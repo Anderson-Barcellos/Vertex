@@ -1,12 +1,15 @@
 import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { SelectedFinding } from '@/types/report';
 import { organs as defaultOrgans, type Organ } from '@/data/organs';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 
-import { FileText, Download, CopySimple } from '@phosphor-icons/react';
+import { FileText, Download, CopySimple, Robot, Lightning } from '@phosphor-icons/react';
 
 import { toast } from 'sonner';
+
+export type AIStatus = 'idle' | 'loading' | 'streaming' | 'completed' | 'error';
 
 interface ReportCanvasProps {
   selectedFindings: SelectedFinding[];
@@ -18,7 +21,13 @@ interface ReportCanvasProps {
   aiImpression?: string;
   aiError?: string | null;
   isAiLoading?: boolean;
+  aiStatus?: AIStatus;
   currentAiModel?: 'gemini' | 'openai';
+
+  // Controles manuais de IA
+  onGenerateAI?: () => void;
+  autoGenerateAI?: boolean;
+  onToggleAutoGenerate?: (value: boolean) => void;
 }
 
 export default function ReportCanvas({
@@ -31,7 +40,12 @@ export default function ReportCanvas({
   aiImpression,
   aiError,
   isAiLoading = false,
-  currentAiModel = 'gemini'
+  aiStatus = 'idle',
+  currentAiModel = 'gemini',
+
+  onGenerateAI,
+  autoGenerateAI = false,
+  onToggleAutoGenerate
 }: ReportCanvasProps) {
 
   const copyToClipboard = () => {
@@ -49,44 +63,48 @@ export default function ReportCanvas({
     }
   };
 
-
-  const uniqueOrgansWithFindings = useMemo(
-    () => new Set(selectedFindings.map(finding => finding.organId)),
-    [selectedFindings]
-  );
-
-  const uniqueNormalOrgans = useMemo(() => new Set(normalOrgans), [normalOrgans]);
-  const coverage = organsList.length > 0
-    ? Math.min(
-        100,
-        Math.round(
-          ((uniqueOrgansWithFindings.size + uniqueNormalOrgans.size) / organsList.length) * 100
-        )
-      )
-    : 0;
-
-  const highlightCards = [
-    {
-      label: 'Achados registrados',
-      value: selectedFindings.length,
-      description: 'Total de alterações documentadas até o momento.'
-    },
-    {
-      label: 'Órgãos com achados',
-      value: uniqueOrgansWithFindings.size,
-      description: 'Estruturas com alterações relevantes.'
-    },
-    {
-      label: 'Órgãos normais',
-      value: uniqueNormalOrgans.size,
-      description: 'Órgãos com documentação de normalidade.'
-    },
-    {
-      label: 'Cobertura do exame',
-      value: `${coverage}%`,
-      description: 'Proporção das estruturas avaliadas neste exame.'
+  // Enhanced status indicator component
+  const renderAIStatusIndicator = () => {
+    switch (aiStatus) {
+      case 'loading':
+        return (
+          <div className="flex items-center gap-2 text-sm text-blue-600">
+            <div className="w-4 h-4 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <span>Preparando consulta à IA...</span>
+          </div>
+        );
+      case 'streaming':
+        return (
+          <div className="flex items-center gap-2 text-sm text-green-600">
+            <div className="w-4 h-4 relative">
+              <div className="w-full h-full bg-green-600 rounded-full animate-pulse"></div>
+              <div className="absolute inset-0 w-2 h-2 bg-green-300 rounded-full m-auto animate-ping"></div>
+            </div>
+            <span>IA gerando resposta...</span>
+          </div>
+        );
+      case 'completed':
+        return (
+          <div className="flex items-center gap-2 text-sm text-green-600">
+            <div className="w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
+              <div className="w-2 h-2 bg-white rounded-full"></div>
+            </div>
+            <span>Análise completa</span>
+          </div>
+        );
+      case 'error':
+        return (
+          <div className="flex items-center gap-2 text-sm text-red-600">
+            <div className="w-4 h-4 bg-red-600 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">!</span>
+            </div>
+            <span>Erro na análise</span>
+          </div>
+        );
+      default:
+        return null;
     }
-  ];
+  };
 
 
   return (
@@ -113,114 +131,169 @@ export default function ReportCanvas({
       </div>
 
       {/* Main Report Area - Now full width */}
-      <div className="flex-1 p-4 bg-muted/30 overflow-y-auto">
-        <div className="max-w-5xl mx-auto space-y-4">
+      <div className="flex-1 p-4 bg-muted/30 overflow-y-auto overflow-x-hidden">
+        <div className="flex flex-col items-center space-y-4 max-w-full">
 
-          {/* Gemini AI Suggestion */}
-          {(aiImpression || aiError || isAiLoading) && (
-            <div className="bg-white/80 border border-primary/20 rounded-lg p-4 shadow-sm">
+          {/* A4-like Report Container */}
+          <div className="a4-container">
+            {/* Enhanced AI Suggestion Panel with Status Indicators */}
+            {(aiImpression || aiError || aiStatus !== 'idle') && (
+            <div className="bg-white/80 border border-primary/20 rounded-lg p-4 shadow-sm w-full max-w-[210mm]">
               <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-primary/70">
-                    {currentAiModel === 'openai' ? 'GPT-5 Nano' : 'Gemini 2.5 Pro'}
-                  </p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-primary/70">
+                      {currentAiModel === 'openai' ? 'GPT-5 Nano' : 'Gemini 1.5 Pro'}
+                    </p>
+                    {renderAIStatusIndicator()}
+                  </div>
                   <h3 className="text-sm font-semibold text-foreground">
                     Impressão diagnóstica sugerida
                   </h3>
                 </div>
-                {aiImpression && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={copyAiImpression}
-                    className="h-8 text-xs"
-                  >
-                    <CopySimple size={14} />
-                    <span className="ml-1">Copiar</span>
-                  </Button>
-                )}
+                <div className="flex items-center gap-2">
+                  {/* Toggle para geração automática */}
+                  <div className="flex items-center gap-2 pr-3 border-r border-gray-200">
+                    <label htmlFor="auto-generate" className="flex items-center gap-1.5 cursor-pointer">
+                      <Lightning size={14} className={autoGenerateAI ? "text-yellow-500" : "text-gray-400"} />
+                      <span className="text-xs text-gray-600">Auto</span>
+                    </label>
+                    <Switch
+                      id="auto-generate"
+                      checked={autoGenerateAI}
+                      onCheckedChange={onToggleAutoGenerate}
+                      className="scale-75"
+                    />
+                  </div>
+
+                  {/* Botão para gerar manualmente */}
+                  {!aiImpression && !isAiLoading && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={onGenerateAI}
+                      className="h-8 text-xs bg-primary hover:bg-primary/90"
+                    >
+                      <Robot size={14} />
+                      <span className="ml-1">Gerar IA</span>
+                    </Button>
+                  )}
+
+                  {/* Botão para copiar quando completo */}
+                  {aiImpression && aiStatus === 'completed' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={copyAiImpression}
+                      className="h-8 text-xs"
+                    >
+                      <CopySimple size={14} />
+                      <span className="ml-1">Copiar</span>
+                    </Button>
+                  )}
+                </div>
               </div>
 
               <div className="mt-3">
-                {isAiLoading ? (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <div className="w-4 h-4 border-2 border-primary/40 border-t-primary rounded-full animate-spin"></div>
-                    Consultando Gemini para análise clínica...
+                {aiStatus === 'loading' ? (
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                    <div className="flex items-center gap-2 text-sm text-blue-700">
+                      <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-700 rounded-full animate-spin"></div>
+                      Preparando consulta à {currentAiModel === 'openai' ? 'GPT-5 Nano' : 'Gemini 2.5 Pro'}...
+                    </div>
                   </div>
-                ) : aiError ? (
-                  <p className="text-xs text-destructive font-medium">{aiError}</p>
+                ) : aiStatus === 'streaming' ? (
+                  <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                    <div className="flex items-center gap-2 text-sm text-green-700 mb-2">
+                      <div className="w-4 h-4 relative">
+                        <div className="w-full h-full bg-green-600 rounded-full animate-pulse"></div>
+                        <div className="absolute inset-0 w-2 h-2 bg-green-300 rounded-full m-auto animate-ping"></div>
+                      </div>
+                      IA gerando análise em tempo real...
+                    </div>
+                    {aiImpression && (
+                      <pre className="whitespace-pre-wrap text-xs leading-relaxed font-sans text-foreground/90 bg-white/70 border border-border rounded-md p-3">
+                        {aiImpression}
+                        <span className="inline-block w-2 h-3 bg-green-600 animate-pulse ml-1">|</span>
+                      </pre>
+                    )}
+                  </div>
+                ) : aiError || aiStatus === 'error' ? (
+                  <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                    <p className="text-xs text-red-700 font-medium flex items-center gap-2">
+                      <span className="w-4 h-4 bg-red-600 rounded-full flex items-center justify-center text-white text-xs font-bold">!</span>
+                      {aiError || 'Erro ao consultar a IA'}
+                    </p>
+                  </div>
                 ) : aiImpression ? (
-                  <pre className="mt-2 whitespace-pre-wrap text-xs leading-relaxed font-sans text-foreground/90 bg-white/70 border border-border rounded-md p-3">
-                    {aiImpression}
-                  </pre>
+                  <div className="bg-white/70 border border-border rounded-md p-3">
+                    <pre className="whitespace-pre-wrap text-xs leading-relaxed font-sans text-foreground/90">
+                      {aiImpression}
+                    </pre>
+                  </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Nenhuma impressão automatizada disponível até o momento.
-                  </p>
+                  <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <Robot size={24} className="text-gray-400" />
+                      <p className="text-xs text-muted-foreground text-center">
+                        {autoGenerateAI
+                          ? "A IA gerará uma impressão diagnóstica quando você adicionar achados"
+                          : "Clique em 'Gerar IA' para criar uma impressão diagnóstica"}
+                      </p>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
           )}
 
-
-          {/* Highlights */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            {highlightCards.map(card => (
-              <div
-                key={card.label}
-                className="bg-white/70 border border-border rounded-lg p-4 shadow-sm backdrop-blur"
-              >
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  {card.label}
-                </p>
-                <p className="text-2xl font-semibold text-foreground mt-1">{card.value}</p>
-                <p className="text-xs text-muted-foreground mt-2 leading-snug">
-                  {card.description}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* A4-like Report Container */}
-          <div
-            className="bg-white shadow-lg border border-gray-200 rounded-lg overflow-hidden"
-            style={{
-              minHeight: '700px',
-              aspectRatio: '210/297',
-              maxWidth: '750px',
-              margin: '0 auto'
-            }}
-          >
-            {isGenerating ? (
+            <div className="a4-content p-8">
+              {isGenerating ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center space-y-4">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-sm text-muted-foreground">Gerando relatório com IA...</p>
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">Gerando relatório com IA...</p>
+                    <p className="text-xs text-muted-foreground/70">Processando achados clínicos</p>
+                  </div>
                 </div>
               </div>
             ) : generatedReport ? (
-              <div className="p-6">
+              <div className="a4-content p-8">
                 <MarkdownRenderer
                   content={generatedReport}
                   isStreaming={isGenerating}
-                  className="prose prose-sm max-w-none"
+                  className="a4-prose prose max-w-none"
                 />
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-center">
-                <div className="space-y-3">
-                  <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-                    <FileText size={32} className="text-gray-400" />
+                <div className="space-y-4">
+                  <div className="w-20 h-20 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center shadow-inner">
+                    <FileText size={36} className="text-gray-400" />
                   </div>
-                  <p className="text-gray-500 text-base font-medium">
-                    O laudo aparecerá aqui após ser gerado.
-                  </p>
-                  <p className="text-gray-400 text-sm">
-                    Use o botão "Gerar Laudo" na barra lateral
-                  </p>
+                  <div className="space-y-2">
+                    <p className="text-gray-500 text-base font-medium">
+                      O laudo aparecerá aqui após ser gerado
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      Use o botão "Gerar Laudo" na barra lateral
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+                    <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                    <span>Aguardando geração</span>
+                    <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                  </div>
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>

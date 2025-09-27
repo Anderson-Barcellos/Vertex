@@ -2,7 +2,7 @@
 import type { SelectedFinding } from '@/types/report';
 
 // Gemini API endpoint
-const GEMINI_API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+const GEMINI_API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent';
 
 /**
  * Verifica se a API Key do Gemini está configurada
@@ -252,7 +252,7 @@ if (import.meta.env.DEV) {
 }
 
 // Default model for Gemini
-export const DEFAULT_GEMINI_MODEL = 'gemini-pro';
+export const DEFAULT_GEMINI_MODEL = 'gemini-1.5-pro';
 
 /**
  * Create a Gemini report request payload

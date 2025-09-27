@@ -1,9 +1,10 @@
-# 📋 Documentação do Projeto - UltraSound Report GE
+# 📋 Documentação do Projeto - Vertex US
 
 **Data de Configuração:** 14 de Setembro de 2025
-**Última Atualização:** 15 de Setembro de 2025
-**Configurado por:** Claude
-**Projeto:** Sistema de Geração de Laudos Ultrassonográficos
+**Última Atualização:** 25 de Setembro de 2025
+**Configurado por:** Claude + Vertex Team
+**Projeto:** Sistema de Geração de Laudos Ultrassonográficos com IA
+**Repositório GitHub:** https://github.com/Anderson-Barcellos/Vertex
 
 ## 🎯 Visão Geral
 
@@ -11,10 +12,14 @@ Sistema profissional de geração de laudos ultrassonográficos com interface in
 
 ### Stack Tecnológica
 - **Frontend:** React 19 + TypeScript
-- **Build Tool:** Vite 6.3.6
+- **Build Tool:** Vite 7.1.5
 - **Estilização:** Tailwind CSS v4 + Radix UI
 - **Roteamento:** React Router DOM v7
 - **Ícones:** Phosphor Icons + Lucide React
+- **IA Integrada:**
+  - Google Gemini AI (gemini-2.0-flash-exp) com streaming
+  - OpenAI GPT-5 Nano com streaming
+- **Markdown:** react-markdown + remark-gfm
 - **Servidor Web:** Apache 2.4.62 (Reverse Proxy)
 - **SSL:** Let's Encrypt (válido até 03/11/2025)
 - **Domínio:** ultrassom.ai
@@ -219,6 +224,41 @@ echo | openssl s_client -connect ultrassom.ai:8133 2>/dev/null | openssl x509 -n
 - `X-Forwarded-Host: ultrassom.ai:8133` - Host original
 - `X-Forwarded-For` - IP do cliente
 
+## 🚀 Novas Funcionalidades (24/09/2025)
+
+### Integração com IA Avançada
+1. **Gemini AI Streaming**
+   - Modelo: gemini-2.0-flash-exp
+   - Geração de laudos em tempo real
+   - Impressão clínica automática durante seleção de achados
+   - Sistema de callbacks para atualização progressiva
+
+2. **OpenAI GPT-5 Nano**
+   - Integração completa com streaming
+   - Suporte a formato JSON estruturado
+   - Seletor de modelo na interface
+   - Indicador visual do modelo em uso
+
+3. **Melhorias na Interface**
+   - SelectedFindingsPanel movido para lado direito como painel flutuante
+   - Altura adaptativa baseada no conteúdo
+   - Animações verdes fade-in para novos itens
+   - Correção do problema de fechamento do popup ao selecionar dropdowns
+   - Detecção inteligente de portais Radix UI
+
+4. **Controle de Versão**
+   - Repositório Git inicializado
+   - Push para GitHub privado: Anderson-Barcellos/Vertex
+   - 104 arquivos versionados
+   - 22.506+ linhas de código
+
+### Correções de Bugs
+- ✅ Popup lateral não fecha mais ao selecionar opções com campos extras
+- ✅ WebSocket/HMR configurado corretamente para desenvolvimento local
+- ✅ Removido fallback genérico que aparecia no campo superior
+- ✅ Correção de sintaxe em componentes React com stopPropagation
+- ✅ Importações corrigidas no geminiClient.ts
+
 ## 📝 Manutenção
 
 ### Renovação do Certificado SSL
@@ -354,6 +394,15 @@ X-XSS-Protection: 1; mode=block
 - Exibição hierárquica por órgão
 - Detalhes de medidas e localização
 - Órgãos normais em badges
+- Alinhado com os cartões A4 do canvas
+
+#### 5. **ExamStatisticsPanel.tsx** (NOVO - 25/09/2025)
+- Painel flutuante de estatísticas do exame
+- Posicionado abaixo do SelectedFindingsPanel
+- Métricas em formato de linhas com separadores
+- Barra de progresso visual da cobertura do exame
+- Animações fade-in verdes para valores atualizados
+- Design dark theme consistente
 
 ## 📊 Melhorias Implementadas (15/09/2025)
 
@@ -411,3 +460,55 @@ Para questões sobre esta configuração, consulte este documento ou execute nov
 **Última atualização:** 15 de Setembro de 2025
 **Versão:** 2.0.0
 **Status:** ✅ Sistema Operacional com Interface Otimizada
+
+## \ud83d\udd27 Configura\u00e7\u00e3o de APIs (ATUALIZADO 24/09/2025)
+
+### Vari\u00e1veis de Ambiente (.env)
+```env
+# Gemini AI - Google
+VITE_GEMINI_API_KEY=sua_chave_gemini_aqui
+
+# OpenAI - GPT-5 Nano
+VITE_OPENAI_API_KEY=sua_chave_openai_aqui
+```
+
+## \ud83c\udf86 Novas Funcionalidades Implementadas em 24/09/2025
+
+- \u2705 **Integra\u00e7\u00e3o Gemini AI com streaming completo**
+- \u2705 **Integra\u00e7\u00e3o OpenAI GPT-5 Nano com streaming**
+- \u2705 **Corre\u00e7\u00e3o do bug de fechamento do popup ao selecionar dropdowns**
+- \u2705 **Reposit\u00f3rio GitHub privado criado e configurado**
+- \u2705 **104 arquivos versionados com 22.506+ linhas de c\u00f3digo**
+
+## \ud83c\udf06 Novas Funcionalidades Implementadas em 25/09/2025
+
+### Melhorias na Interface e UX
+1. **Bot\u00f5es R\u00e1pidos "Normal" na Sidebar**
+   - Bot\u00e3o CheckCircle ao lado de cada \u00f3rg\u00e3o na navega\u00e7\u00e3o
+   - Marca \u00f3rg\u00e3os como normais com apenas 1 clique (antes eram 2-3)
+   - Feedback visual imediato com \u00edcone verde preenchido
+   - Evita abertura desnecess\u00e1ria do painel flutuante
+
+2. **Reposicionamento do SelectedFindingsPanel**
+   - Movido para alinhar com os cart\u00f5es A4 (mt-32)
+   - Melhor aproveitamento do espa\u00e7o vertical
+   - Alinhamento visual mais harm\u00f4nico com o canvas do relat\u00f3rio
+
+3. **Novo ExamStatisticsPanel**
+   - Painel de estat\u00edsticas do exame em formato de linhas
+   - Posicionado abaixo do SelectedFindingsPanel
+   - Exibe m\u00e9tricas em tempo real:
+     - Achados registrados
+     - \u00d3rg\u00e3os com achados
+     - \u00d3rg\u00e3os normais
+     - Barra de cobertura do exame com gradiente
+   - Anima\u00e7\u00f5es suaves com efeito verde para novos valores
+   - Estilo consistente com o design dark do sistema
+
+4. **Corre\u00e7\u00f5es de Layout**
+   - Corre\u00e7\u00e3o do problema de centraliza\u00e7\u00e3o vertical com `min-h-full`
+   - Remo\u00e7\u00e3o dos cards de estat\u00edsticas do ReportCanvas
+   - Organiza\u00e7\u00e3o dos pain\u00e9is flutuantes em container flex
+
+**Reposit\u00f3rio GitHub:** https://github.com/Anderson-Barcellos/Vertex
+**Vers\u00e3o Atual:** 3.1.0

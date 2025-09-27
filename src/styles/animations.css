@@ -82,3 +82,184 @@
 .badge-new {
   animation: pulseGreen 1s ease-out;
 }
+
+/* Statistics panel animations */
+.statistic-item {
+  transition: all 0.3s ease;
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: 2px 0;
+}
+
+.statistic-item:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* New statistic highlight */
+.statistic-item-new {
+  animation: fadeInGreen 0.6s ease-out;
+  position: relative;
+}
+
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.statistic-value-update {
+  animation: slideUpFade 0.4s ease-out;
+}
+
+/* A4 Paper Styles with fixed width and proper z-index */
+.a4-container {
+  width: 210mm;
+  height: 297mm;
+  min-width: 210mm; /* Prevent shrinking below standard A4 width */
+  max-width: 210mm; /* Maintain exact A4 width */
+  background: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  margin: 0 auto;
+  z-index: 2; /* Above main content but below floating panels */
+}
+
+/* Only scale down for very small screens while maintaining minimum usable size */
+@media (max-width: 1200px) {
+  .a4-container {
+    min-width: 180mm; /* Maintain reasonable minimum size */
+    width: 180mm;
+    height: 254mm;
+  }
+}
+
+@media (max-width: 768px) {
+  .a4-container {
+    min-width: 160mm; /* Still usable on tablets */
+    width: 160mm;
+    height: 226mm;
+  }
+}
+
+@media (max-width: 640px) {
+  .a4-container {
+    min-width: 140mm; /* Minimum for mobile readability */
+    width: 140mm;
+    height: 198mm;
+  }
+}
+
+/* Custom Scrollbar for A4 Content */
+.a4-content {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+.a4-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.a4-content::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px;
+}
+
+.a4-content::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.a4-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+/* Reduced font sizes for A4 content */
+.a4-prose {
+  font-size: 10px !important;
+  line-height: 1.4 !important;
+}
+
+.a4-prose h1 {
+  font-size: 16px !important;
+  margin: 0.4em 0 !important;
+  font-weight: 700;
+}
+
+.a4-prose h2 {
+  font-size: 14px !important;
+  margin: 0.4em 0 !important;
+  font-weight: 600;
+}
+
+.a4-prose h3 {
+  font-size: 12px !important;
+  margin: 0.3em 0 !important;
+  font-weight: 600;
+}
+
+.a4-prose p {
+  font-size: 10px !important;
+  margin: 0.4em 0 !important;
+}
+
+.a4-prose ul, .a4-prose ol {
+  margin: 0.3em 0 !important;
+  padding-left: 1.2em !important;
+}
+
+.a4-prose li {
+  font-size: 10px !important;
+  margin: 0.2em 0 !important;
+}
+
+.a4-prose strong {
+  font-weight: 600;
+}
+
+/* Z-Index Hierarchy */
+/* Base layer - main content and background */
+.main-content {
+  z-index: 1;
+}
+
+/* A4 paper container - above main content */
+.a4-container {
+  z-index: 2;
+}
+
+/* Floating panels - above A4 paper */
+.floating-panels {
+  z-index: 10;
+}
+
+/* Organ section panel - above floating panels */
+.organ-section-panel {
+  z-index: 20;
+}
+
+/* Dropdowns and select menus - above panels */
+.dropdown-content,
+[data-radix-portal],
+[data-radix-popper-content-wrapper],
+[data-radix-select-content],
+[data-radix-dropdown-menu-content] {
+  z-index: 30 !important;
+}
+
+/* Modals and dialogs - highest priority */
+.modal-content,
+[data-radix-dialog-overlay],
+[data-radix-dialog-content] {
+  z-index: 40 !important;
+}

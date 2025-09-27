@@ -4,6 +4,7 @@ import Sidebar from '@/components/Sidebar';
 import OrganSection from '@/components/OrganSection';
 import ReportCanvas from '@/components/ReportCanvas';
 import SelectedFindingsPanel from '@/components/SelectedFindingsPanel';
+import ExamStatisticsPanel from '@/components/ExamStatisticsPanel';
 import { breastOrgans } from '@/data/breastOrgans';
 import { BREAST_ULTRASOUND_TEMPLATE } from '@/data/reportTemplates';
 import { SelectedFinding, ReportData, FindingInstance, type AIProvider } from '@/types/report';
@@ -21,6 +22,7 @@ export default function BreastExam() {
   const [normalOrgans, setNormalOrgans] = useState<string[]>([]);
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAnyDropdownOpen, setIsAnyDropdownOpen] = useState(false);
   const organPanelRef = useRef<HTMLDivElement>(null);
   const [generatedReport, setGeneratedReport] = useState('');
 
@@ -36,8 +38,28 @@ export default function BreastExam() {
   const currentOrganFindings = selectedFindings.filter(sf => sf.organId === selectedOrgan);
   const isCurrentOrganNormal = normalOrgans.includes(selectedOrgan);
 
+  // Monitor all dropdowns state
+  useEffect(() => {
+    const checkDropdowns = () => {
+      const hasOpenDropdown = document.querySelector('[data-state="open"]') !== null ||
+                             document.querySelector('[aria-expanded="true"]') !== null;
+      setIsAnyDropdownOpen(hasOpenDropdown);
+    };
+
+    // Check periodically for dropdown state
+    const interval = setInterval(checkDropdowns, 100);
+
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Don't minimize if any dropdown is open
+      if (isAnyDropdownOpen) {
+        console.log('Dropdown está aberto - não minimizando');
+        return;
+      }
+
       if (
         organPanelRef.current &&
         !organPanelRef.current.contains(event.target as Node) &&
@@ -59,7 +81,7 @@ export default function BreastExam() {
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [selectedOrgan, isPanelMinimized]);
+  }, [selectedOrgan, isPanelMinimized, isAnyDropdownOpen]);
 
   const handleOrganSelect = (organId: string) => {
     setSelectedOrgan(organId);
@@ -252,6 +274,7 @@ export default function BreastExam() {
         <Sidebar
           selectedOrgan={selectedOrgan}
           onOrganSelect={handleOrganSelect}
+          onNormalChange={handleNormalChange}
           selectedFindings={selectedFindings}
           normalOrgans={normalOrgans}
           organsList={breastOrgans}
@@ -259,10 +282,10 @@ export default function BreastExam() {
       </div>
 
       {/* Main Content Area with Report Canvas and Floating Panel */}
-      <div className="flex-1 relative overflow-hidden bg-gray-50">
-        <div className="h-full flex items-center justify-center gap-8 p-8 overflow-y-auto">
-          {/* Report Canvas - Centered */}
-          <div className="bg-white shadow-lg rounded-lg" style={{ width: '210mm', minHeight: '297mm' }}>
+      <div className="flex-1 relative overflow-hidden bg-gray-50 main-content">
+        <div className="min-h-full flex items-start justify-center gap-8 p-8 overflow-y-auto">
+          {/* Report Canvas - A4 Paper Container */}
+          <div className="a4-container my-auto">
             <ReportCanvas
               selectedFindings={selectedFindings}
               normalOrgans={normalOrgans}
@@ -275,22 +298,31 @@ export default function BreastExam() {
             />
           </div>
 
-          {/* Selected Findings Panel - Floating on the right */}
-          <SelectedFindingsPanel
-            selectedFindings={selectedFindings}
-            normalOrgans={normalOrgans}
-            organsList={breastOrgans}
-            onGenerateReport={handleGenerateReport}
-            isGenerating={isGenerating}
-            className="self-center"
-          />
+          {/* Panels Container - Sticky positioned to align with A4 top */}
+          <div className="flex flex-col gap-4 sticky top-4 floating-panels">
+            {/* Selected Findings Panel */}
+            <SelectedFindingsPanel
+              selectedFindings={selectedFindings}
+              normalOrgans={normalOrgans}
+              organsList={breastOrgans}
+              onGenerateReport={handleGenerateReport}
+              isGenerating={isGenerating}
+            />
+
+            {/* Exam Statistics Panel */}
+            <ExamStatisticsPanel
+              selectedFindings={selectedFindings}
+              normalOrgans={normalOrgans}
+              organsList={breastOrgans}
+            />
+          </div>
         </div>
 
         {/* Floating Organ Section */}
         {selectedOrgan && currentOrgan && (
           <div
             ref={organPanelRef}
-            className={`absolute top-6 left-6 bg-card border border-border rounded-lg shadow-2xl z-10 backdrop-blur-sm transition-all duration-300 ${
+            className={`absolute top-6 left-6 bg-card border border-border rounded-lg shadow-2xl organ-section-panel backdrop-blur-sm transition-all duration-300 ${
               isPanelMinimized ? 'w-12' : 'w-80'
             } max-h-[calc(100vh-120px)]`}
           >

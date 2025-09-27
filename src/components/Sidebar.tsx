@@ -8,12 +8,14 @@ import {
   Grains,
   Heart,
   DropHalfBottom,
-  Circle
+  Circle,
+  CheckCircle
 } from '@phosphor-icons/react';
 
 interface SidebarProps {
   selectedOrgan: string;
   onOrganSelect: (organId: string) => void;
+  onNormalChange?: (organId: string, isNormal: boolean) => void;
   selectedFindings: SelectedFinding[];
   normalOrgans: string[];
   organsList?: Organ[];
@@ -33,6 +35,7 @@ const iconMap = {
 export default function Sidebar({
   selectedOrgan,
   onOrganSelect,
+  onNormalChange,
   selectedFindings,
   normalOrgans,
   organsList = defaultOrgans
@@ -125,11 +128,33 @@ export default function Sidebar({
 
             return (
               <li key={organ.id}>
-                <div>
+                <div className="flex items-center gap-1">
+                  {/* Quick Normal Button */}
+                  {onNormalChange && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onNormalChange(organ.id, !isNormal);
+                      }}
+                      className={cn(
+                        "p-1.5 rounded-md transition-all",
+                        isNormal
+                          ? "text-green-500 hover:bg-green-500/10"
+                          : "text-sidebar-foreground/30 hover:text-green-500 hover:bg-white/5"
+                      )}
+                      title={isNormal ? "Remover normal" : "Marcar como normal"}
+                    >
+                      <CheckCircle
+                        size={18}
+                        weight={isNormal ? "fill" : "regular"}
+                      />
+                    </button>
+                  )}
+
                   <button
                     onClick={() => onOrganSelect(organ.id)}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-md transition-all duration-200",
+                      "flex-1 flex items-center gap-3 px-3 py-2.5 text-sm rounded-md transition-all duration-200",
                       isSelected
                         ? "bg-accent text-accent-foreground shadow-sm"
                         : "hover:bg-white/5"
@@ -144,46 +169,43 @@ export default function Sidebar({
                     {hasFindings && (
                       <div className="w-2 h-2 bg-accent rounded-full flex-shrink-0" />
                     )}
-                    {isNormal && (
-                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0" />
-                    )}
                   </button>
+                </div>
 
-                  {/* Show findings details */}
-                  {hasFindings && (
-                    <div className="ml-7 mt-1 space-y-1 text-[10px]" style={{ color: 'var(--sidebar-foreground)' }}>
-                      {organFindings.map(finding => (
-                        <div key={finding.findingId} className="opacity-60">
-                          <div className="flex items-start gap-1">
-                            <span className="text-accent">•</span>
-                            <div className="flex-1">
-                              <span className="font-medium">{finding.finding.name}</span>
-                              {finding.instances && finding.instances.length > 0 && (
-                                <div className="mt-0.5 ml-2">
-                                  {finding.instances.map((instance, idx) => (
-                                    <div key={instance.id} className="text-[9px] opacity-80">
-                                      {instance.measurements.size && (
-                                        <span>Tam: {instance.measurements.size}</span>
-                                      )}
-                                      {instance.measurements.location && (
-                                        <span className="ml-1">| {instance.measurements.location}</span>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                              {!finding.instances && finding.severity && (
-                                <span className="ml-2 text-[9px] uppercase opacity-80">
-                                  ({finding.severity})
-                                </span>
-                              )}
-                            </div>
+                {/* Show findings details */}
+                {hasFindings && (
+                  <div className="ml-7 mt-1 space-y-1 text-[10px]" style={{ color: 'var(--sidebar-foreground)' }}>
+                    {organFindings.map(finding => (
+                      <div key={finding.findingId} className="opacity-60">
+                        <div className="flex items-start gap-1">
+                          <span className="text-accent">•</span>
+                          <div className="flex-1">
+                            <span className="font-medium">{finding.finding.name}</span>
+                            {finding.instances && finding.instances.length > 0 && (
+                              <div className="mt-0.5 ml-2">
+                                {finding.instances.map((instance, idx) => (
+                                  <div key={instance.id} className="text-[9px] opacity-80">
+                                    {instance.measurements.size && (
+                                      <span>Tam: {instance.measurements.size}</span>
+                                    )}
+                                    {instance.measurements.location && (
+                                      <span className="ml-1">| {instance.measurements.location}</span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {!finding.instances && finding.severity && (
+                              <span className="ml-2 text-[9px] uppercase opacity-80">
+                                ({finding.severity})
+                              </span>
+                            )}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </li>
             );
           })}

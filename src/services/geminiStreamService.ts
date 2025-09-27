@@ -108,7 +108,7 @@ export class GeminiStreamService {
 
     try {
       const model = this.genAI.getGenerativeModel({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-1.5-pro',
         systemInstruction: SYSTEM_INSTRUCTION,
         generationConfig: {
           temperature: 0.2,
@@ -228,7 +228,7 @@ INSTRUÇÕES IMPORTANTES:
 
     try {
       const model = this.genAI.getGenerativeModel({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-1.5-pro',
         systemInstruction: SYSTEM_INSTRUCTION,
         generationConfig: {
           temperature: 0.2,
@@ -281,7 +281,7 @@ INSTRUÇÕES IMPORTANTES:
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
       const result = await model.generateContent('Teste de conexão. Responda apenas: OK');
       const response = await result.response;
       const text = response.text();

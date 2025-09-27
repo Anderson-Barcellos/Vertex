@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Sidebar from '@/components/Sidebar';
 import OrganSection from '@/components/OrganSection';
 import ReportCanvas from '@/components/ReportCanvas';
 import SelectedFindingsPanel from '@/components/SelectedFindingsPanel';
+import ExamStatisticsPanel from '@/components/ExamStatisticsPanel';
 import { organs } from '@/data/organs';
 import { SelectedFinding, ReportData, FindingInstance, type AIProvider } from '@/types/report';
 import { Finding } from '@/data/organs';
@@ -12,6 +13,8 @@ import { generateReport } from '@/services/reportGenerator';
 import { generateGeminiClinicalImpression } from '@/services/geminiClient';
 import { geminiStreamService } from '@/services/geminiStreamService';
 import { openaiStreamService } from '@/services/openaiStreamService';
+import { unifiedAIService } from '@/services/unifiedAIService';
+import type { AIStatus } from '@/components/ReportCanvas';
 import { toast } from 'sonner';
 import { CaretLeft, CaretRight, House } from '@phosphor-icons/react';
 
@@ -25,15 +28,39 @@ function AbdomeTotalExam() {
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiImpression, setAiImpression] = useState('');
   const [currentAiModel, setCurrentAiModel] = useState<'gemini' | 'openai'>('gemini');
+  const [autoGenerateAI, setAutoGenerateAI] = useState(false); // Controle manual por padrão
   const [aiError, setAiError] = useState<string | null>(null);
+  const [aiStatus, setAiStatus] = useState<AIStatus>('idle');
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
+  const [isAnyDropdownOpen, setIsAnyDropdownOpen] = useState(false);
   const organPanelRef = useRef<HTMLDivElement>(null);
   const aiDebounceRef = useRef<number | null>(null);
   const aiAbortRef = useRef<AbortController | null>(null);
+  const statusUnsubscribeRef = useRef<(() => void) | null>(null);
+
+  // Monitor all dropdowns state
+  useEffect(() => {
+    const checkDropdowns = () => {
+      const hasOpenDropdown = document.querySelector('[data-state="open"]') !== null ||
+                             document.querySelector('[aria-expanded="true"]') !== null;
+      setIsAnyDropdownOpen(hasOpenDropdown);
+    };
+
+    // Check periodically for dropdown state
+    const interval = setInterval(checkDropdowns, 100);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Handle click outside to minimize organ panel
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Don't minimize if any dropdown is open
+      if (isAnyDropdownOpen) {
+        console.log('Dropdown está aberto - não minimizando');
+        return;
+      }
+
       if (
         organPanelRef.current &&
         !organPanelRef.current.contains(event.target as Node) &&
@@ -43,14 +70,25 @@ function AbdomeTotalExam() {
         // Check if click is on a Radix UI portal (dropdowns, selects, etc)
         const target = event.target as HTMLElement;
         const isRadixPortal = target.closest('[data-radix-portal]') ||
+                             target.closest('[data-radix-popper-content-wrapper]') ||
+                             target.closest('[data-state="open"]') ||
                              target.closest('[role="listbox"]') ||
                              target.closest('[role="option"]') ||
+                             target.closest('[role="combobox"]') ||
                              target.closest('[data-radix-select-content]') ||
-                             target.closest('[data-radix-dropdown-menu-content]');
+                             target.closest('[data-radix-select-trigger]') ||
+                             target.closest('[data-radix-select-viewport]') ||
+                             target.closest('[data-radix-dropdown-menu-content]') ||
+                             target.closest('.select-content') ||
+                             target.closest('.select-trigger');
 
         if (isRadixPortal) {
+          console.log('Click detectado em portal Radix UI - não minimizando');
           return; // Don't minimize if clicking on a portal element
         }
+
+        // Debug: log what was clicked
+        console.log('Click fora detectado, minimizando. Target:', target);
 
         // Check if click is not on sidebar or findings panel
         const sidebar = document.querySelector('[data-sidebar]');
@@ -68,7 +106,7 @@ function AbdomeTotalExam() {
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [selectedOrgan, isPanelMinimized]);
+  }, [selectedOrgan, isPanelMinimized, isAnyDropdownOpen]);
 
   const handleOrganSelect = (organId: string) => {
     if (selectedOrgan === organId) {
@@ -231,99 +269,104 @@ function AbdomeTotalExam() {
     }
   };
 
-  useEffect(() => {
-    if (aiDebounceRef.current) {
-      window.clearTimeout(aiDebounceRef.current);
-      aiDebounceRef.current = null;
+  // Função manual para gerar impressão diagnóstica com IA
+  const generateAIImpression = useCallback(() => {
+    // Cleanup previous operations
+    if (statusUnsubscribeRef.current) {
+      statusUnsubscribeRef.current();
+      statusUnsubscribeRef.current = null;
     }
 
-    if (aiAbortRef.current) {
-      aiAbortRef.current.abort();
-      aiAbortRef.current = null;
+    // Cancelar operações anteriores apenas se não estiver em andamento
+    if (!isAiProcessing) {
+      unifiedAIService.cancelAllOperations();
     }
 
-    if (selectedFindings.length === 0) {
+    // Clear state if no findings
+    if (selectedFindings.length === 0 && normalOrgans.length === 0) {
       setAiImpression('');
-      setAiError(null);
+      setAiError('Adicione achados ou marque órgãos como normais antes de gerar a impressão');
       setIsAiProcessing(false);
+      setAiStatus('idle');
       return;
     }
 
-    setIsAiProcessing(true);
-    setAiError(null);
+    // Set current AI provider
+    unifiedAIService.setProvider(currentAiModel);
 
-    const controller = new AbortController();
-    aiAbortRef.current = controller;
+    // Subscribe to status changes
+    statusUnsubscribeRef.current = unifiedAIService.onStatusChange((status) => {
+      setAiStatus(status);
+      setIsAiProcessing(status === 'loading' || status === 'streaming');
+      if (status === 'error') {
+        setAiError('Erro ao consultar a IA');
+      } else if (status !== 'error') {
+        setAiError(null);
+      }
+    });
 
-    aiDebounceRef.current = window.setTimeout(async () => {
-      try {
-        // Use streaming service for AI impression
-        if (geminiStreamService.isConfigured()) {
-          let impression = '';
-          await geminiStreamService.generateClinicalImpressionStream(
-            {
-              examType: 'Ultrassonografia Abdominal Total',
-              selectedFindings,
-              normalOrgans,
-              organsCatalog: organs
-            },
-            {
-              onChunk: (text) => {
-                impression += text;
-                setAiImpression(impression);
-              },
-              onComplete: (finalText) => {
-                setAiImpression(finalText);
-                setAiError(null);
-              },
-              onError: (error) => {
-                if (error.message.includes('abort')) return;
-                setAiImpression('');
-                setAiError(error.message);
-              }
-            }
-          );
-        } else {
-          // Fallback to non-streaming
-          const result = await generateGeminiClinicalImpression(
-            {
-              examType: 'Ultrassonografia Abdominal Total',
-              selectedFindings,
-              normalOrgans,
-              organsCatalog: organs
-            },
-            { signal: controller.signal }
-          );
-          setAiImpression(result);
+    // Start AI impression generation
+    let accumulatedText = '';
+    unifiedAIService.generateClinicalImpression(
+      {
+        examType: 'Ultrassonografia Abdominal Total',
+        selectedFindings,
+        normalOrgans,
+        organsCatalog: organs
+      },
+      {
+        onChunk: (text) => {
+          accumulatedText += text;
+          setAiImpression(accumulatedText);
+        },
+        onComplete: (finalText) => {
+          setAiImpression(finalText);
           setAiError(null);
-        }
-      } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError') {
-          return;
-        }
-        console.error('Falha ao consultar o Gemini 2.5 Pro:', error);
-        setAiImpression('');
-        setAiError(
-          error instanceof Error
-            ? error.message
-            : 'Não foi possível obter a impressão diagnóstica sugerida pelo Gemini.'
-        );
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsAiProcessing(false);
+        },
+        onError: (errorMsg) => {
+          setAiImpression('');
+          setAiError(errorMsg);
         }
       }
-    }, 600);
+    ).catch((error) => {
+      console.error('AI impression generation failed:', error);
+      setAiError('Falha na geração da impressão diagnóstica');
+    });
+  }, [selectedFindings, normalOrgans, currentAiModel, isAiProcessing]);
+
+  // Efeito para geração automática (apenas se ativado)
+  useEffect(() => {
+    if (!autoGenerateAI) return;
+
+    // Debounce de 2 segundos para evitar múltiplas chamadas
+    const timer = setTimeout(() => {
+      if (selectedFindings.length > 0 || normalOrgans.length > 0) {
+        generateAIImpression();
+      }
+    }, 2000);
 
     return () => {
-      if (aiDebounceRef.current) {
-        window.clearTimeout(aiDebounceRef.current);
-        aiDebounceRef.current = null;
+      clearTimeout(timer);
+      if (statusUnsubscribeRef.current && autoGenerateAI) {
+        statusUnsubscribeRef.current();
+        statusUnsubscribeRef.current = null;
       }
-      controller.abort();
-      aiAbortRef.current = null;
+      if (autoGenerateAI) {
+        unifiedAIService.cancelClinicalImpression();
+      }
     };
-  }, [selectedFindings, normalOrgans]);
+  }, [selectedFindings, normalOrgans, currentAiModel, autoGenerateAI, generateAIImpression]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (statusUnsubscribeRef.current) {
+        statusUnsubscribeRef.current();
+        statusUnsubscribeRef.current = null;
+      }
+      unifiedAIService.cleanup();
+    };
+  }, []);
 
   const currentOrgan = organs.find(organ => organ.id === selectedOrgan);
   const currentOrganFindings = selectedFindings.filter(f => f.organId === selectedOrgan);
@@ -362,6 +405,7 @@ function AbdomeTotalExam() {
         <Sidebar
           selectedOrgan={selectedOrgan}
           onOrganSelect={handleOrganSelect}
+          onNormalChange={handleNormalChange}
           selectedFindings={selectedFindings}
           normalOrgans={normalOrgans}
           organsList={organs}
@@ -369,10 +413,10 @@ function AbdomeTotalExam() {
       </div>
 
       {/* Main Content Area with Report Canvas and Floating Panel */}
-      <div className="flex-1 relative overflow-hidden bg-gray-50">
-        <div className="h-full flex items-center justify-center gap-8 p-8 overflow-y-auto">
-          {/* Report Canvas - Centered */}
-          <div className="bg-white shadow-lg rounded-lg" style={{ width: '210mm', minHeight: '297mm' }}>
+      <div className="flex-1 relative overflow-hidden bg-gray-50 main-content">
+        <div className="min-h-full flex items-start justify-center gap-8 p-8 overflow-y-auto">
+          {/* Report Canvas - A4 Paper Container */}
+          <div className="a4-container my-auto">
             <ReportCanvas
               selectedFindings={selectedFindings}
               normalOrgans={normalOrgans}
@@ -381,27 +425,40 @@ function AbdomeTotalExam() {
               aiImpression={aiImpression}
               aiError={aiError}
               isAiLoading={isAiProcessing}
+              aiStatus={aiStatus}
               organsList={organs}
               currentAiModel={currentAiModel}
+              onGenerateAI={generateAIImpression}
+              autoGenerateAI={autoGenerateAI}
+              onToggleAutoGenerate={setAutoGenerateAI}
             />
           </div>
 
-          {/* Selected Findings Panel - Floating on the right */}
-          <SelectedFindingsPanel
-            selectedFindings={selectedFindings}
-            normalOrgans={normalOrgans}
-            organsList={organs}
-            onGenerateReport={handleGenerateReport}
-            isGenerating={isGenerating}
-            className="self-center"
-          />
+          {/* Panels Container - Sticky positioned to align with A4 top */}
+          <div className="flex flex-col gap-4 sticky top-4 floating-panels">
+            {/* Selected Findings Panel */}
+            <SelectedFindingsPanel
+              selectedFindings={selectedFindings}
+              normalOrgans={normalOrgans}
+              organsList={organs}
+              onGenerateReport={handleGenerateReport}
+              isGenerating={isGenerating}
+            />
+
+            {/* Exam Statistics Panel */}
+            <ExamStatisticsPanel
+              selectedFindings={selectedFindings}
+              normalOrgans={normalOrgans}
+              organsList={organs}
+            />
+          </div>
         </div>
 
         {/* Floating Organ Section */}
         {currentOrgan && (
           <div
             ref={organPanelRef}
-            className={`absolute top-6 left-6 bg-card border border-border rounded-lg shadow-2xl z-10 backdrop-blur-sm transition-all duration-300 ${
+            className={`absolute top-6 left-6 bg-card border border-border rounded-lg shadow-2xl organ-section-panel backdrop-blur-sm transition-all duration-300 ${
               isPanelMinimized ? 'w-12' : 'w-80'
             } max-h-[calc(100vh-120px)]`}
           >

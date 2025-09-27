@@ -153,19 +153,27 @@ export default function SelectedFindingsPanel({
 
                         {/* Show instances */}
                         {finding.instances && finding.instances.length > 0 && (
-                          <div className="pl-3 mt-0.5 space-y-0.5">
+                          <div className="pl-3 mt-1 space-y-1">
                             {finding.instances.map((instance, idx) => (
-                              <div key={instance.id} className="text-[11px] text-sidebar-foreground opacity-70">
-                                <span className="font-medium">• {idx + 1}:</span>
-                                {instance.measurements.size && (
-                                  <span> {instance.measurements.size}</span>
-                                )}
-                                {instance.measurements.segment && (
-                                  <span> - Seg.{instance.measurements.segment}</span>
-                                )}
-                                {instance.measurements.location && (
-                                  <span> - {instance.measurements.location}</span>
-                                )}
+                              <div key={instance.id} className="bg-sidebar-muted/30 rounded px-2 py-1.5 border border-sidebar-muted/50">
+                                <div className="text-[11px] font-semibold text-sidebar-accent flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 bg-sidebar-accent rounded-full"></span>
+                                  Lesão {idx + 1}
+                                </div>
+                                <div className="text-[10px] text-sidebar-foreground opacity-90 space-y-0.5 mt-1 pl-2.5">
+                                  {instance.measurements.size && (
+                                    <div>• Tamanho: {instance.measurements.size}</div>
+                                  )}
+                                  {instance.measurements.location && (
+                                    <div>• Localização: {instance.measurements.location}</div>
+                                  )}
+                                  {instance.measurements.segment && (
+                                    <div>• Segmento: {instance.measurements.segment}</div>
+                                  )}
+                                  {instance.measurements.additionalInfo && (
+                                    <div>• Obs: {instance.measurements.additionalInfo}</div>
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>
