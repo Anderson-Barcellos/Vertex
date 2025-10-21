@@ -7,6 +7,7 @@ import { organs } from '@/data/organs';
 import { SelectedFinding, ReportData, type AIProvider } from '@/types/report';
 import { Finding } from '@/data/organs';
 import { generateReport } from '@/services/reportGenerator';
+import { geminiStreamService } from '@/services/geminiStreamService';
 import { toast } from 'sonner';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { Home } from 'lucide-react';
@@ -33,10 +34,10 @@ function AbdomeTotalExam() {
   };
 
   const handleFindingChange = (
-    organId: string, 
-    categoryId: string, 
-    findingId: string, 
-    checked: boolean, 
+    organId: string,
+    categoryId: string,
+    findingId: string,
+    checked: boolean,
     finding: Finding
   ) => {
     setSelectedFindings(currentFindings => {
@@ -57,7 +58,7 @@ function AbdomeTotalExam() {
 
     // Remove organ from normal list if findings are selected
     if (checked) {
-      setNormalOrgans(currentNormal => 
+      setNormalOrgans(currentNormal =>
         currentNormal.filter(id => id !== organId)
       );
     }
@@ -72,13 +73,13 @@ function AbdomeTotalExam() {
         }
         return currentNormal;
       });
-      
-      setSelectedFindings(currentFindings => 
+
+      setSelectedFindings(currentFindings =>
         currentFindings.filter(f => f.organId !== organId)
       );
     } else {
       // Remove from normal organs
-      setNormalOrgans(currentNormal => 
+      setNormalOrgans(currentNormal =>
         currentNormal.filter(id => id !== organId)
       );
     }
@@ -86,29 +87,75 @@ function AbdomeTotalExam() {
 
   const handleGenerateReport = async (
     data: ReportData,
-    options: { model: AIProvider }
+    options: { model: AIProvider; specificModel: string }
   ) => {
     setIsGenerating(true);
+    setGeneratedReport(''); // Limpar relatório anterior
+
     try {
       const provider = options?.model ?? 'gemini';
+      const specificModel = options?.specificModel ?? 'gemini-2.0-flash-exp';
+
+      console.log('[AbdomeTotalExam] Gerando relatório com:', {
+        provider,
+        specificModel,
+        findingsCount: data.selectedFindings.length,
+        normalOrgansCount: data.normalOrgans.length
+      });
 
       if (provider === 'openai') {
         toast.info(
-          'Integração com modelos OpenAI está em desenvolvimento. Utilizando Gemini 2.5 Pro para gerar o laudo.'
+          `Gerando laudo com ${specificModel}...`
+        );
+      } else {
+        toast.info(
+          `Gerando laudo com ${specificModel}...`
         );
       }
 
-      const report = await generateReport(data, {
-        organsList: organs,
-        provider
-      });
-      setGeneratedReport(report);
-      toast.success('Relatório gerado com sucesso!');
+      // Usar streaming para gerar relatório em tempo real
+      // Armazenar modelo no sessionStorage para ser usado pelo serviço
+      sessionStorage.setItem('selectedAIModel', specificModel);
+
+      await geminiStreamService.generateFullReportStream(
+        {
+          examType: 'Ultrassonografia de Abdome Total',
+          selectedFindings: data.selectedFindings,
+          normalOrgans: data.normalOrgans,
+          organsCatalog: organs
+        },
+        {
+          onChunk: (accumulatedText: string) => {
+            // O serviço já passa o texto acumulado
+            setGeneratedReport(accumulatedText);
+          },
+          onComplete: (fullText: string) => {
+            setGeneratedReport(fullText);
+            setIsGenerating(false);
+            toast.success('Relatório gerado com sucesso!');
+          },
+          onError: (error: Error) => {
+            console.error('Error generating report:', error);
+            setIsGenerating(false);
+            toast.error('Erro ao gerar relatório. Tente novamente.');
+
+            // Fallback para geração básica sem streaming
+            generateReport(data, {
+              organsList: organs,
+              provider
+            }).then(report => {
+              setGeneratedReport(report);
+              toast.success('Relatório gerado (modo fallback)');
+            }).catch(fallbackError => {
+              console.error('Fallback também falhou:', fallbackError);
+            });
+          }
+        }
+      );
     } catch (error) {
       console.error('Error generating report:', error);
-      toast.error('Erro ao gerar relatório. Tente novamente.');
-    } finally {
       setIsGenerating(false);
+      toast.error('Erro ao gerar relatório. Tente novamente.');
     }
   };
 
@@ -146,21 +193,19 @@ function AbdomeTotalExam() {
             </div>
           </div>
         </div>
-        
+
         <Sidebar
           selectedOrgan={selectedOrgan}
           onOrganSelect={handleOrganSelect}
           selectedFindings={selectedFindings}
           normalOrgans={normalOrgans}
-          onGenerateReport={handleGenerateReport}
-          isGenerating={isGenerating}
           organsList={organs}
         />
       </div>
-      
-      <div className="flex-1 relative overflow-hidden">
+
+      <div className="flex-1 relative">
         {/* Report Canvas - Full background */}
-        <div className="absolute inset-0 overflow-y-auto bg-card">
+        <div className="absolute inset-0 overflow-y-auto overflow-x-hidden bg-card">
           <ReportCanvas
             selectedFindings={selectedFindings}
             normalOrgans={normalOrgans}
@@ -169,12 +214,11 @@ function AbdomeTotalExam() {
             organsList={organs}
           />
         </div>
-        
+
         {/* Floating Organ Section */}
         {currentOrgan && (
-          <div className={`absolute top-6 left-6 bg-card border border-border rounded-lg shadow-2xl z-10 backdrop-blur-sm transition-all duration-300 ${
-            isPanelMinimized ? 'w-12' : 'w-80'
-          } max-h-[calc(100vh-120px)]`}>
+          <div className={`absolute top-6 left-6 bg-card border border-border rounded-lg shadow-2xl z-10 backdrop-blur-sm transition-all duration-300 ${isPanelMinimized ? 'w-12' : 'w-80'
+            } max-h-[calc(100vh-120px)]`}>
             {isPanelMinimized ? (
               /* Minimized state */
               <div className="p-3 flex flex-col items-center">
@@ -213,7 +257,7 @@ function AbdomeTotalExam() {
           </div>
         )}
       </div>
-      
+
     </div>
   );
 }

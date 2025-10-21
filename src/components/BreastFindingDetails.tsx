@@ -107,7 +107,7 @@ export function BreastFindingDetails({
 
   return (
     <div
-      className="space-y-4"
+      className="space-y-4 max-h-[400px] overflow-y-auto"
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
@@ -211,7 +211,7 @@ export function BreastFindingDetails({
                   <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="Selecione o quadrante" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[200px] overflow-y-auto">
                     {BREAST_LOCATIONS.map(loc => (
                       <SelectItem key={loc.value} value={loc.value}>
                         {loc.label}
@@ -231,7 +231,7 @@ export function BreastFindingDetails({
                   <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="Selecione a posição" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[200px] overflow-y-auto">
                     {CLOCK_POSITIONS.map(pos => (
                       <SelectItem key={pos.value} value={pos.value}>
                         {pos.label}
@@ -251,7 +251,7 @@ export function BreastFindingDetails({
                   <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="Selecione a distância" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[200px] overflow-y-auto">
                     {NIPPLE_DISTANCES.map(dist => (
                       <SelectItem key={dist.value} value={dist.value}>
                         {dist.label}
@@ -274,7 +274,7 @@ export function BreastFindingDetails({
                 <SelectTrigger className="h-8 text-sm">
                   <SelectValue placeholder="Selecione a forma" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {NODULE_SHAPES.map(shape => (
                     <SelectItem key={shape.value} value={shape.value}>
                       {shape.label}
@@ -296,7 +296,7 @@ export function BreastFindingDetails({
                 <SelectTrigger className="h-8 text-sm">
                   <SelectValue placeholder="Selecione as margens" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {NODULE_MARGINS.map(margin => (
                     <SelectItem key={margin.value} value={margin.value}>
                       {margin.label}
@@ -318,7 +318,7 @@ export function BreastFindingDetails({
                 <SelectTrigger className="h-8 text-sm">
                   <SelectValue placeholder="Selecione a orientação" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {NODULE_ORIENTATION.map(orient => (
                     <SelectItem key={orient.value} value={orient.value}>
                       {orient.label}
@@ -340,7 +340,7 @@ export function BreastFindingDetails({
                 <SelectTrigger className="h-8 text-sm">
                   <SelectValue placeholder="Selecione a ecogenicidade" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {ECHOGENICITY.map(echo => (
                     <SelectItem key={echo.value} value={echo.value}>
                       {echo.label}
@@ -362,7 +362,7 @@ export function BreastFindingDetails({
                 <SelectTrigger className="h-8 text-sm">
                   <SelectValue placeholder="Selecione as características" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {POSTERIOR_FEATURES.map(feat => (
                     <SelectItem key={feat.value} value={feat.value}>
                       {feat.label}
@@ -384,7 +384,7 @@ export function BreastFindingDetails({
                 <SelectTrigger className="h-8 text-sm">
                   <SelectValue placeholder="Selecione a vascularização" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {VASCULARIZATION.map(vasc => (
                     <SelectItem key={vasc.value} value={vasc.value}>
                       {vasc.label}
@@ -406,7 +406,7 @@ export function BreastFindingDetails({
                 <SelectTrigger className="h-8 text-sm">
                   <SelectValue placeholder="Selecione a distribuição" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {CALCIFICATION_DISTRIBUTION.map(dist => (
                     <SelectItem key={dist.value} value={dist.value}>
                       {dist.label}
@@ -428,7 +428,7 @@ export function BreastFindingDetails({
                 <SelectTrigger className="h-8 text-sm">
                   <SelectValue placeholder="Selecione o conteúdo" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {CYST_CONTENT.map(content => (
                     <SelectItem key={content.value} value={content.value}>
                       {content.label}
@@ -465,7 +465,7 @@ export function BreastFindingDetails({
                 <SelectTrigger className="h-8 text-sm border-primary/50">
                   <SelectValue placeholder="Selecione BI-RADS" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {BIRADS_CATEGORIES.map(cat => (
                     <SelectItem key={cat.value} value={cat.value}>
                       {cat.label}

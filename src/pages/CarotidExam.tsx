@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Sidebar from '@/components/Sidebar';
@@ -6,7 +6,8 @@ import OrganSection from '@/components/OrganSection';
 import ReportCanvas from '@/components/ReportCanvas';
 import SelectedFindingsPanel from '@/components/SelectedFindingsPanel';
 import ExamStatisticsPanel from '@/components/ExamStatisticsPanel';
-import { organs } from '@/data/organs';
+import CarotidFindingDetails from '@/components/CarotidFindingDetails';
+import { carotidOrgans } from '@/data/carotidOrgans';
 import { SelectedFinding, ReportData, FindingInstance, type AIProvider } from '@/types/report';
 import { Finding } from '@/data/organs';
 import { generateReport } from '@/services/reportGenerator';
@@ -18,7 +19,7 @@ import type { AIStatus } from '@/components/ReportCanvas';
 import { toast } from 'sonner';
 import { CaretLeft, CaretRight, House } from '@phosphor-icons/react';
 
-function AbdomeTotalExam() {
+function CarotidExam() {
   const navigate = useNavigate();
   const [selectedOrgan, setSelectedOrgan] = useState('');
   const [selectedFindings, setSelectedFindings] = useState<SelectedFinding[]>([]);
@@ -34,30 +35,44 @@ function AbdomeTotalExam() {
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
   const [isAnyDropdownOpen, setIsAnyDropdownOpen] = useState(false);
   const organPanelRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const findingsPanelRef = useRef<HTMLDivElement>(null);
   const aiDebounceRef = useRef<number | null>(null);
   const aiAbortRef = useRef<AbortController | null>(null);
   const statusUnsubscribeRef = useRef<(() => void) | null>(null);
+  const isAiProcessingRef = useRef(false);
 
-  // Monitor all dropdowns state
+  // Keep ref in sync with state
   useEffect(() => {
-    const checkDropdowns = () => {
-      const hasOpenDropdown = document.querySelector('[data-state="open"]') !== null ||
+    isAiProcessingRef.current = isAiProcessing;
+  }, [isAiProcessing]);
+
+  // Monitor dropdowns state via MutationObserver (more efficient than polling)
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const hasOpenDropdown =
+        document.querySelector('[data-state="open"]') !== null ||
         document.querySelector('[aria-expanded="true"]') !== null;
       setIsAnyDropdownOpen(hasOpenDropdown);
-    };
+    });
 
-    // Check periodically for dropdown state
-    const interval = setInterval(checkDropdowns, 100);
+    // Observe only the organ panel for dropdown changes
+    if (organPanelRef.current) {
+      observer.observe(organPanelRef.current, {
+        attributes: true,
+        attributeFilter: ['data-state', 'aria-expanded'],
+        subtree: true
+      });
+    }
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => observer.disconnect();
+  }, [selectedOrgan]); // Re-observe when organ changes
 
   // Handle click outside to minimize organ panel
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       // Don't minimize if any dropdown is open
       if (isAnyDropdownOpen) {
-        console.log('Dropdown está aberto - não minimizando');
         return;
       }
 
@@ -83,20 +98,14 @@ function AbdomeTotalExam() {
           target.closest('.select-trigger');
 
         if (isRadixPortal) {
-          console.log('Click detectado em portal Radix UI - não minimizando');
           return; // Don't minimize if clicking on a portal element
         }
 
-        // Debug: log what was clicked
-        console.log('Click fora detectado, minimizando. Target:', target);
+        // Check if click is not on sidebar or findings panel using refs
+        const isClickOnSidebar = sidebarRef.current?.contains(event.target as Node);
+        const isClickOnFindingsPanel = findingsPanelRef.current?.contains(event.target as Node);
 
-        // Check if click is not on sidebar or findings panel
-        const sidebar = document.querySelector('[data-sidebar]');
-        const findingsPanel = document.querySelector('[data-findings-panel]');
-        if (
-          (!sidebar || !sidebar.contains(event.target as Node)) &&
-          (!findingsPanel || !findingsPanel.contains(event.target as Node))
-        ) {
+        if (!isClickOnSidebar && !isClickOnFindingsPanel) {
           setIsPanelMinimized(true);
         }
       }
@@ -205,10 +214,10 @@ function AbdomeTotalExam() {
         let fullReport = '';
         await openaiStreamService.generateFullReportStream(
           {
-            examType: 'Ultrassonografia Abdominal Total',
+            examType: 'Ecodoppler de Carótidas e Vertebrais',
             selectedFindings: data.selectedFindings,
             normalOrgans: data.normalOrgans,
-            organsCatalog: organs
+            organsCatalog: carotidOrgans
           },
           {
             onChunk: (text) => {
@@ -230,7 +239,7 @@ function AbdomeTotalExam() {
         if (!geminiStreamService.isConfigured()) {
           // Fallback to non-streaming Gemini
           const report = await generateReport(data, {
-            organsList: organs,
+            organsList: carotidOrgans,
             provider
           });
           setGeneratedReport(report);
@@ -239,10 +248,10 @@ function AbdomeTotalExam() {
           // Streaming do Gemini com chunks em tempo real
           await geminiStreamService.generateFullReportStream(
             {
-              examType: 'Ultrassonografia Abdominal Total',
+              examType: 'Ecodoppler de Carótidas e Vertebrais',
               selectedFindings: data.selectedFindings,
               normalOrgans: data.normalOrgans,
-              organsCatalog: organs
+              organsCatalog: carotidOrgans
             },
             {
               onChunk: (accumulatedText) => {
@@ -263,7 +272,7 @@ function AbdomeTotalExam() {
                       normalOrgans: data.normalOrgans,
                       additionalNotes: ''
                     },
-                    { organsList: organs, provider }
+                    { organsList: carotidOrgans, provider }
                   );
                   setGeneratedReport(fallback);
                   toast.error('Falha no endpoint de IA. Exibindo laudo básico.');
@@ -293,7 +302,7 @@ function AbdomeTotalExam() {
     }
 
     // Cancelar operações anteriores apenas se não estiver em andamento
-    if (!isAiProcessing) {
+    if (!isAiProcessingRef.current) {
       unifiedAIService.cancelAllOperations();
     }
 
@@ -324,10 +333,10 @@ function AbdomeTotalExam() {
     let accumulatedText = '';
     unifiedAIService.generateClinicalImpression(
       {
-        examType: 'Ultrassonografia Abdominal Total',
+        examType: 'Ecodoppler de Carótidas e Vertebrais',
         selectedFindings,
         normalOrgans,
-        organsCatalog: organs
+        organsCatalog: carotidOrgans
       },
       {
         onChunk: (text) => {
@@ -347,7 +356,7 @@ function AbdomeTotalExam() {
       console.error('AI impression generation failed:', error);
       setAiError('Falha na geração da impressão diagnóstica');
     });
-  }, [selectedFindings, normalOrgans, currentAiModel, isAiProcessing]);
+  }, [selectedFindings, normalOrgans, currentAiModel]); // Removed isAiProcessing - using ref instead
 
   // Efeito para geração automática (apenas se ativado)
   useEffect(() => {
@@ -383,14 +392,26 @@ function AbdomeTotalExam() {
     };
   }, []);
 
-  const currentOrgan = organs.find(organ => organ.id === selectedOrgan);
-  const currentOrganFindings = selectedFindings.filter(f => f.organId === selectedOrgan);
-  const isCurrentOrganNormal = normalOrgans.includes(selectedOrgan);
+  // Memoize expensive calculations
+  const currentOrgan = useMemo(
+    () => carotidOrgans.find(organ => organ.id === selectedOrgan),
+    [selectedOrgan]
+  );
+
+  const currentOrganFindings = useMemo(
+    () => selectedFindings.filter(f => f.organId === selectedOrgan),
+    [selectedFindings, selectedOrgan]
+  );
+
+  const isCurrentOrganNormal = useMemo(
+    () => normalOrgans.includes(selectedOrgan),
+    [normalOrgans, selectedOrgan]
+  );
 
   return (
     <div className="flex h-screen bg-background">
       {/* Dark Sidebar - Now narrower */}
-      <div data-sidebar style={{ backgroundColor: 'var(--sidebar-background)' }} className="w-52 border-r border-border/20">
+      <div ref={sidebarRef} data-sidebar style={{ backgroundColor: 'var(--sidebar-background)' }} className="w-52 border-r border-border/20">
         <div className="p-4 border-b border-border/20">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
@@ -401,7 +422,7 @@ function AbdomeTotalExam() {
                 VERTEX
               </h1>
               <p style={{ color: 'var(--sidebar-foreground)' }} className="text-sm opacity-70">
-                Ultrassonografia abdominal
+                Ecodoppler Vascular
               </p>
             </div>
           </div>
@@ -423,7 +444,7 @@ function AbdomeTotalExam() {
           onNormalChange={handleNormalChange}
           selectedFindings={selectedFindings}
           normalOrgans={normalOrgans}
-          organsList={organs}
+          organsList={carotidOrgans}
         />
       </div>
 
@@ -441,7 +462,7 @@ function AbdomeTotalExam() {
               aiError={aiError}
               isAiLoading={isAiProcessing}
               aiStatus={aiStatus}
-              organsList={organs}
+              organsList={carotidOrgans}
               currentAiModel={currentAiModel}
               onGenerateAI={generateAIImpression}
               autoGenerateAI={autoGenerateAI}
@@ -450,12 +471,12 @@ function AbdomeTotalExam() {
           </div>
 
           {/* Panels Container - Sticky positioned to align with A4 top */}
-          <div className="flex flex-col gap-4 sticky top-4 floating-panels">
+          <div ref={findingsPanelRef} data-findings-panel className="flex flex-col gap-4 sticky top-4 floating-panels">
             {/* Selected Findings Panel */}
             <SelectedFindingsPanel
               selectedFindings={selectedFindings}
               normalOrgans={normalOrgans}
-              organsList={organs}
+              organsList={carotidOrgans}
               onGenerateReport={handleGenerateReport}
               isGenerating={isGenerating}
             />
@@ -464,7 +485,7 @@ function AbdomeTotalExam() {
             <ExamStatisticsPanel
               selectedFindings={selectedFindings}
               normalOrgans={normalOrgans}
-              organsList={organs}
+              organsList={carotidOrgans}
             />
           </div>
         </div>
@@ -473,7 +494,7 @@ function AbdomeTotalExam() {
         {currentOrgan && (
           <div
             ref={organPanelRef}
-            className={`absolute top-6 left-6 bg-card border border-border rounded-lg shadow-2xl organ-section-panel backdrop-blur-sm transition-all duration-300 ${isPanelMinimized ? 'w-12' : 'w-80'
+            className={`absolute top-6 left-6 bg-card border border-border rounded-lg shadow-2xl organ-section-panel backdrop-blur-sm transition-all duration-300 flex flex-col overflow-hidden ${isPanelMinimized ? 'w-12' : 'w-80'
               } max-h-[calc(100vh-120px)]`}
           >
             {isPanelMinimized ? (
@@ -490,7 +511,7 @@ function AbdomeTotalExam() {
                 </div>
               </div>
             ) : (
-              <div className="h-full">
+              <div className="h-full flex flex-col overflow-hidden">
                 <div className="absolute top-2 right-2 z-20">
                   <button
                     onClick={() => setIsPanelMinimized(true)}
@@ -506,6 +527,7 @@ function AbdomeTotalExam() {
                   onFindingChange={handleFindingChange}
                   onNormalChange={handleNormalChange}
                   isNormal={isCurrentOrganNormal}
+                  FindingDetailsComponent={CarotidFindingDetails}
                 />
               </div>
             )}
@@ -518,4 +540,4 @@ function AbdomeTotalExam() {
   );
 }
 
-export default AbdomeTotalExam;
+export default CarotidExam;

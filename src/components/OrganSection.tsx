@@ -20,6 +20,14 @@ interface OrganSectionProps {
   ) => void;
   onNormalChange: (organId: string, isNormal: boolean) => void;
   isNormal: boolean;
+  FindingDetailsComponent?: React.ComponentType<{
+    finding: Finding;
+    organId: string;
+    severity?: string;
+    instances?: FindingInstance[];
+    onSeverityChange: (severity: string) => void;
+    onInstancesChange: (instances: FindingInstance[]) => void;
+  }>;
 }
 
 export default function OrganSection({
@@ -27,7 +35,8 @@ export default function OrganSection({
   selectedFindings,
   onFindingChange,
   onNormalChange,
-  isNormal
+  isNormal,
+  FindingDetailsComponent = FindingDetailsEnhanced
 }: OrganSectionProps) {
   // Local state for finding details
   const [findingDetails, setFindingDetails] = useState<Record<string, {
@@ -114,15 +123,15 @@ export default function OrganSection({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col max-h-full">
       {/* Header compacto com background */}
-      <div className="bg-primary text-primary-foreground p-4 rounded-t-lg">
+      <div className="bg-primary text-primary-foreground p-4 rounded-t-lg flex-shrink-0">
         <h2 className="text-lg font-semibold">{organ.name}</h2>
         <p className="text-sm opacity-90">Achados ultrassonográficos</p>
       </div>
 
       {/* Conteúdo scrollável */}
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex-1 p-4 overflow-y-auto min-h-0">
         <div className="flex items-center space-x-3 mb-4 p-3 bg-muted/30 rounded-lg">
           <Checkbox
             id={`${organ.id}-normal`}
@@ -194,7 +203,7 @@ export default function OrganSection({
 
                         {/* Show enhanced details form when selected and has special fields */}
                         {isSelected && (finding.hasSeverity || finding.hasMeasurement || finding.hasLocation || finding.hasQuantity) && (
-                          <FindingDetailsEnhanced
+                          <FindingDetailsComponent
                             finding={finding}
                             organId={organ.id}
                             severity={details.severity || finding.severity}

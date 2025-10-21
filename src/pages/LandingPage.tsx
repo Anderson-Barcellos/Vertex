@@ -29,6 +29,15 @@ const examTypes = [
     color: 'bg-blue-500'
   },
   {
+    id: 'carotid',
+    name: 'Ecodoppler de Carótidas e Vertebrais',
+    description: 'Avaliação doppler das artérias carótidas e vertebrais',
+    icon: Activity,
+    available: true,
+    route: '/carotid-exam',
+    color: 'bg-purple-500'
+  },
+  {
     id: 'mamas',
     name: 'Mamas',
     description: 'Ultrassonografia mamária com BI-RADS',
@@ -261,19 +270,19 @@ function LandingPage() {
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <span style={{ color: 'var(--sidebar-foreground)' }} className="text-xs opacity-70">Modalidades</span>
-                    <span style={{ color: 'var(--sidebar-foreground)' }} className="text-xs font-semibold">8</span>
+                    <span style={{ color: 'var(--sidebar-foreground)' }} className="text-xs font-semibold">9</span>
                   </div>
                   <div className="h-1 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-accent" style={{ width: '12.5%' }}></div>
+                    <div className="h-full bg-accent" style={{ width: '33.3%' }}></div>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <span style={{ color: 'var(--sidebar-foreground)' }} className="text-xs opacity-70">Disponíveis</span>
-                    <span style={{ color: 'var(--sidebar-foreground)' }} className="text-xs font-semibold">1</span>
+                    <span style={{ color: 'var(--sidebar-foreground)' }} className="text-xs font-semibold">3</span>
                   </div>
                   <div className="h-1 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-green-500" style={{ width: '12.5%' }}></div>
+                    <div className="h-full bg-green-500" style={{ width: '33.3%' }}></div>
                   </div>
                 </div>
               </div>

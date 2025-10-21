@@ -19,6 +19,18 @@ export async function generateReport(
   data: ReportData,
   options: ReportGenerationOptions = {}
 ): Promise<string> {
+  // Validar dados de entrada
+  if (!data) {
+    throw new Error('Dados do relatório não fornecidos');
+  }
+
+  const hasFindings = data.selectedFindings && data.selectedFindings.length > 0;
+  const hasNormalOrgans = data.normalOrgans && data.normalOrgans.length > 0;
+
+  if (!hasFindings && !hasNormalOrgans) {
+    throw new Error('Nenhum achado ou órgão normal foi selecionado. Por favor, selecione pelo menos um achado ou marque órgãos como normais.');
+  }
+
   const organsList = options.organsList ?? organs;
   const promptTemplate = options.promptTemplate ?? ABDOMEN_TOTAL_TEMPLATE;
   const provider: AIProvider = options.provider ?? 'gemini';
@@ -34,16 +46,43 @@ export async function generateReport(
   }
 
   try {
-    const requestPayload = createGeminiReportRequest(data, {
+    // Log de debug antes de gerar o prompt
+    console.log('[reportGenerator] Iniciando geração de relatório com:', {
+      provider,
+      model: resolvedModel,
+      findingsCount: data.selectedFindings?.length || 0,
+      normalOrgansCount: data.normalOrgans?.length || 0,
+      timestamp: new Date().toISOString()
+    });
+
+    const promptText = createGeminiReportRequest(data, {
       model: resolvedModel,
       organsList,
       promptTemplate
     });
-    const { text } = await requestGeminiContent(requestPayload);
+
+    // Log do tamanho do prompt
+    console.log('[reportGenerator] Prompt criado com', promptText.length, 'caracteres');
+
+    const { text } = await requestGeminiContent(promptText);
+
+    console.log('[reportGenerator] Relatório gerado com sucesso -', text.length, 'caracteres na resposta');
+
     return text;
   } catch (error) {
-    console.error('Error generating report with Gemini:', error);
-    return generateBasicReport(data, organsList, promptTemplate);
+    console.error('[reportGenerator] Erro ao gerar relatório:', {
+      error: error instanceof Error ? error.message : String(error),
+      data: {
+        findingsCount: data.selectedFindings?.length,
+        normalOrgansCount: data.normalOrgans?.length
+      },
+      timestamp: new Date().toISOString()
+    });
+
+    // Retornar relatório básico como fallback
+    const basicReport = generateBasicReport(data, organsList, promptTemplate);
+    console.log('[reportGenerator] Usando fallback com relatório básico');
+    return basicReport;
   }
 }
 
@@ -83,7 +122,7 @@ function generateBasicReport(
 
     if (organFindings.length > 0 || isNormal) {
       report += `**${organ.name}:** `;
-      
+
       if (isNormal || organFindings.length === 0) {
         report += organ.normalDescription;
       } else {
@@ -112,14 +151,14 @@ function generateBasicReport(
 
           return desc;
         });
-        
+
         report += `apresenta ${findingDescriptions.join(', ')}.`;
       }
-      
+
       report += '\n\n';
     }
   });
-  
+
   // Impression
   report += `## ${template.impressionTitle}:\n\n`;
 

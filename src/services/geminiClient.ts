@@ -1,21 +1,12 @@
 // Gemini AI Integration
 import type { SelectedFinding } from '@/types/report';
 
-// Gemini API endpoint
-const GEMINI_API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent';
-
-/**
- * Verifica se a API Key do Gemini está configurada
- */
-export function checkGeminiApiKey(): boolean {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) {
-    console.warn('VITE_GEMINI_API_KEY não está configurada no arquivo .env');
-    return false;
-  }
-  console.log('✅ Gemini API Key detectada:', apiKey.substring(0, 10) + '...');
-  return true;
-}
+// Use proxy local para evitar CORS
+// Proxy configurado em vite.config.ts: /api/gemini -> https://ultrassom.ai:8177/geminiCall
+const GEMINI_API_ENDPOINT =
+  import.meta.env.VITE_GEMINI_API_URL || '/api/gemini';
+const GEMINI_MODEL =
+  import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-pro';
 
 /**
  * Gera impressão clínica usando Gemini AI
@@ -29,74 +20,11 @@ export async function generateGeminiClinicalImpression(
   },
   options: { signal?: AbortSignal } = {}
 ): Promise<string> {
-  // Verificar API Key
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-
-  if (!apiKey) {
-    console.warn('Gemini API Key não configurada.');
-    throw new Error('Gemini API Key não está configurada. Configure VITE_GEMINI_API_KEY no arquivo .env');
-  }
-
   try {
     // Construir o prompt
     const prompt = buildPrompt(data);
-
-    // Fazer a chamada para a API do Gemini
-    const response = await fetch(`${GEMINI_API_ENDPOINT}?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.3,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        },
-        safetySettings: [
-          {
-            category: "HARM_CATEGORY_HARASSMENT",
-            threshold: "BLOCK_ONLY_HIGH"
-          },
-          {
-            category: "HARM_CATEGORY_HATE_SPEECH",
-            threshold: "BLOCK_ONLY_HIGH"
-          },
-          {
-            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            threshold: "BLOCK_ONLY_HIGH"
-          },
-          {
-            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-            threshold: "BLOCK_ONLY_HIGH"
-          }
-        ]
-      }),
-      signal: options.signal
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Erro na API do Gemini:', error);
-      throw new Error(`API Error: ${response.status}`);
-    }
-
-    const result = await response.json();
-
-    // Extrair o texto da resposta
-    if (result.candidates && result.candidates[0]?.content?.parts?.[0]?.text) {
-      return result.candidates[0].content.parts[0].text;
-    }
-
-    // Fallback se não houver resposta válida
-    throw new Error('Resposta inválida da API do Gemini');
-
+    const result = await callGeminiEndpoint(prompt, options.signal);
+    return result;
   } catch (error) {
     if (options.signal?.aborted) {
       throw new Error('Operação cancelada');
@@ -107,7 +35,7 @@ export async function generateGeminiClinicalImpression(
 }
 
 /**
- * Constrói o prompt para o Gemini
+ * Constrói o prompt para o Gemini com detalhes completos
  */
 function buildPrompt(data: {
   examType?: string;
@@ -121,25 +49,96 @@ Gere uma IMPRESSÃO DIAGNÓSTICA profissional e concisa para o seguinte exame de
 
 `;
 
-  // Adicionar achados patológicos
+  // Adicionar achados patológicos com detalhes completos
   if (data.selectedFindings.length > 0) {
     prompt += 'ACHADOS PATOLÓGICOS:\n';
+
     data.selectedFindings.forEach(finding => {
-      prompt += `- ${finding.finding.name}`;
-
+      // Criar nome do achado com severidade
+      let findingHeader = `- ${finding.finding.name}`;
       if (finding.severity) {
-        prompt += ` (${finding.severity})`;
+        findingHeader += ` (Severidade: ${finding.severity})`;
       }
+      prompt += findingHeader + '\n';
 
+      // Adicionar detalhes das instâncias (lesões/achados múltiplos)
       if (finding.instances && finding.instances.length > 0) {
-        finding.instances.forEach(instance => {
-          if (instance.measurements.size) {
-            prompt += ` - Tamanho: ${instance.measurements.size}`;
+        finding.instances.forEach((instance, idx) => {
+          prompt += `  Lesão ${idx + 1}:\n`;
+
+          // Tamanho/Dimensão
+          if (instance.measurements?.size) {
+            prompt += `    • Tamanho: ${instance.measurements.size}\n`;
           }
-          if (instance.measurements.location) {
-            prompt += ` - Localização: ${instance.measurements.location}`;
+
+          // Localização anatômica
+          if (instance.measurements?.location) {
+            prompt += `    • Localização: ${instance.measurements.location}\n`;
+          }
+
+          // Segmento hepático (específico para fígado)
+          if (instance.measurements?.segment) {
+            prompt += `    • Segmento: ${instance.measurements.segment}\n`;
+          }
+
+          // Quantidade (para cálculos, etc)
+          if (instance.measurements?.quantity) {
+            prompt += `    • Quantidade: ${instance.measurements.quantity}\n`;
+          }
+
+          // Descrição adicional
+          if (instance.measurements?.description) {
+            prompt += `    • Descrição: ${instance.measurements.description}\n`;
+          }
+
+          // Campos específicos de Doppler de Carótidas
+          if (instance.measurements?.vps) {
+            prompt += `    • VPS: ${instance.measurements.vps} cm/s\n`;
+          }
+          if (instance.measurements?.vdf) {
+            prompt += `    • VDF: ${instance.measurements.vdf} cm/s\n`;
+          }
+          if (instance.measurements?.ratioICA_CCA) {
+            prompt += `    • Razão ICA/CCA: ${instance.measurements.ratioICA_CCA}\n`;
+          }
+          if (instance.measurements?.ratioICA_ICA) {
+            prompt += `    • Razão ICA/ICA contralateral: ${instance.measurements.ratioICA_ICA}\n`;
+          }
+          if (instance.measurements?.emi) {
+            prompt += `    • EMI: ${instance.measurements.emi} mm\n`;
+          }
+          if (instance.measurements?.plaqueEchogenicity) {
+            prompt += `    • Ecogenicidade da placa: ${instance.measurements.plaqueEchogenicity}\n`;
+          }
+          if (instance.measurements?.plaqueComposition) {
+            prompt += `    • Composição da placa: ${instance.measurements.plaqueComposition}\n`;
+          }
+          if (instance.measurements?.plaqueSurface) {
+            prompt += `    • Superfície da placa: ${instance.measurements.plaqueSurface}\n`;
+          }
+          if (instance.measurements?.vertebralFlowPattern) {
+            prompt += `    • Padrão de fluxo vertebral: ${instance.measurements.vertebralFlowPattern}\n`;
+          }
+          if (instance.measurements?.subclavianSteal) {
+            prompt += `    • Roubo da subclávia: ${instance.measurements.subclavianSteal}\n`;
           }
         });
+      } else if (finding.measurements) {
+        // Se não há instâncias detalhadas, usar as medidas do finding
+        if (finding.measurements.size) {
+          prompt += `  Tamanho: ${finding.measurements.size}\n`;
+        }
+        if (finding.measurements.location) {
+          prompt += `  Localização: ${finding.measurements.location}\n`;
+        }
+        if (finding.measurements.segment) {
+          prompt += `  Segmento: ${finding.measurements.segment}\n`;
+        }
+      }
+
+      // Adicionar detalhes textuais se disponíveis
+      if (finding.details) {
+        prompt += `  Detalhes: ${finding.details}\n`;
       }
 
       prompt += '\n';
@@ -147,11 +146,14 @@ Gere uma IMPRESSÃO DIAGNÓSTICA profissional e concisa para o seguinte exame de
     prompt += '\n';
   }
 
-  // Adicionar órgãos normais
+  // Adicionar órgãos normais com seus nomes completos do catálogo
   if (data.normalOrgans.length > 0) {
-    prompt += 'ÓRGÃOS NORMAIS:\n';
-    data.normalOrgans.forEach(organ => {
-      prompt += `- ${organ}\n`;
+    prompt += 'ÓRGÃOS NORMAIS (sem alterações):\n';
+
+    data.normalOrgans.forEach(organId => {
+      // Se temos o catálogo, usar o nome completo
+      const organName = data.organsCatalog?.find(org => org.id === organId)?.name || organId;
+      prompt += `- ${organName}\n`;
     });
     prompt += '\n';
   }
@@ -165,6 +167,7 @@ INSTRUÇÕES:
 5. Se houver achados significativos, mencione necessidade de acompanhamento quando apropriado
 6. Use classificações padronizadas (BI-RADS, TI-RADS, etc) quando aplicável
 7. NÃO inclua cabeçalho ou título, apenas o texto da impressão
+8. Estruture a resposta em parágrafos claros e bem organizados
 `;
 
   return prompt;
@@ -207,52 +210,17 @@ function generateLocalImpression(
  * Testa a conexão com a API do Gemini
  */
 export async function testGeminiConnection(): Promise<boolean> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-
-  if (!apiKey) {
-    console.error('❌ VITE_GEMINI_API_KEY não está configurada');
-    return false;
-  }
-
   try {
-    const response = await fetch(`${GEMINI_API_ENDPOINT}?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: "Teste de conexão. Responda apenas: OK"
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 10,
-        }
-      })
-    });
-
-    if (response.ok) {
-      console.log('✅ Conexão com Gemini API funcionando!');
-      return true;
-    } else {
-      console.error('❌ Erro na conexão com Gemini:', response.status);
-      return false;
-    }
+    const text = await callGeminiEndpoint('Teste de conexão. Responda apenas: OK');
+    return Boolean(text);
   } catch (error) {
     console.error('❌ Falha ao conectar com Gemini:', error);
     return false;
   }
 }
 
-// Auto-teste ao carregar o módulo (apenas em desenvolvimento)
-if (import.meta.env.DEV) {
-  checkGeminiApiKey();
-}
-
 // Default model for Gemini
-export const DEFAULT_GEMINI_MODEL = 'gemini-1.5-pro';
+export const DEFAULT_GEMINI_MODEL = GEMINI_MODEL;
 
 /**
  * Create a Gemini report request payload
@@ -260,7 +228,7 @@ export const DEFAULT_GEMINI_MODEL = 'gemini-1.5-pro';
 export function createGeminiReportRequest(
   data: any,
   options: any
-): any {
+): string {
   // Build the prompt
   const prompt = buildPrompt({
     examType: options.promptTemplate?.examTitle || 'Ultrassonografia',
@@ -269,57 +237,285 @@ export function createGeminiReportRequest(
     organsCatalog: options.organsList
   });
 
-  return {
-    contents: [{
-      parts: [{
-        text: prompt
-      }]
-    }],
-    generationConfig: {
-      temperature: 0.3,
-      topK: 40,
-      topP: 0.95,
-      maxOutputTokens: 2048,
-    }
-  };
+  return prompt;
 }
 
 /**
  * Request Gemini content generation
  */
-export async function requestGeminiContent(payload: any): Promise<{ text: string }> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('Gemini API Key não configurada');
-  }
-
-  const response = await fetch(`${GEMINI_API_ENDPOINT}?key=${apiKey}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    throw new Error(`Gemini API Error: ${response.status}`);
-  }
-
-  const result = await response.json();
-
-  if (result.candidates && result.candidates[0]?.content?.parts?.[0]?.text) {
-    return { text: result.candidates[0].content.parts[0].text };
-  }
-
-  throw new Error('Invalid Gemini response');
+export async function requestGeminiContent(prompt: string): Promise<{ text: string }> {
+  const text = await callGeminiEndpoint(prompt);
+  return { text };
 }
 
 export default {
   generateGeminiClinicalImpression,
   testGeminiConnection,
-  checkGeminiApiKey,
   createGeminiReportRequest,
   requestGeminiContent,
   DEFAULT_GEMINI_MODEL
 };
+
+function createRequestUrl(): string {
+  try {
+    if (GEMINI_API_ENDPOINT.startsWith('http')) {
+      return GEMINI_API_ENDPOINT;
+    }
+    const base = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+    return new URL(GEMINI_API_ENDPOINT, base).toString();
+  } catch (error) {
+    console.error('Configuração inválida para GEMINI_API_ENDPOINT:', error);
+    throw new Error('Endpoint do Gemini inválido. Verifique VITE_GEMINI_API_URL.');
+  }
+}
+
+async function callGeminiEndpoint(text: string, signal?: AbortSignal, modelId?: string): Promise<string> {
+  const requestUrl = createRequestUrl();
+  const requestId = Math.random().toString(36).substring(7); // ID único para rastreamento
+  const requestSize = text.length;
+  const startTime = Date.now();
+  const model = modelId || GEMINI_MODEL;
+
+  // Log da requisição iniciada
+  console.log(`[Gemini ${requestId}] Iniciando request`, {
+    url: requestUrl,
+    bodySize: `${(requestSize / 1024).toFixed(2)} KB`,
+    model: model,
+    timestamp: new Date().toISOString()
+  });
+
+  // Criar AbortController com timeout de 30 segundos
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    console.warn(`[Gemini ${requestId}] Timeout acionado após 30 segundos`);
+    controller.abort();
+  }, 30000);
+
+  // Usar AbortSignal fornecido ou criar um novo
+  const finalSignal = signal || controller.signal;
+
+  try {
+    // Payload compatible with backend endpoint
+    // text: conteúdo do exame
+    // model: nome do modelo a usar
+    // prompt: NÃO enviar - deixar backend usar system_prompt padrão
+    const payload = {
+      text,
+      model: model || GEMINI_MODEL
+    };
+
+    const response = await fetch(requestUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: finalSignal
+    });
+
+    clearTimeout(timeoutId);
+
+    const elapsedTime = Date.now() - startTime;
+
+    if (!response.ok) {
+      const errorMessage = await response.text().catch(() => '');
+      console.error(`[Gemini ${requestId}] Erro na resposta`, {
+        status: response.status,
+        statusText: response.statusText,
+        errorSize: `${(errorMessage.length / 1024).toFixed(2)} KB`,
+        elapsedTime: `${elapsedTime}ms`
+      });
+      throw new Error(`Gemini API Error: ${response.status} ${response.statusText}. ${errorMessage}`);
+    }
+
+    if (!response.body) {
+      const fallback = await response.text();
+      clearTimeout(timeoutId);
+      console.log(`[Gemini ${requestId}] Resposta sem streaming`, {
+        responseSize: `${(fallback.length / 1024).toFixed(2)} KB`,
+        elapsedTime: `${elapsedTime}ms`
+      });
+      return fallback.trim();
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let result = '';
+    let chunkCount = 0;
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      if (value) {
+        const chunk = decoder.decode(value, { stream: true });
+        result += chunk;
+        chunkCount++;
+      }
+    }
+
+    // Flush final do decoder
+    const finalChunk = decoder.decode();
+    if (finalChunk) {
+      result += finalChunk;
+    }
+
+    const finalElapsedTime = Date.now() - startTime;
+    console.log(`[Gemini ${requestId}] Request completado com sucesso`, {
+      responseSize: `${(result.length / 1024).toFixed(2)} KB`,
+      chunksReceived: chunkCount,
+      elapsedTime: `${finalElapsedTime}ms`,
+      averageChunkSize: `${((result.length / chunkCount) / 1024).toFixed(2)} KB`
+    });
+
+    return result.trim();
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    const elapsedTime = Date.now() - startTime;
+
+    // Verificar se foi cancelado por timeout
+    if (error.name === 'AbortError') {
+      console.error(`[Gemini ${requestId}] Request foi abortado`, {
+        reason: finalSignal.aborted ? 'Signal abortado' : 'Timeout',
+        elapsedTime: `${elapsedTime}ms`
+      });
+      throw new Error('Operação cancelada - timeout de 30 segundos excedido. O servidor pode estar indisponível.');
+    }
+
+    // Erro geral
+    console.error(`[Gemini ${requestId}] Erro ao chamar endpoint`, {
+      error: error instanceof Error ? error.message : String(error),
+      elapsedTime: `${elapsedTime}ms`,
+      timestamp: new Date().toISOString()
+    });
+
+    throw error;
+  }
+}
+
+/**
+ * Chama o endpoint Gemini com streaming e callback progressivo
+ * @param text Conteúdo a ser enviado
+ * @param onChunk Callback chamado a cada chunk recebido com o texto acumulado
+ * @param signal AbortSignal para cancelamento
+ * @returns Promise com o texto completo
+ */
+export async function callGeminiWithStreaming(
+  text: string,
+  onChunk?: (accumulatedText: string) => void,
+  signal?: AbortSignal
+): Promise<string> {
+  const requestUrl = createRequestUrl();
+  const requestId = Math.random().toString(36).substring(7);
+  const startTime = Date.now();
+
+  console.log(`[Gemini Streaming ${requestId}] Iniciando streaming`, {
+    url: requestUrl,
+    bodySize: `${(text.length / 1024).toFixed(2)} KB`,
+    timestamp: new Date().toISOString()
+  });
+
+  // Criar AbortController com timeout de 60 segundos para streaming
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    console.warn(`[Gemini Streaming ${requestId}] Timeout de streaming acionado após 60 segundos`);
+    controller.abort();
+  }, 60000);
+
+  const finalSignal = signal || controller.signal;
+
+  try {
+    // Payload compatible with backend endpoint
+    const payload = {
+      text,
+      model: GEMINI_MODEL
+      // NÃO enviar 'prompt' - deixar backend usar system_prompt padrão
+    };
+
+    const response = await fetch(requestUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: finalSignal
+    });
+
+    if (!response.ok) {
+      const message = await response.text().catch(() => '');
+      clearTimeout(timeoutId);
+      console.error(`[Gemini Streaming ${requestId}] Erro na resposta`, {
+        status: response.status,
+        statusText: response.statusText
+      });
+      throw new Error(`Gemini API Error: ${response.status} ${message}`);
+    }
+
+    if (!response.body) {
+      clearTimeout(timeoutId);
+      const fallback = await response.text();
+      console.log(`[Gemini Streaming ${requestId}] Fallback sem streaming`);
+      onChunk?.(fallback.trim());
+      return fallback.trim();
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let result = '';
+    let chunkCount = 0;
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+
+        if (done) break;
+
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          result += chunk;
+          chunkCount++;
+
+          // Chamar callback com texto acumulado
+          if (onChunk) {
+            console.log(`[Gemini Streaming ${requestId}] Chunk ${chunkCount} recebido - ${result.length} caracteres acumulados`);
+            onChunk(result);
+          }
+        }
+      }
+
+      // Flush final do decoder
+      const finalChunk = decoder.decode();
+      if (finalChunk) {
+        result += finalChunk;
+        if (onChunk) {
+          onChunk(result);
+        }
+      }
+
+      clearTimeout(timeoutId);
+      const elapsedTime = Date.now() - startTime;
+      console.log(`[Gemini Streaming ${requestId}] Streaming completado`, {
+        totalSize: `${(result.length / 1024).toFixed(2)} KB`,
+        totalChunks: chunkCount,
+        elapsedTime: `${elapsedTime}ms`
+      });
+
+      return result.trim();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (finalSignal.aborted) {
+        console.error(`[Gemini Streaming ${requestId}] Streaming cancelado`);
+        throw new Error('Operação cancelada');
+      }
+      throw error;
+    }
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+
+    if (error.name === 'AbortError') {
+      console.error(`[Gemini Streaming ${requestId}] AbortError - timeout ou cancelamento`);
+      throw new Error('Operação cancelada - timeout excedido');
+    }
+
+    console.error(`[Gemini Streaming ${requestId}] Erro`, {
+      error: error instanceof Error ? error.message : String(error)
+    });
+    throw error;
+  }
+}

@@ -119,7 +119,7 @@ export default function FindingDetailsEnhanced({
 
   return (
     <div
-      className="ml-6 mt-2 p-3 bg-muted/50 rounded-md space-y-3 border-l-2 border-accent"
+      className="ml-6 mt-2 p-3 bg-muted/50 rounded-md space-y-3 border-l-2 border-accent max-h-[calc(100vh-400px)] overflow-y-auto"
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
@@ -136,7 +136,7 @@ export default function FindingDetailsEnhanced({
             <SelectTrigger className="h-7 text-xs flex-1">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-[200px] overflow-y-auto">
               <SelectItem value="leve">Leve</SelectItem>
               <SelectItem value="moderado">Moderado</SelectItem>
               <SelectItem value="acentuado">Acentuado</SelectItem>
@@ -239,7 +239,7 @@ export default function FindingDetailsEnhanced({
                     <SelectTrigger className="h-7 text-xs flex-1">
                       <SelectValue placeholder="Selecione..." />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[200px] overflow-y-auto">
                       {locationOptions.map(option => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}

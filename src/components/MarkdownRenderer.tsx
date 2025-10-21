@@ -38,7 +38,7 @@ export default function MarkdownRenderer({
             </h3>
           ),
           p: ({ children, ...props }) => (
-            <p className="mb-3 text-gray-700 leading-relaxed" {...props}>
+            <p className="mb-3 text-gray-700 leading-relaxed text-[13px]" {...props}>
               {children}
             </p>
           ),

@@ -2,14 +2,26 @@ import React, { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { SelectedFinding, ReportData, type AIProvider } from '@/types/report';
 import { organs as defaultOrgans, type Organ } from '@/data/organs';
-import { FileText, Lightning } from '@phosphor-icons/react';
+import { FileText, Lightning, CaretDown } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
+
+// Model configurations
+const GEMINI_MODELS = [
+  { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash', description: 'Rápido e eficiente' },
+  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', description: 'Mais avançado' },
+  { id: 'gemini-flash-lite-latest', name: 'Gemini 2.5 Lite', description: 'Leve e econômico' }
+];
+
+const OPENAI_MODELS = [
+  { id: 'gpt-4o', name: 'GPT-4o', description: 'Modelo otimizado' },
+  { id: 'gpt-5-nano', name: 'GPT-5 Nano', description: 'Último modelo' }
+];
 
 interface SelectedFindingsPanelProps {
   selectedFindings: SelectedFinding[];
   normalOrgans: string[];
   organsList?: Organ[];
-  onGenerateReport: (data: ReportData, options: { model: AIProvider }) => Promise<void>;
+  onGenerateReport: (data: ReportData, options: { model: AIProvider; specificModel: string }) => Promise<void>;
   isGenerating?: boolean;
   className?: string;
 }
@@ -23,6 +35,10 @@ export default function SelectedFindingsPanel({
   className
 }: SelectedFindingsPanelProps) {
   const [selectedModel, setSelectedModel] = useState<AIProvider>('gemini');
+  const [selectedGeminiModel, setSelectedGeminiModel] = useState(GEMINI_MODELS[0].id);
+  const [selectedOpenAIModel, setSelectedOpenAIModel] = useState(OPENAI_MODELS[0].id);
+  const [showGeminiDropdown, setShowGeminiDropdown] = useState(false);
+  const [showOpenAIDropdown, setShowOpenAIDropdown] = useState(false);
 
   const groupedFindings = useMemo(() => {
     return selectedFindings.reduce((acc, finding) => {
@@ -49,11 +65,11 @@ export default function SelectedFindingsPanel({
 
   const coveragePercentage = organsList.length > 0
     ? Math.min(
-        100,
-        Math.round(
-          ((uniqueNormalOrgans.size + uniqueOrgansWithFindings.size) / organsList.length) * 100
-        )
+      100,
+      Math.round(
+        ((uniqueNormalOrgans.size + uniqueOrgansWithFindings.size) / organsList.length) * 100
       )
+    )
     : 0;
 
   const handleGenerateReport = () => {
@@ -62,7 +78,14 @@ export default function SelectedFindingsPanel({
       normalOrgans,
       additionalNotes: ''
     };
-    onGenerateReport(reportData, { model: selectedModel });
+
+    // Determinar qual modelo específico usar baseado no provider
+    const specificModel = selectedModel === 'gemini' ? selectedGeminiModel : selectedOpenAIModel;
+
+    onGenerateReport(reportData, {
+      model: selectedModel,
+      specificModel
+    });
   };
 
   // Calculate dynamic height based on content
@@ -75,7 +98,7 @@ export default function SelectedFindingsPanel({
   return (
     <div
       className={cn(
-        "w-80 bg-sidebar-background/95 backdrop-blur-sm rounded-xl shadow-xl border border-border/20 flex flex-col overflow-hidden transition-all duration-300",
+        "w-80 bg-sidebar-background/95 backdrop-blur-sm rounded-xl shadow-xl border border-border/20 flex flex-col transition-all duration-300",
         className
       )}
       style={{
@@ -170,8 +193,8 @@ export default function SelectedFindingsPanel({
                                   {instance.measurements.segment && (
                                     <div>• Segmento: {instance.measurements.segment}</div>
                                   )}
-                                  {instance.measurements.additionalInfo && (
-                                    <div>• Obs: {instance.measurements.additionalInfo}</div>
+                                  {instance.measurements.description && (
+                                    <div>• Obs: {instance.measurements.description}</div>
                                   )}
                                 </div>
                               </div>
@@ -212,35 +235,102 @@ export default function SelectedFindingsPanel({
       </div>
 
       {/* Footer - AI Model Selection and Generate Button */}
-      <div className="p-4 border-t border-border/20 bg-sidebar-background space-y-3">
-        {/* AI Model Selection */}
+      <div className="p-4 border-t border-border/20 bg-sidebar-background space-y-3 relative">
+        {/* AI Model Selection with Dropdowns */}
         <div>
           <h3 className="text-xs font-medium mb-2 text-sidebar-foreground opacity-70">
             Modelo de IA:
           </h3>
           <div className="flex gap-2">
-            <button
-              onClick={() => setSelectedModel('gemini')}
-              className={cn(
-                "flex-1 px-3 py-1.5 text-xs rounded-md font-medium transition-all",
-                selectedModel === 'gemini'
-                  ? "bg-accent text-accent-foreground shadow-sm"
-                  : "bg-sidebar-muted text-sidebar-foreground opacity-70 border border-white/10 hover:opacity-100"
+            {/* Gemini Button with Dropdown */}
+            <div className="flex-1 relative z-50">
+              <button
+                onClick={() => {
+                  setSelectedModel('gemini');
+                  setShowGeminiDropdown(!showGeminiDropdown);
+                  setShowOpenAIDropdown(false);
+                }}
+                className={cn(
+                  "w-full px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center justify-between gap-1",
+                  selectedModel === 'gemini'
+                    ? "bg-accent text-accent-foreground shadow-sm"
+                    : "bg-sidebar-muted text-sidebar-foreground opacity-70 border border-white/10 hover:opacity-100"
+                )}
+              >
+                <span className="truncate">
+                  {GEMINI_MODELS.find(m => m.id === selectedGeminiModel)?.name || 'Gemini'}
+                </span>
+                <CaretDown size={12} className={cn("transition-transform", showGeminiDropdown && "rotate-180")} />
+              </button>
+
+              {/* Gemini Dropdown */}
+              {showGeminiDropdown && (
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-sidebar-background border border-border/20 rounded-md shadow-lg overflow-hidden">
+                  {GEMINI_MODELS.map((model) => (
+                    <button
+                      key={model.id}
+                      onClick={() => {
+                        setSelectedGeminiModel(model.id);
+                        setSelectedModel('gemini');
+                        setShowGeminiDropdown(false);
+                      }}
+                      className={cn(
+                        "w-full px-3 py-2 text-left text-xs hover:bg-sidebar-muted transition-colors",
+                        selectedGeminiModel === model.id && "bg-accent/10"
+                      )}
+                    >
+                      <div className="font-medium text-sidebar-foreground">{model.name}</div>
+                      <div className="text-[10px] text-sidebar-foreground opacity-60">{model.description}</div>
+                    </button>
+                  ))}
+                </div>
               )}
-            >
-              Gemini 2.5
-            </button>
-            <button
-              onClick={() => setSelectedModel('openai')}
-              className={cn(
-                "flex-1 px-3 py-1.5 text-xs rounded-md font-medium transition-all",
-                selectedModel === 'openai'
-                  ? "bg-accent text-accent-foreground shadow-sm"
-                  : "bg-sidebar-muted text-sidebar-foreground opacity-70 border border-white/10 hover:opacity-100"
+            </div>
+
+            {/* OpenAI Button with Dropdown */}
+            <div className="flex-1 relative z-50">
+              <button
+                onClick={() => {
+                  setSelectedModel('openai');
+                  setShowOpenAIDropdown(!showOpenAIDropdown);
+                  setShowGeminiDropdown(false);
+                }}
+                className={cn(
+                  "w-full px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center justify-between gap-1",
+                  selectedModel === 'openai'
+                    ? "bg-accent text-accent-foreground shadow-sm"
+                    : "bg-sidebar-muted text-sidebar-foreground opacity-70 border border-white/10 hover:opacity-100"
+                )}
+              >
+                <span className="truncate">
+                  {OPENAI_MODELS.find(m => m.id === selectedOpenAIModel)?.name || 'OpenAI'}
+                </span>
+                <CaretDown size={12} className={cn("transition-transform", showOpenAIDropdown && "rotate-180")} />
+              </button>
+
+              {/* OpenAI Dropdown */}
+              {showOpenAIDropdown && (
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-sidebar-background border border-border/20 rounded-md shadow-lg overflow-hidden">
+                  {OPENAI_MODELS.map((model) => (
+                    <button
+                      key={model.id}
+                      onClick={() => {
+                        setSelectedOpenAIModel(model.id);
+                        setSelectedModel('openai');
+                        setShowOpenAIDropdown(false);
+                      }}
+                      className={cn(
+                        "w-full px-3 py-2 text-left text-xs hover:bg-sidebar-muted transition-colors",
+                        selectedOpenAIModel === model.id && "bg-accent/10"
+                      )}
+                    >
+                      <div className="font-medium text-sidebar-foreground">{model.name}</div>
+                      <div className="text-[10px] text-sidebar-foreground opacity-60">{model.description}</div>
+                    </button>
+                  ))}
+                </div>
               )}
-            >
-              OpenAI
-            </button>
+            </div>
           </div>
         </div>
 

@@ -12,8 +12,8 @@ dist
 dist-ssr
 *-dist
 *.local
-node_modules.bak.1760618325
-node_modules
+node_modules.bak.1760618325/
+node_modules/
 agents
 packages.json
 packages-lock.json
@@ -36,4 +36,3 @@ pids
 .devcontainer/
 
 .spark-workbench-id
-dist
