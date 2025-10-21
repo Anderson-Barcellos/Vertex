@@ -61,8 +61,10 @@
       "Bash(git pull:*)",
       "Bash(git rm:*)",
       "Bash(npm run typecheck:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(sed:*)"
     ]
   },
-  "outputStyle": "medical-dev-optimized"
+  "outputStyle": "Explanatory"
 }

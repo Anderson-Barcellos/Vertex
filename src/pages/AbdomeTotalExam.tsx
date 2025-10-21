@@ -390,8 +390,8 @@ function AbdomeTotalExam() {
   return (
     <div className="flex h-screen bg-background">
       {/* Dark Sidebar - Now narrower */}
-      <div data-sidebar style={{ backgroundColor: 'var(--sidebar-background)' }} className="w-52 border-r border-border/20">
-        <div className="p-4 border-b border-border/20">
+      <aside data-sidebar style={{ backgroundColor: 'var(--sidebar-background)' }} className="w-52 border-r border-border/20">
+        <header className="p-4 border-b border-border/20">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
               <span className="text-accent-foreground font-semibold text-sm">US</span>
@@ -415,7 +415,7 @@ function AbdomeTotalExam() {
             <House size={16} />
             <span>Voltar ao Início</span>
           </button>
-        </div>
+        </header>
 
         <Sidebar
           selectedOrgan={selectedOrgan}
@@ -425,13 +425,13 @@ function AbdomeTotalExam() {
           normalOrgans={normalOrgans}
           organsList={organs}
         />
-      </div>
+      </aside>
 
       {/* Main Content Area with Report Canvas and Floating Panel */}
-      <div className="flex-1 relative overflow-hidden bg-gray-50 main-content">
-        <div className="fluid-container h-full flex items-start justify-center p-4 sm:p-6 lg:p-8 overflow-y-auto">
-          {/* Report Canvas - Fluid Responsive Container */}
-          <div className="report-container w-full my-auto">
+      <main className="flex-1 relative overflow-hidden bg-gray-50 main-content">
+        <div className="min-h-full flex items-start justify-center gap-8 p-8 overflow-y-auto">
+          {/* Report Canvas - A4 Paper Container */}
+          <div className="a4-container my-auto">
             <ReportCanvas
               selectedFindings={selectedFindings}
               normalOrgans={normalOrgans}
@@ -511,7 +511,7 @@ function AbdomeTotalExam() {
             )}
           </div>
         )}
-      </div>
+      </main>
 
       <Toaster />
     </div>

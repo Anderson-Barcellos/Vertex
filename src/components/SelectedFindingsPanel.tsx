@@ -96,9 +96,10 @@ export default function SelectedFindingsPanel({
     : '400px';
 
   return (
-    <div
+    <section
+      aria-labelledby="achados-titulo"
       className={cn(
-        "w-80 bg-sidebar-background/95 backdrop-blur-sm rounded-xl shadow-xl border border-border/20 flex flex-col transition-all duration-300",
+        "w-56 md:w-64 lg:w-72 xl:w-80 bg-sidebar-background/95 backdrop-blur-sm rounded-xl shadow-xl border border-border/20 flex flex-col transition-all duration-300",
         className
       )}
       style={{
@@ -111,7 +112,7 @@ export default function SelectedFindingsPanel({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <FileText size={18} className="text-sidebar-foreground" />
-            <h2 className="text-sm font-semibold text-sidebar-foreground">
+            <h2 id="achados-titulo" className="text-sm font-semibold text-sidebar-foreground">
               Achados Selecionados
             </h2>
           </div>
@@ -353,6 +354,6 @@ export default function SelectedFindingsPanel({
           )}
         </button>
       </div>
-    </div>
+    </section>
   );
 }

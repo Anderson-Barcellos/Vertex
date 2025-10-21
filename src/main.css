@@ -60,7 +60,8 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-background: oklch(0.145 0 0); /* DARK background */
+  --sidebar-foreground: oklch(0.985 0 0); /* WHITE text */
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
@@ -97,7 +98,8 @@
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-background: oklch(0.145 0 0); /* DARK background mesmo no dark mode */
+  --sidebar-foreground: oklch(0.985 0 0); /* WHITE text */
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
@@ -139,6 +141,7 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --color-sidebar: var(--sidebar);
+  --color-sidebar-background: var(--sidebar-background);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
@@ -187,4 +190,50 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/*
+  ---break---
+  Prevenir vazamento de elementos além do HTML
+*/
+html {
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+}
+
+body {
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Garantir que portals fiquem dentro do viewport */
+#portal-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+#portal-root > * {
+  pointer-events: auto;
+}
+
+/* Forçar Radix UI portals dentro do container */
+[data-radix-portal],
+[data-radix-popper-content-wrapper] {
+  position: fixed !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+}
+
+/* Prevenir elementos Sonner de vazar */
+[data-sonner-toaster] {
+  position: fixed !important;
+  z-index: 9998 !important;
+  max-width: 100vw !important;
 }

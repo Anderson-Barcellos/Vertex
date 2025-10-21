@@ -55,7 +55,10 @@ export default function Sidebar({
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <nav className="p-4">
+      <nav
+        className="p-4"
+        role="navigation"
+        aria-label="Navegação de órgãos do exame">
         {/* Examination Summary */}
         <div className="mb-6 space-y-3">
           <div className="bg-sidebar-muted/40 rounded-lg border border-white/5 p-4 shadow-sm">
@@ -143,6 +146,8 @@ export default function Sidebar({
                           : "text-sidebar-foreground/30 hover:text-green-500 hover:bg-white/5"
                       )}
                       title={isNormal ? "Remover normal" : "Marcar como normal"}
+                      aria-label={isNormal ? `Remover ${organ.name} como normal` : `Marcar ${organ.name} como normal`}
+                      aria-pressed={isNormal}
                     >
                       <CheckCircle
                         size={18}
@@ -160,6 +165,8 @@ export default function Sidebar({
                         : "hover:bg-white/5"
                     )}
                     style={!isSelected ? { color: 'var(--sidebar-foreground)' } : {}}
+                    aria-label={`Selecionar ${organ.name} para examinação`}
+                    aria-current={isSelected ? 'true' : 'false'}
                   >
                     <IconComponent
                       size={18}

@@ -110,14 +110,14 @@ const getEMIClassification = (value: number) => {
 };
 
 // Helper para determinar risco de placa
-const getPlaqueRisk = (echogenicity?: string, composition?: string, surface?: string) => {
-  const risks = [];
+const getPlaqueRisk = (echogenicity?: string, composition?: string, surface?: string): 'low' | 'medium' | 'high' => {
+  const risks: ('low' | 'medium' | 'high')[] = [];
 
   const echoRisk = PLAQUE_ECHOGENICITY.find(e => e.value === echogenicity)?.risk;
   const compRisk = PLAQUE_COMPOSITION.find(c => c.value === composition)?.risk;
 
-  if (echoRisk) risks.push(echoRisk);
-  if (compRisk) risks.push(compRisk);
+  if (echoRisk) risks.push(echoRisk as 'low' | 'medium' | 'high');
+  if (compRisk) risks.push(compRisk as 'low' | 'medium' | 'high');
   if (surface === 'ulcerada') risks.push('high');
 
   if (risks.includes('high')) return 'high';

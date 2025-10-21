@@ -20,6 +20,14 @@ export interface Finding {
   hasDistribution?: boolean;
   hasInternalContent?: boolean;
   hasCorticalThickness?: boolean;
+  // Campos extras para doppler de carótidas
+  extraFields?: (string | {
+    id: string;
+    label: string;
+    type: string;
+    placeholder?: string;
+    options?: string[];
+  })[];
 }
 
 export interface OrganCategory {

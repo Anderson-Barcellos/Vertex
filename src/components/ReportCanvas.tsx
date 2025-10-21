@@ -108,9 +108,9 @@ export default function ReportCanvas({
 
 
   return (
-    <div className="flex flex-col h-full">
+    <article className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-6 border-b border-border bg-card">
+      <header className="p-6 border-b border-border bg-card">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <FileText size={24} className="text-foreground" />
@@ -128,14 +128,12 @@ export default function ReportCanvas({
             </Button>
           )}
         </div>
-      </div>
+      </header>
 
       {/* Main Report Area - Fluid responsive layout */}
-      <div className="flex-1 p-4 bg-muted/30 overflow-y-auto overflow-x-hidden">
-        <div className="fluid-container">
-
-          {/* Fluid Report Container */}
-          <div className="report-container">
+      <section className="flex-1 p-4 bg-muted/30 overflow-y-auto overflow-x-hidden">
+        {/* Report Container - Simplified structure */}
+        <div className="w-full max-w-5xl mx-auto">
             {/* Enhanced AI Suggestion Panel with Status Indicators */}
             {(aiImpression || aiError || aiStatus !== 'idle') && (
               <div className="bg-white/80 border border-primary/20 rounded-lg p-4 shadow-sm w-full">
@@ -326,8 +324,7 @@ export default function ReportCanvas({
               )}
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+      </section>
+    </article>
   );
 }

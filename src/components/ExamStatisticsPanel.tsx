@@ -56,9 +56,10 @@ export default function ExamStatisticsPanel({
   ];
 
   return (
-    <div
+    <section
+      aria-labelledby="estatisticas-titulo"
       className={cn(
-        "w-80 bg-sidebar-background/95 backdrop-blur-sm rounded-xl shadow-xl border border-border/20 overflow-hidden transition-all duration-300",
+        "w-56 md:w-64 lg:w-72 xl:w-80 bg-sidebar-background/95 backdrop-blur-sm rounded-xl shadow-xl border border-border/20 overflow-hidden transition-all duration-300",
         className
       )}
     >
@@ -67,7 +68,7 @@ export default function ExamStatisticsPanel({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <ChartBar size={18} className="text-sidebar-foreground" />
-            <h2 className="text-sm font-semibold text-sidebar-foreground">
+            <h2 id="estatisticas-titulo" className="text-sm font-semibold text-sidebar-foreground">
               Estatísticas do Exame
             </h2>
           </div>
@@ -126,6 +127,6 @@ export default function ExamStatisticsPanel({
           </p>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
