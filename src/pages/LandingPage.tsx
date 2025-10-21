@@ -42,7 +42,7 @@ const examTypes = [
     name: 'Mamas',
     description: 'Ultrassonografia mamária com BI-RADS',
     icon: Heart,
-    available: true,
+    available: false,
     route: '/exam/mamas',
     color: 'bg-pink-500'
   },
@@ -279,10 +279,10 @@ function LandingPage() {
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <span style={{ color: 'var(--sidebar-foreground)' }} className="text-xs opacity-70">Disponíveis</span>
-                    <span style={{ color: 'var(--sidebar-foreground)' }} className="text-xs font-semibold">3</span>
+                    <span style={{ color: 'var(--sidebar-foreground)' }} className="text-xs font-semibold">2</span>
                   </div>
                   <div className="h-1 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-green-500" style={{ width: '33.3%' }}></div>
+                    <div className="h-full bg-green-500" style={{ width: '22.2%' }}></div>
                   </div>
                 </div>
               </div>
@@ -300,9 +300,9 @@ function LandingPage() {
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto bg-card">
-        <div className="max-w-7xl mx-auto p-8">
+        <div className="fluid-container-xl p-6 sm:p-8">
           {/* Header */}
-          <div className="mb-12">
+          <div className="mb-8 sm:mb-12">
             <h1 className="text-4xl font-bold mb-4">
               Selecione o Tipo de Exame
             </h1>
@@ -312,7 +312,7 @@ function LandingPage() {
           </div>
 
           {/* Exam Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="responsive-grid responsive-grid-auto gap-4 sm:gap-6">
             {examTypes.map((exam) => {
               const Icon = exam.icon;
               return (

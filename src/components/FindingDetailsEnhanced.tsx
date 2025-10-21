@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Finding } from '@/data/organs';
 import { FindingMeasurement, FindingInstance } from '@/types/report';
 import { Ruler, MapPin, Hash, Plus, X, Save } from 'lucide-react';
-import { BreastFindingDetails } from './BreastFindingDetails';
 
 interface FindingDetailsEnhancedProps {
   finding: Finding;
@@ -75,20 +74,6 @@ export default function FindingDetailsEnhanced({
   // Local state for the current form
   const [currentMeasurement, setCurrentMeasurement] = useState<FindingMeasurement>({});
   const [isEditing, setIsEditing] = useState(false);
-
-  // Use specialized component for breast findings
-  const isBreastOrgan = ['mama-direita', 'mama-esquerda', 'axilas', 'pele-tecido-subcutaneo'].includes(organId);
-
-  if (isBreastOrgan) {
-    return (
-      <BreastFindingDetails
-        finding={finding}
-        organId={organId}
-        instances={instances}
-        onInstancesChange={onInstancesChange}
-      />
-    );
-  }
 
   const handleAddInstance = () => {
     if (currentMeasurement.size || currentMeasurement.segment || currentMeasurement.location) {

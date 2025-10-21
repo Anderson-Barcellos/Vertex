@@ -124,32 +124,28 @@
   animation: slideUpFade 0.4s ease-out;
 }
 
-/* A4 Paper Styles with fixed width and proper z-index */
+/* ============================================
+   LEGACY A4 CLASSES
+   Maintained for backward compatibility.
+   New code should use .report-container and .fluid-prose from layout.css
+   ============================================ */
+
 .a4-container {
-  width: 210mm;
-  min-height: 297mm;
-  /* Mínimo A4 */
-  max-height: calc(100vh - 120px);
-  /* Limita altura à viewport com margem */
-  min-width: 210mm;
-  /* Prevent shrinking below standard A4 width */
-  max-width: 210mm;
-  /* Maintain exact A4 width */
+  width: 100%;
+  max-width: var(--container-xl, 1200px);
   background: white;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   overflow-y: auto;
-  /* Scroll discreto quando necessário */
   overflow-x: hidden;
   position: relative;
   margin: 0 auto;
-  z-index: 2;
-  /* Above main content but below floating panels */
+  z-index: var(--z-content, 10);
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+  padding: 48px;
 }
 
-/* Scrollbar personalizado para Webkit (Chrome, Safari) */
 .a4-container::-webkit-scrollbar {
   width: 6px;
 }
@@ -169,67 +165,48 @@
   background: rgba(156, 163, 175, 0.5);
 }
 
-/* Only scale down for very small screens while maintaining minimum usable size */
-@media (max-width: 1200px) {
-  .a4-container {
-    min-width: 180mm;
-    /* Maintain reasonable minimum size */
-    width: 180mm;
-    min-height: 254mm;
-  }
-}
-
 @media (max-width: 768px) {
   .a4-container {
-    min-width: 160mm;
-    /* Still usable on tablets */
-    width: 160mm;
-    min-height: 226mm;
+    padding: 32px;
   }
 }
 
 @media (max-width: 640px) {
   .a4-container {
-    min-width: 140mm;
-    /* Minimum for mobile readability */
-    width: 140mm;
-    min-height: 198mm;
+    padding: 24px;
   }
 }
 
-/* A4 Content - sem scroll próprio, usa scroll do container */
 .a4-content {
   min-height: 100%;
   overflow: visible;
-  /* Sem scroll próprio - scroll está no .a4-container */
 }
 
-/* Optimized font sizes for A4 content - Increased for better readability */
 .a4-prose {
-  font-size: 13px !important;
-  line-height: 1.6 !important;
+  font-size: clamp(14px, 1vw + 12px, 16px) !important;
+  line-height: 1.7 !important;
 }
 
 .a4-prose h1 {
-  font-size: 20px !important;
+  font-size: clamp(24px, 2vw + 18px, 32px) !important;
   margin: 0.6em 0 !important;
   font-weight: 700;
 }
 
 .a4-prose h2 {
-  font-size: 17px !important;
+  font-size: clamp(20px, 1.5vw + 16px, 26px) !important;
   margin: 0.5em 0 !important;
   font-weight: 600;
 }
 
 .a4-prose h3 {
-  font-size: 15px !important;
+  font-size: clamp(17px, 1.2vw + 14px, 21px) !important;
   margin: 0.4em 0 !important;
   font-weight: 600;
 }
 
 .a4-prose p {
-  font-size: 13px !important;
+  font-size: clamp(14px, 1vw + 12px, 16px) !important;
   margin: 0.5em 0 !important;
 }
 
@@ -240,7 +217,7 @@
 }
 
 .a4-prose li {
-  font-size: 13px !important;
+  font-size: clamp(14px, 1vw + 12px, 16px) !important;
   margin: 0.3em 0 !important;
 }
 
@@ -248,39 +225,40 @@
   font-weight: 600;
 }
 
-/* Z-Index Hierarchy */
-/* Base layer - main content and background */
+/* ============================================
+   Z-INDEX HIERARCHY
+   Consolidated system - uses CSS variables from layout.css
+   ============================================ */
+
 .main-content {
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
-/* A4 paper container - above main content */
 .a4-container {
-  z-index: 2;
+  z-index: var(--z-content);
 }
 
-/* Floating panels - above A4 paper */
 .floating-panels {
-  z-index: 10;
+  z-index: var(--z-floating);
 }
 
-/* Organ section panel - above floating panels */
 .organ-section-panel {
-  z-index: 20;
+  z-index: var(--z-floating);
 }
 
-/* Dropdowns and select menus - above panels */
+/* Radix UI portals - dropdowns, selects, popovers */
 .dropdown-content,
 [data-radix-portal],
 [data-radix-popper-content-wrapper],
 [data-radix-select-content],
-[data-radix-dropdown-menu-content] {
-  z-index: 30 !important;
+[data-radix-dropdown-menu-content],
+[data-radix-popover-content] {
+  z-index: var(--z-dropdown) !important;
 }
 
 /* Modals and dialogs - highest priority */
 .modal-content,
 [data-radix-dialog-overlay],
 [data-radix-dialog-content] {
-  z-index: 40 !important;
+  z-index: var(--z-modal) !important;
 }

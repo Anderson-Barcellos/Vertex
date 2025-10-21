@@ -130,15 +130,15 @@ export default function ReportCanvas({
         </div>
       </div>
 
-      {/* Main Report Area - Now full width */}
+      {/* Main Report Area - Fluid responsive layout */}
       <div className="flex-1 p-4 bg-muted/30 overflow-y-auto overflow-x-hidden">
-        <div className="flex flex-col items-center space-y-4 max-w-full">
+        <div className="fluid-container">
 
-          {/* A4-like Report Container */}
-          <div className="a4-container">
+          {/* Fluid Report Container */}
+          <div className="report-container">
             {/* Enhanced AI Suggestion Panel with Status Indicators */}
             {(aiImpression || aiError || aiStatus !== 'idle') && (
-              <div className="bg-white/80 border border-primary/20 rounded-lg p-4 shadow-sm w-full max-w-[210mm]">
+              <div className="bg-white/80 border border-primary/20 rounded-lg p-4 shadow-sm w-full">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -247,12 +247,12 @@ export default function ReportCanvas({
               </div>
             )}
 
-            <div className="a4-content p-8">
+            <div className="report-content">
               {generatedReport ? (
                 <>
                   {/* Header com indicador de streaming */}
                   {isGenerating && (
-                    <div className="mb-4 pb-3 border-b border-dashed border-blue-300 bg-blue-50/50 -mx-8 -mt-8 px-8 pt-4 rounded-t-lg">
+                    <div className="mb-4 pb-3 border-b border-dashed border-blue-300 bg-blue-50/50 -mx-6 -mt-6 px-6 pt-4 rounded-t-lg sm:-mx-8 sm:-mt-8 sm:px-8">
                       <div className="flex items-center gap-3 text-sm text-blue-700">
                         <div className="flex items-center gap-2">
                           <div className="w-4 h-4 relative">
@@ -273,7 +273,7 @@ export default function ReportCanvas({
                     <MarkdownRenderer
                       content={generatedReport}
                       isStreaming={isGenerating}
-                      className="a4-prose prose max-w-none"
+                      className="fluid-prose prose max-w-none"
                     />
 
                     {/* Cursor piscante no final durante streaming */}

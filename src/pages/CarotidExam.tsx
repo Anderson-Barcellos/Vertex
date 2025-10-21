@@ -450,9 +450,9 @@ function CarotidExam() {
 
       {/* Main Content Area with Report Canvas and Floating Panel */}
       <div className="flex-1 relative overflow-hidden bg-gray-50 main-content">
-        <div className="min-h-full flex items-start justify-center gap-8 p-8 overflow-y-auto">
-          {/* Report Canvas - A4 Paper Container */}
-          <div className="a4-container my-auto">
+        <div className="fluid-container h-full flex items-start justify-center gap-4 sm:gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          {/* Report Canvas - Fluid Responsive Container */}
+          <div className="report-container w-full my-auto">
             <ReportCanvas
               selectedFindings={selectedFindings}
               normalOrgans={normalOrgans}
