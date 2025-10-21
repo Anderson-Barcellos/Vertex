@@ -57,7 +57,9 @@
       "Bash(do echo \"=== Testando porta $port ===\")",
       "Bash(netstat:*)",
       "Bash(awk:*)",
-      "Read(//root/**)"
+      "Read(//root/**)",
+      "Bash(git pull:*)",
+      "Bash(git rm:*)"
     ]
   },
   "outputStyle": "medical-dev-optimized"
