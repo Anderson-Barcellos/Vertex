@@ -12,14 +12,17 @@ export interface FindingMeasurement {
   vdf?: string; // Velocidade Diastólica Final (cm/s)
   ratioICA_CCA?: string; // Razão VPS ICA/CCA
   ratioICA_ICA?: string; // Razão VPS ICA/ICA contralateral
+  nascetGrade?: string; // Grau NASCET
 
   // Carotid Doppler - Características de Placas
   plaqueEchogenicity?: string; // Ecogenicidade da placa (Gray-Weale)
   plaqueComposition?: string; // Composição da placa
   plaqueSurface?: string; // Superfície da placa
+  plaqueRisk?: string; // Estratificação de risco da placa
 
   // Carotid Doppler - EMI e Vertebrais
   emi?: string; // Espessamento Médio-Intimal em mm
+  emiClassification?: string; // Classificação EMI (normal, limítrofe, etc)
   vertebralFlowPattern?: string; // Padrão de fluxo vertebral
   subclavianSteal?: string; // Roubo da subclávia (Sim/Não)
 
@@ -29,10 +32,13 @@ export interface FindingMeasurement {
   echogenicity?: string; // Ecogenicidade da placa (deprecated, usar plaqueEchogenicity)
   composition?: string; // Composição da placa (deprecated, usar plaqueComposition)
   surface?: string; // Superfície da placa (deprecated, usar plaqueSurface)
+  risk?: string; // Estratificação de risco (deprecated, usar plaqueRisk)
   emiValue?: string; // Espessamento Médio-Intimal (deprecated, usar emi)
   vertebralVelocity?: string; // Velocidade em vertebrais (deprecated)
   vertebralIR?: string; // Índice de Resistividade (deprecated)
   flowPattern?: string; // Padrão de fluxo (deprecated, usar vertebralFlowPattern)
+  emi_classification?: string; // Legacy compatibility para classificações EMI
+  ratio_aci_acc?: string; // Legacy compatibility para ratio ICA/ACC
 }
 
 export interface FindingInstance {

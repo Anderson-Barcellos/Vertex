@@ -101,23 +101,62 @@ Gere uma IMPRESSÃO DIAGNÓSTICA profissional e concisa para o seguinte exame de
           if (instance.measurements?.ratioICA_CCA) {
             prompt += `    • Razão ICA/CCA: ${instance.measurements.ratioICA_CCA}\n`;
           }
+          if (!instance.measurements?.ratioICA_CCA && instance.measurements?.ratio) {
+            prompt += `    • Razão ICA/CCA: ${instance.measurements.ratio}\n`;
+          }
           if (instance.measurements?.ratioICA_ICA) {
             prompt += `    • Razão ICA/ICA contralateral: ${instance.measurements.ratioICA_ICA}\n`;
+          }
+          if (instance.measurements?.nascetGrade) {
+            prompt += `    • Grau NASCET: ${instance.measurements.nascetGrade}\n`;
+          }
+          if (!instance.measurements?.nascetGrade && instance.measurements?.nascet) {
+            prompt += `    • Grau NASCET: ${instance.measurements.nascet}\n`;
           }
           if (instance.measurements?.emi) {
             prompt += `    • EMI: ${instance.measurements.emi} mm\n`;
           }
+          if (!instance.measurements?.emi && instance.measurements?.emiValue) {
+            prompt += `    • EMI: ${instance.measurements.emiValue} mm\n`;
+          }
+          if (instance.measurements?.emiClassification) {
+            prompt += `    • Classificação EMI: ${instance.measurements.emiClassification}\n`;
+          }
           if (instance.measurements?.plaqueEchogenicity) {
             prompt += `    • Ecogenicidade da placa: ${instance.measurements.plaqueEchogenicity}\n`;
+          }
+          if (!instance.measurements?.plaqueEchogenicity && instance.measurements?.echogenicity) {
+            prompt += `    • Ecogenicidade da placa: ${instance.measurements.echogenicity}\n`;
           }
           if (instance.measurements?.plaqueComposition) {
             prompt += `    • Composição da placa: ${instance.measurements.plaqueComposition}\n`;
           }
+          if (!instance.measurements?.plaqueComposition && instance.measurements?.composition) {
+            prompt += `    • Composição da placa: ${instance.measurements.composition}\n`;
+          }
           if (instance.measurements?.plaqueSurface) {
             prompt += `    • Superfície da placa: ${instance.measurements.plaqueSurface}\n`;
           }
+          if (!instance.measurements?.plaqueSurface && instance.measurements?.surface) {
+            prompt += `    • Superfície da placa: ${instance.measurements.surface}\n`;
+          }
+          if (instance.measurements?.plaqueRisk) {
+            prompt += `    • Estratificação de risco: ${instance.measurements.plaqueRisk}\n`;
+          }
+          if (!instance.measurements?.plaqueRisk && instance.measurements?.risk) {
+            prompt += `    • Estratificação de risco: ${instance.measurements.risk}\n`;
+          }
           if (instance.measurements?.vertebralFlowPattern) {
             prompt += `    • Padrão de fluxo vertebral: ${instance.measurements.vertebralFlowPattern}\n`;
+          }
+          if (!instance.measurements?.vertebralFlowPattern && instance.measurements?.flowPattern) {
+            prompt += `    • Padrão de fluxo vertebral: ${instance.measurements.flowPattern}\n`;
+          }
+          if (instance.measurements?.vertebralVelocity) {
+            prompt += `    • Velocidade vertebral: ${instance.measurements.vertebralVelocity}\n`;
+          }
+          if (instance.measurements?.vertebralIR) {
+            prompt += `    • Índice de Resistividade: ${instance.measurements.vertebralIR}\n`;
           }
           if (instance.measurements?.subclavianSteal) {
             prompt += `    • Roubo da subclávia: ${instance.measurements.subclavianSteal}\n`;

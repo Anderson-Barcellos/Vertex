@@ -19,6 +19,7 @@ interface SidebarProps {
   selectedFindings: SelectedFinding[];
   normalOrgans: string[];
   organsList?: Organ[];
+  showSummary?: boolean;
 }
 
 const iconMap = {
@@ -38,7 +39,8 @@ export default function Sidebar({
   onNormalChange,
   selectedFindings,
   normalOrgans,
-  organsList = defaultOrgans
+  organsList = defaultOrgans,
+  showSummary = true
 }: SidebarProps) {
 
   const uniqueOrgansWithFindings = useMemo(() => {
@@ -60,61 +62,63 @@ export default function Sidebar({
         role="navigation"
         aria-label="Navegação de órgãos do exame">
         {/* Examination Summary */}
-        <div className="mb-6 space-y-3">
-          <div className="bg-sidebar-muted/40 rounded-lg border border-white/5 p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3
-                  style={{ color: 'var(--sidebar-foreground)' }}
-                  className="text-xs font-semibold uppercase tracking-wide opacity-70"
-                >
-                  Resumo do exame
-                </h3>
-                <p
-                  style={{ color: 'var(--sidebar-foreground)' }}
-                  className="text-[11px] opacity-60"
-                >
-                  Acompanhe o progresso do preenchimento
-                </p>
+        {showSummary && (
+          <div className="mb-6 space-y-3">
+            <div className="bg-sidebar-muted/40 rounded-lg border border-white/5 p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3
+                    style={{ color: 'var(--sidebar-foreground)' }}
+                    className="text-xs font-semibold uppercase tracking-wide opacity-70"
+                  >
+                    Resumo do exame
+                  </h3>
+                  <p
+                    style={{ color: 'var(--sidebar-foreground)' }}
+                    className="text-[11px] opacity-60"
+                  >
+                    Acompanhe o progresso do preenchimento
+                  </p>
+                </div>
+                <span className="text-sm font-semibold text-accent">{completion}%</span>
               </div>
-              <span className="text-sm font-semibold text-accent">{completion}%</span>
-            </div>
 
-            <div className="grid grid-cols-1 gap-2 text-[11px]">
-              <div className="flex items-center justify-between">
-                <span style={{ color: 'var(--sidebar-foreground)' }} className="opacity-70">
-                  Órgãos com achados
-                </span>
-                <span style={{ color: 'var(--sidebar-foreground)' }} className="font-medium">
-                  {uniqueOrgansWithFindings.size}
-                </span>
+              <div className="grid grid-cols-1 gap-2 text-[11px]">
+                <div className="flex items-center justify-between">
+                  <span style={{ color: 'var(--sidebar-foreground)' }} className="opacity-70">
+                    Órgãos com achados
+                  </span>
+                  <span style={{ color: 'var(--sidebar-foreground)' }} className="font-medium">
+                    {uniqueOrgansWithFindings.size}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span style={{ color: 'var(--sidebar-foreground)' }} className="opacity-70">
+                    Órgãos normais
+                  </span>
+                  <span style={{ color: 'var(--sidebar-foreground)' }} className="font-medium">
+                    {uniqueNormalOrgans.size}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span style={{ color: 'var(--sidebar-foreground)' }} className="opacity-70">
+                    Achados registrados
+                  </span>
+                  <span style={{ color: 'var(--sidebar-foreground)' }} className="font-medium">
+                    {selectedFindings.length}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span style={{ color: 'var(--sidebar-foreground)' }} className="opacity-70">
-                  Órgãos normais
-                </span>
-                <span style={{ color: 'var(--sidebar-foreground)' }} className="font-medium">
-                  {uniqueNormalOrgans.size}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span style={{ color: 'var(--sidebar-foreground)' }} className="opacity-70">
-                  Achados registrados
-                </span>
-                <span style={{ color: 'var(--sidebar-foreground)' }} className="font-medium">
-                  {selectedFindings.length}
-                </span>
-              </div>
-            </div>
 
-            <div className="mt-3 h-1.5 bg-sidebar-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-accent transition-all duration-300"
-                style={{ width: `${completion}%` }}
-              ></div>
+              <div className="mt-3 h-1.5 bg-sidebar-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-accent transition-all duration-300"
+                  style={{ width: `${completion}%` }}
+                ></div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Organs Section */}
         <h2 style={{ color: 'var(--sidebar-foreground)' }} className="text-sm font-medium mb-4 uppercase tracking-wide opacity-70">

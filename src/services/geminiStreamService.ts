@@ -184,11 +184,26 @@ export class GeminiStreamService {
             if (instance.measurements.ratioICA_CCA) {
               prompt += ` | Razão ICA/CCA: ${instance.measurements.ratioICA_CCA}`;
             }
+            if (!instance.measurements.ratioICA_CCA && instance.measurements.ratio) {
+              prompt += ` | Razão ICA/CCA: ${instance.measurements.ratio}`;
+            }
             if (instance.measurements.ratioICA_ICA) {
               prompt += ` | Razão ICA/ICA contralateral: ${instance.measurements.ratioICA_ICA}`;
             }
+            if (instance.measurements.nascetGrade) {
+              prompt += ` | Grau NASCET: ${instance.measurements.nascetGrade}`;
+            }
+            if (!instance.measurements.nascetGrade && instance.measurements.nascet) {
+              prompt += ` | Grau NASCET: ${instance.measurements.nascet}`;
+            }
             if (instance.measurements.emi) {
               prompt += ` | EMI: ${instance.measurements.emi} mm`;
+            }
+            if (!instance.measurements.emi && instance.measurements.emiValue) {
+              prompt += ` | EMI: ${instance.measurements.emiValue} mm`;
+            }
+            if (instance.measurements.emiClassification) {
+              prompt += ` | Classificação EMI: ${instance.measurements.emiClassification}`;
             }
             if (instance.measurements.plaqueEchogenicity) {
               prompt += ` | Ecogenicidade da placa: ${instance.measurements.plaqueEchogenicity}`;
@@ -199,8 +214,23 @@ export class GeminiStreamService {
             if (instance.measurements.plaqueSurface) {
               prompt += ` | Superfície da placa: ${instance.measurements.plaqueSurface}`;
             }
+            if (instance.measurements.plaqueRisk) {
+              prompt += ` | Risco da placa: ${instance.measurements.plaqueRisk}`;
+            }
+            if (!instance.measurements.plaqueRisk && instance.measurements.risk) {
+              prompt += ` | Risco da placa: ${instance.measurements.risk}`;
+            }
             if (instance.measurements.vertebralFlowPattern) {
               prompt += ` | Padrão de fluxo vertebral: ${instance.measurements.vertebralFlowPattern}`;
+            }
+            if (!instance.measurements.vertebralFlowPattern && instance.measurements.flowPattern) {
+              prompt += ` | Padrão de fluxo vertebral: ${instance.measurements.flowPattern}`;
+            }
+            if (instance.measurements.vertebralVelocity) {
+              prompt += ` | Velocidade vertebral: ${instance.measurements.vertebralVelocity}`;
+            }
+            if (instance.measurements.vertebralIR) {
+              prompt += ` | IR vertebral: ${instance.measurements.vertebralIR}`;
             }
             if (instance.measurements.subclavianSteal) {
               prompt += ` | Roubo da subclávia: ${instance.measurements.subclavianSteal}`;

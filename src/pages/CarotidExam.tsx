@@ -409,10 +409,15 @@ function CarotidExam() {
   );
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex min-h-screen bg-background">
       {/* Dark Sidebar - Now narrower */}
-      <aside ref={sidebarRef} data-sidebar style={{ backgroundColor: 'var(--sidebar-background)' }} className="w-52 border-r border-border/20">
-        <header className="p-4 border-b border-border/20">
+      <aside
+        ref={sidebarRef}
+        data-sidebar
+        style={{ backgroundColor: 'var(--sidebar-background)' }}
+        className="w-64 border-r border-border/20"
+      >
+        <header className="p-4 border-b border-border/20 bg-sidebar-background">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
               <span className="text-accent-foreground font-semibold text-sm">US</span>
@@ -445,48 +450,58 @@ function CarotidExam() {
           selectedFindings={selectedFindings}
           normalOrgans={normalOrgans}
           organsList={carotidOrgans}
+          showSummary={false}
         />
       </aside>
 
       {/* Main Content Area with Report Canvas and Floating Panel */}
-      <main className="flex-1 relative overflow-hidden bg-gray-50 main-content">
-        <div className="min-h-full flex items-start justify-center gap-8 p-8 overflow-y-auto">
-          {/* Report Canvas - A4 Paper Container */}
-          <div className="a4-container my-auto">
-            <ReportCanvas
-              selectedFindings={selectedFindings}
-              normalOrgans={normalOrgans}
-              generatedReport={generatedReport}
-              isGenerating={isGenerating}
-              aiImpression={aiImpression}
-              aiError={aiError}
-              isAiLoading={isAiProcessing}
-              aiStatus={aiStatus}
-              organsList={carotidOrgans}
-              currentAiModel={currentAiModel}
-              onGenerateAI={generateAIImpression}
-              autoGenerateAI={autoGenerateAI}
-              onToggleAutoGenerate={setAutoGenerateAI}
-            />
-          </div>
+      <main className="flex-1 relative bg-gray-50 main-content">
+        <div className="w-full overflow-x-hidden">
+          <div className="flex flex-col xl:flex-row items-start gap-8 p-8">
+            {/* Report Canvas - A4 Paper Container */}
+            <div className="flex-1 flex justify-center xl:justify-start">
+              <div className="a4-container mx-auto xl:mx-0">
+                <ReportCanvas
+                  selectedFindings={selectedFindings}
+                  normalOrgans={normalOrgans}
+                  generatedReport={generatedReport}
+                  isGenerating={isGenerating}
+                  aiImpression={aiImpression}
+                  aiError={aiError}
+                  isAiLoading={isAiProcessing}
+                  aiStatus={aiStatus}
+                  organsList={carotidOrgans}
+                  currentAiModel={currentAiModel}
+                  onGenerateAI={generateAIImpression}
+                  autoGenerateAI={autoGenerateAI}
+                  onToggleAutoGenerate={setAutoGenerateAI}
+                />
+              </div>
+            </div>
 
-          {/* Panels Container - Sticky positioned to align with A4 top */}
-          <div ref={findingsPanelRef} data-findings-panel className="flex flex-col gap-4 sticky top-4 floating-panels">
-            {/* Selected Findings Panel */}
-            <SelectedFindingsPanel
-              selectedFindings={selectedFindings}
-              normalOrgans={normalOrgans}
-              organsList={carotidOrgans}
-              onGenerateReport={handleGenerateReport}
-              isGenerating={isGenerating}
-            />
+            {/* Panels Container */}
+            <div
+              ref={findingsPanelRef}
+              data-findings-panel
+              className="flex flex-col gap-4 w-full xl:w-80 sticky top-4 floating-panels"
+            >
+              {/* Selected Findings Panel */}
+              <SelectedFindingsPanel
+                selectedFindings={selectedFindings}
+                normalOrgans={normalOrgans}
+                organsList={carotidOrgans}
+                onGenerateReport={handleGenerateReport}
+                isGenerating={isGenerating}
+                expandToContent
+              />
 
-            {/* Exam Statistics Panel */}
-            <ExamStatisticsPanel
-              selectedFindings={selectedFindings}
-              normalOrgans={normalOrgans}
-              organsList={carotidOrgans}
-            />
+              {/* Exam Statistics Panel */}
+              <ExamStatisticsPanel
+                selectedFindings={selectedFindings}
+                normalOrgans={normalOrgans}
+                organsList={carotidOrgans}
+              />
+            </div>
           </div>
         </div>
 
@@ -494,7 +509,7 @@ function CarotidExam() {
         {currentOrgan && (
           <div
             ref={organPanelRef}
-            className={`absolute top-6 left-6 bg-card border border-border rounded-lg shadow-2xl organ-section-panel backdrop-blur-sm transition-all duration-300 flex flex-col overflow-hidden ${isPanelMinimized ? 'w-12' : 'w-80'
+            className={`absolute top-6 left-6 bg-card border border-border rounded-lg shadow-2xl organ-section-panel backdrop-blur-sm transition-all duration-300 ${isPanelMinimized ? 'w-12' : 'w-80'
               } max-h-[calc(100vh-120px)]`}
           >
             {isPanelMinimized ? (
@@ -511,7 +526,7 @@ function CarotidExam() {
                 </div>
               </div>
             ) : (
-              <div className="h-full flex flex-col overflow-hidden">
+              <div className="h-full">
                 <div className="absolute top-2 right-2 z-20">
                   <button
                     onClick={() => setIsPanelMinimized(true)}

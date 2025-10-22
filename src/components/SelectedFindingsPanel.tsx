@@ -24,6 +24,7 @@ interface SelectedFindingsPanelProps {
   onGenerateReport: (data: ReportData, options: { model: AIProvider; specificModel: string }) => Promise<void>;
   isGenerating?: boolean;
   className?: string;
+  expandToContent?: boolean;
 }
 
 export default function SelectedFindingsPanel({
@@ -32,7 +33,8 @@ export default function SelectedFindingsPanel({
   organsList = defaultOrgans,
   onGenerateReport,
   isGenerating = false,
-  className
+  className,
+  expandToContent = false
 }: SelectedFindingsPanelProps) {
   const [selectedModel, setSelectedModel] = useState<AIProvider>('gemini');
   const [selectedGeminiModel, setSelectedGeminiModel] = useState(GEMINI_MODELS[0].id);
@@ -95,6 +97,13 @@ export default function SelectedFindingsPanel({
     ? `min(calc(100vh - 8rem), ${Math.max(400, Math.min(700, 300 + itemCount * 40))}px)`
     : '400px';
 
+  const panelStyle = expandToContent
+    ? undefined
+    : {
+        maxHeight: dynamicMaxHeight,
+        minHeight: hasContent ? '300px' : '250px'
+      };
+
   return (
     <section
       aria-labelledby="achados-titulo"
@@ -102,13 +111,10 @@ export default function SelectedFindingsPanel({
         "w-56 md:w-64 lg:w-72 xl:w-80 bg-sidebar-background/95 backdrop-blur-sm rounded-xl shadow-xl border border-border/20 flex flex-col transition-all duration-300",
         className
       )}
-      style={{
-        maxHeight: dynamicMaxHeight,
-        minHeight: hasContent ? '300px' : '250px'
-      }}
+      style={panelStyle}
     >
       {/* Header */}
-      <div className="p-4 border-b border-border/20 bg-sidebar-background">
+      <div className="p-4 border-b border-border/20 bg-sidebar-background rounded-t-xl">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <FileText size={18} className="text-sidebar-foreground" />
@@ -142,8 +148,8 @@ export default function SelectedFindingsPanel({
         </div>
       </div>
 
-      {/* Content - Scrollable */}
-      <div className="flex-1 overflow-y-auto p-4">
+      {/* Content */}
+      <div className={cn("flex-1 p-4", !expandToContent && "overflow-y-auto")}>
         {Object.keys(groupedFindings).length === 0 && normalOrgans.length === 0 ? (
           <p className="text-xs text-sidebar-foreground opacity-60 text-center py-8">
             Nenhum achado selecionado
@@ -194,6 +200,45 @@ export default function SelectedFindingsPanel({
                                   {instance.measurements.segment && (
                                     <div>• Segmento: {instance.measurements.segment}</div>
                                   )}
+                                  {instance.measurements.vps && (
+                                    <div>• VPS: {instance.measurements.vps}</div>
+                                  )}
+                                  {instance.measurements.vdf && (
+                                    <div>• VDF: {instance.measurements.vdf}</div>
+                                  )}
+                                  {(instance.measurements.ratioICA_CCA || instance.measurements.ratio) && (
+                                    <div>• Razão ICA/CCA: {instance.measurements.ratioICA_CCA || instance.measurements.ratio}</div>
+                                  )}
+                                  {(instance.measurements.nascetGrade || instance.measurements.nascet) && (
+                                    <div>• NASCET: {instance.measurements.nascetGrade || instance.measurements.nascet}</div>
+                                  )}
+                                  {(instance.measurements.emi || instance.measurements.emiValue) && (
+                                    <div>• EMI: {instance.measurements.emi || instance.measurements.emiValue} mm</div>
+                                  )}
+                                  {(instance.measurements.plaqueEchogenicity || instance.measurements.echogenicity) && (
+                                    <div>• Ecogenicidade: {instance.measurements.plaqueEchogenicity || instance.measurements.echogenicity}</div>
+                                  )}
+                                  {(instance.measurements.plaqueComposition || instance.measurements.composition) && (
+                                    <div>• Composição: {instance.measurements.plaqueComposition || instance.measurements.composition}</div>
+                                  )}
+                                  {(instance.measurements.plaqueSurface || instance.measurements.surface) && (
+                                    <div>• Superfície: {instance.measurements.plaqueSurface || instance.measurements.surface}</div>
+                                  )}
+                                  {(instance.measurements.plaqueRisk || instance.measurements.risk) && (
+                                    <div>• Risco: {instance.measurements.plaqueRisk || instance.measurements.risk}</div>
+                                  )}
+                                  {instance.measurements.vertebralVelocity && (
+                                    <div>• Velocidade vertebral: {instance.measurements.vertebralVelocity}</div>
+                                  )}
+                                  {instance.measurements.vertebralIR && (
+                                    <div>• IR vertebral: {instance.measurements.vertebralIR}</div>
+                                  )}
+                                  {(instance.measurements.vertebralFlowPattern || instance.measurements.flowPattern) && (
+                                    <div>• Padrão de fluxo: {instance.measurements.vertebralFlowPattern || instance.measurements.flowPattern}</div>
+                                  )}
+                                  {instance.measurements.subclavianSteal && (
+                                    <div>• Roubo da subclávia: {instance.measurements.subclavianSteal}</div>
+                                  )}
                                   {instance.measurements.description && (
                                     <div>• Obs: {instance.measurements.description}</div>
                                   )}
@@ -236,7 +281,7 @@ export default function SelectedFindingsPanel({
       </div>
 
       {/* Footer - AI Model Selection and Generate Button */}
-      <div className="p-4 border-t border-border/20 bg-sidebar-background space-y-3 relative">
+      <div className="p-4 border-t border-border/20 bg-sidebar-background space-y-3 relative rounded-b-xl">
         {/* AI Model Selection with Dropdowns */}
         <div>
           <h3 className="text-xs font-medium mb-2 text-sidebar-foreground opacity-70">

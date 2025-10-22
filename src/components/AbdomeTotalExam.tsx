@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
 import OrganSection from '@/components/OrganSection';
 import ReportCanvas from '@/components/ReportCanvas';
+import SelectedFindingsPanel from '@/components/SelectedFindingsPanel';
+import ExamStatisticsPanel from '@/components/ExamStatisticsPanel';
 import { organs } from '@/data/organs';
 import { SelectedFinding, ReportData, type AIProvider } from '@/types/report';
 import { Finding } from '@/data/organs';
@@ -164,7 +166,7 @@ function AbdomeTotalExam() {
   const isCurrentOrganNormal = normalOrgans.includes(selectedOrgan);
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="min-h-screen bg-background">
       {/* Botão Voltar */}
       <Button
         variant="ghost"
@@ -176,88 +178,120 @@ function AbdomeTotalExam() {
         Início
       </Button>
 
-      {/* Dark Sidebar - Reduzida */}
-      <div style={{ backgroundColor: 'var(--sidebar-background)' }} className="w-64 border-r border-border/20">
-        <div className="p-4 border-b border-border/20">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
-              <span className="text-accent-foreground font-semibold text-sm">US</span>
-            </div>
-            <div>
-              <h1 style={{ color: 'var(--sidebar-foreground)' }} className="text-lg font-semibold">
-                Sistema de Laudos
-              </h1>
-              <p style={{ color: 'var(--sidebar-foreground)' }} className="text-sm opacity-70">
-                Ultrassonografia inteligente
-              </p>
+      <div className="mx-auto flex w-full max-w-screen-2xl gap-0 px-4 py-6 lg:gap-6 lg:px-6">
+        {/* Sidebar */}
+        <aside
+          data-sidebar
+          style={{ backgroundColor: 'var(--sidebar-background)' }}
+          className="w-64 flex-shrink-0 border border-border/20 rounded-xl overflow-hidden"
+        >
+          <div className="p-4 border-b border-border/20 bg-sidebar-background">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
+                <span className="text-accent-foreground font-semibold text-sm">US</span>
+              </div>
+              <div>
+                <h1 style={{ color: 'var(--sidebar-foreground)' }} className="text-lg font-semibold">
+                  Sistema de Laudos
+                </h1>
+                <p style={{ color: 'var(--sidebar-foreground)' }} className="text-sm opacity-70">
+                  Ultrassonografia inteligente
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <Sidebar
-          selectedOrgan={selectedOrgan}
-          onOrganSelect={handleOrganSelect}
-          selectedFindings={selectedFindings}
-          normalOrgans={normalOrgans}
-          organsList={organs}
-        />
-      </div>
-
-      <div className="flex-1 relative">
-        {/* Report Canvas - Full background */}
-        <div className="absolute inset-0 overflow-y-auto overflow-x-hidden bg-card">
-          <ReportCanvas
+          <Sidebar
+            selectedOrgan={selectedOrgan}
+            onOrganSelect={handleOrganSelect}
             selectedFindings={selectedFindings}
             normalOrgans={normalOrgans}
-            generatedReport={generatedReport}
-            isGenerating={isGenerating}
             organsList={organs}
+            showSummary={false}
           />
-        </div>
+        </aside>
 
-        {/* Floating Organ Section */}
-        {currentOrgan && (
-          <div className={`absolute top-6 left-6 bg-card border border-border rounded-lg shadow-2xl z-10 backdrop-blur-sm transition-all duration-300 ${isPanelMinimized ? 'w-12' : 'w-80'
-            } max-h-[calc(100vh-120px)]`}>
-            {isPanelMinimized ? (
-              /* Minimized state */
-              <div className="p-3 flex flex-col items-center">
-                <button
-                  onClick={() => setIsPanelMinimized(false)}
-                  className="mb-2 p-2 hover:bg-muted rounded-md transition-colors"
-                  title="Expandir painel"
-                >
-                  <CaretRight size={16} />
-                </button>
-                <div className="writing-mode-vertical text-xs font-medium text-muted-foreground">
-                  {currentOrgan.name}
+        {/* Conteúdo principal */}
+        <main className="relative flex-1 min-w-0">
+          <div className="h-full overflow-x-hidden rounded-xl border border-border/20 bg-gray-50 shadow-sm">
+            <div className="flex flex-col xl:flex-row items-start gap-8 p-6 lg:p-8">
+              {/* Report Canvas */}
+              <div className="flex-1 min-w-0">
+                <div className="a4-container mx-auto xl:mx-0">
+                  <ReportCanvas
+                    selectedFindings={selectedFindings}
+                    normalOrgans={normalOrgans}
+                    generatedReport={generatedReport}
+                    isGenerating={isGenerating}
+                    organsList={organs}
+                  />
                 </div>
               </div>
-            ) : (
-              /* Expanded state */
-              <div className="h-full">
-                <div className="absolute top-2 right-2 z-20">
-                  <button
-                    onClick={() => setIsPanelMinimized(true)}
-                    className="p-1 hover:bg-muted rounded-md transition-colors"
-                    title="Minimizar painel"
-                  >
-                    <CaretLeft size={16} />
-                  </button>
-                </div>
-                <OrganSection
-                  organ={currentOrgan}
-                  selectedFindings={currentOrganFindings}
-                  onFindingChange={handleFindingChange}
-                  onNormalChange={handleNormalChange}
-                  isNormal={isCurrentOrganNormal}
+
+              {/* Painéis auxiliares */}
+              <div className="flex w-full flex-col gap-4 xl:w-80 xl:sticky xl:top-6 floating-panels min-w-[18rem]">
+                <SelectedFindingsPanel
+                  selectedFindings={selectedFindings}
+                  normalOrgans={normalOrgans}
+                  organsList={organs}
+                  onGenerateReport={handleGenerateReport}
+                  isGenerating={isGenerating}
+                  expandToContent
+                />
+
+                <ExamStatisticsPanel
+                  selectedFindings={selectedFindings}
+                  normalOrgans={normalOrgans}
+                  organsList={organs}
                 />
               </div>
-            )}
+            </div>
           </div>
-        )}
-      </div>
 
+          {/* Floating Organ Section */}
+          {currentOrgan && (
+            <div
+              className={`absolute top-6 left-6 bg-card border border-border rounded-lg shadow-2xl organ-section-panel backdrop-blur-sm transition-all duration-300 ${
+                isPanelMinimized ? 'w-12' : 'w-80'
+              } max-h-[calc(100vh-120px)]`}
+            >
+              {isPanelMinimized ? (
+                <div
+                  className="p-3 flex flex-col items-center cursor-pointer hover:bg-muted/50 transition-colors h-full rounded-lg"
+                  title="Expandir painel"
+                  onClick={() => setIsPanelMinimized(false)}
+                >
+                  <div className="mb-2 p-2">
+                    <CaretRight size={16} />
+                  </div>
+                  <div className="writing-mode-vertical text-xs font-medium text-muted-foreground">
+                    {currentOrgan.name}
+                  </div>
+                </div>
+              ) : (
+                <div className="h-full">
+                  <div className="absolute top-2 right-2 z-20">
+                    <button
+                      onClick={() => setIsPanelMinimized(true)}
+                      className="p-1 hover:bg-muted rounded-md transition-colors"
+                      title="Minimizar painel"
+                    >
+                      <CaretLeft size={16} />
+                    </button>
+                  </div>
+                  <OrganSection
+                    organ={currentOrgan}
+                    selectedFindings={currentOrganFindings}
+                    onFindingChange={handleFindingChange}
+                    onNormalChange={handleNormalChange}
+                    isNormal={isCurrentOrganNormal}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

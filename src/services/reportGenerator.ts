@@ -137,11 +137,29 @@ function generateBasicReport(
           // Add instance details
           if (f.instances && f.instances.length > 0) {
             const instanceDetails = f.instances.map((inst) => {
-              let detail = '';
-              if (inst.measurements.size) detail += inst.measurements.size;
-              if (inst.measurements.segment) detail += ` no segmento ${inst.measurements.segment}`;
-              if (inst.measurements.location) detail += ` em ${inst.measurements.location}`;
-              return detail;
+              const m = inst.measurements;
+              const parts: string[] = [];
+
+              if (m.size) parts.push(`tamanho ${m.size}`);
+              if (m.segment) parts.push(`segmento ${m.segment}`);
+              if (m.location) parts.push(`localização ${m.location}`);
+              if (m.vps) parts.push(`VPS ${m.vps}`);
+              if (m.vdf) parts.push(`VDF ${m.vdf}`);
+              if (m.ratioICA_CCA || m.ratio) parts.push(`razão ICA/CCA ${m.ratioICA_CCA || m.ratio}`);
+              if (m.nascetGrade || m.nascet) parts.push(`grau NASCET ${m.nascetGrade || m.nascet}`);
+              if (m.emi || m.emiValue) parts.push(`EMI ${m.emi || m.emiValue} mm`);
+              if (m.emiClassification) parts.push(`classificação EMI ${m.emiClassification}`);
+              if (m.plaqueEchogenicity || m.echogenicity) parts.push(`ecogenicidade ${m.plaqueEchogenicity || m.echogenicity}`);
+              if (m.plaqueComposition || m.composition) parts.push(`composição ${m.plaqueComposition || m.composition}`);
+              if (m.plaqueSurface || m.surface) parts.push(`superfície ${m.plaqueSurface || m.surface}`);
+              if (m.plaqueRisk || m.risk) parts.push(m.plaqueRisk || m.risk);
+              if (m.vertebralFlowPattern || m.flowPattern) parts.push(`padrão de fluxo ${m.vertebralFlowPattern || m.flowPattern}`);
+              if (m.subclavianSteal) parts.push(`roubo da subclávia ${m.subclavianSteal}`);
+              if (m.vertebralVelocity) parts.push(`velocidade ${m.vertebralVelocity}`);
+              if (m.vertebralIR) parts.push(`IR ${m.vertebralIR}`);
+              if (m.description) parts.push(m.description);
+
+              return parts.join(', ');
             }).filter(Boolean).join('; ');
 
             if (instanceDetails) {

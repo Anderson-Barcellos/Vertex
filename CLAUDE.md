@@ -1,8 +1,8 @@
 
+# SEMPRE LEIA  DIRETRIZES_EXAMES.md PARA PADRÕES DE EXAMES.
 # 📋 Documentação do Projeto - Vertex US
-
 **Data de Configuração:** 14 de Setembro de 2025
-**Última Atualização:** 21 de Outubro de 2025
+**Última Atualização:** 22 de Outubro de 2025
 **Configurado por:** Claude + Vertex Team
 **Projeto:** Sistema de Geração de Laudos Ultrassonográficos com IA
 **Repositório GitHub:** https://github.com/Anderson-Barcellos/Vertex
@@ -12,6 +12,54 @@
 ---
 
 ## 🔥 ATUALIZAÇÕES MAJOR - Outubro 2025
+
+### Layout Centralizado + Diretrizes de Exames (22/10/2025)
+
+**Objetivo:** impedir quebra da sidebar, unificar experiência visual e garantir que futuros exames herdem o mesmo comportamento responsivo.
+
+#### 🧱 Padronização de Layout
+- Criado wrapper centralizado (`max-w-screen-2xl mx-auto px-6`) com `min-w-0` no conteúdo principal.
+- Sidebar fixa com `w-64 flex-shrink-0`, cabeçalho escuro (`bg-sidebar-background`) e `showSummary` opcional.
+- Conteúdo principal encapsulado em caixa `bg-gray-50` com shadow/border, mantendo o `ReportCanvas` alinhado.
+- Painéis auxiliares (`SelectedFindingsPanel`, `ExamStatisticsPanel`) agora usam `xl:w-80`, `min-w-[18rem]` e `expandToContent` para evitar scrollbar interno.
+- Painel flutuante preservado com largura dinâmica (`w-12`/`w-80`) e sem colapso da barra lateral.
+
+#### 📄 Documentação
+- Novo arquivo `docs/DIRETRIZES_EXAMES.md` compilando o checklist de layout + captura de campos específicos.
+- CLAUDE.md agora destaca a leitura obrigatória das diretrizes antes de abrir novos exames.
+
+#### 🧪 Impacto
+- Sidebar não desloca mais em telas médias.
+- Layout reproduzível com poucas classes Tailwind.
+- Base pronta para gerar um componente `ExamPageLayout` se necessário.
+
+#### 📁 Arquivos Atualizados
+- `src/pages/CarotidExam.tsx`
+- `src/components/AbdomeTotalExam.tsx`
+- `src/components/SelectedFindingsPanel.tsx`
+- `src/components/Sidebar.tsx`
+
+### Aperfeiçoamentos Doppler Carótidas (22/10/2025)
+
+**Meta:** armazenar todos os campos clínicos sem conflito de nomenclatura e simplificar inputs.
+
+#### 🩺 Campos Normalizados
+- Helper `normalizeMeasurements` espelha nomes legados ↔️ novos (ex.: `ratio` ⇄ `ratioICA_CCA`, `echogenicity` ⇄ `plaqueEchogenicity`, `flowPattern` ⇄ `vertebralFlowPattern`, `nascet` ⇄ `nascetGrade`).
+- `types/report.ts` expandido com novos atributos (`plaqueRisk`, `emi`, `emiClassification`, etc.) preservando compatibilidade.
+
+#### 🖥️ UI/UX
+- Em `CarotidFindingDetails.tsx` todo campo exclusivo salva par legado/novo e o botão “Salvar” habilita com qualquer informação clínica.
+- Painel “Achados Selecionados” descreve VPS, VDF, razão ICA/CCA, NASCET, EMI, ecogenicidade, composição, superfície, risco, fluxo vertebral, IR, roubo subclávia, etc.
+- Prompt builders (`geminiStreamService`, `geminiClient`) e fallback (`reportGenerator`) recebem todos os campos.
+- Input de EMI virou texto livre (aceita vírgula, mm), removido badge automático, mantendo somente o valor informado.
+
+#### 📁 Arquivos Atualizados
+- `src/components/CarotidFindingDetails.tsx`
+- `src/components/SelectedFindingsPanel.tsx`
+- `src/services/geminiStreamService.ts`
+- `src/services/geminiClient.ts`
+- `src/services/reportGenerator.ts`
+- `src/types/report.ts`
 
 ### Refatoração Semântica HTML5 e Unificação de Layout (21/10/2025)
 

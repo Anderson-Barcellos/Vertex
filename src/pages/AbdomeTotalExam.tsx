@@ -388,10 +388,14 @@ function AbdomeTotalExam() {
   const isCurrentOrganNormal = normalOrgans.includes(selectedOrgan);
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Dark Sidebar - Now narrower */}
-      <aside data-sidebar style={{ backgroundColor: 'var(--sidebar-background)' }} className="w-52 border-r border-border/20">
-        <header className="p-4 border-b border-border/20">
+    <div className="flex min-h-screen bg-background">
+      {/* Dark Sidebar */}
+      <aside
+        data-sidebar
+        style={{ backgroundColor: 'var(--sidebar-background)' }}
+        className="w-64 border-r border-border/20"
+      >
+        <header className="p-4 border-b border-border/20 bg-sidebar-background">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
               <span className="text-accent-foreground font-semibold text-sm">US</span>
@@ -424,48 +428,52 @@ function AbdomeTotalExam() {
           selectedFindings={selectedFindings}
           normalOrgans={normalOrgans}
           organsList={organs}
+          showSummary={false}
         />
       </aside>
 
-      {/* Main Content Area with Report Canvas and Floating Panel */}
-      <main className="flex-1 relative overflow-hidden bg-gray-50 main-content">
-        <div className="min-h-full flex items-start justify-center gap-8 p-8 overflow-y-auto">
-          {/* Report Canvas - A4 Paper Container */}
-          <div className="a4-container my-auto">
-            <ReportCanvas
-              selectedFindings={selectedFindings}
-              normalOrgans={normalOrgans}
-              generatedReport={generatedReport}
-              isGenerating={isGenerating}
-              aiImpression={aiImpression}
-              aiError={aiError}
-              isAiLoading={isAiProcessing}
-              aiStatus={aiStatus}
-              organsList={organs}
-              currentAiModel={currentAiModel}
-              onGenerateAI={generateAIImpression}
-              autoGenerateAI={autoGenerateAI}
-              onToggleAutoGenerate={setAutoGenerateAI}
-            />
-          </div>
+      {/* Main Content Area */}
+      <main className="flex-1 relative bg-gray-50 main-content">
+        <div className="h-full overflow-x-hidden">
+          <div className="flex flex-col xl:flex-row items-start gap-8 p-8">
+            {/* Report Canvas */}
+            <div className="flex-1 flex justify-center xl:justify-start">
+              <div className="a4-container mx-auto xl:mx-0">
+                <ReportCanvas
+                  selectedFindings={selectedFindings}
+                  normalOrgans={normalOrgans}
+                  generatedReport={generatedReport}
+                  isGenerating={isGenerating}
+                  aiImpression={aiImpression}
+                  aiError={aiError}
+                  isAiLoading={isAiProcessing}
+                  aiStatus={aiStatus}
+                  organsList={organs}
+                  currentAiModel={currentAiModel}
+                  onGenerateAI={generateAIImpression}
+                  autoGenerateAI={autoGenerateAI}
+                  onToggleAutoGenerate={setAutoGenerateAI}
+                />
+              </div>
+            </div>
 
-          {/* Panels Container - Sticky positioned to align with A4 top */}
-          <div className="flex flex-col gap-4 sticky top-4 floating-panels">
-            {/* Selected Findings Panel */}
-            <SelectedFindingsPanel
-              selectedFindings={selectedFindings}
-              normalOrgans={normalOrgans}
-              organsList={organs}
-              onGenerateReport={handleGenerateReport}
-              isGenerating={isGenerating}
-            />
+            {/* Panels Container */}
+            <div className="flex flex-col gap-4 w-full xl:w-80 xl:sticky xl:top-4 floating-panels">
+              <SelectedFindingsPanel
+                selectedFindings={selectedFindings}
+                normalOrgans={normalOrgans}
+                organsList={organs}
+                onGenerateReport={handleGenerateReport}
+                isGenerating={isGenerating}
+                expandToContent
+              />
 
-            {/* Exam Statistics Panel */}
-            <ExamStatisticsPanel
-              selectedFindings={selectedFindings}
-              normalOrgans={normalOrgans}
-              organsList={organs}
-            />
+              <ExamStatisticsPanel
+                selectedFindings={selectedFindings}
+                normalOrgans={normalOrgans}
+                organsList={organs}
+              />
+            </div>
           </div>
         </div>
 
