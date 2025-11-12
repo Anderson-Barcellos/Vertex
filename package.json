@@ -4,8 +4,8 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite --host 0.0.0.0 --port 8198 --strictPort",
-        "kill": "fuser -k 8133/tcp",
+        "dev": "vite --host 0.0.0.0 --port 8200 --strictPort",
+        "kill": "fuser -k 8200/tcp",
         "build": "vite build",
         "build:check": "tsc -b --noCheck && vite build",
         "lint": "eslint .",

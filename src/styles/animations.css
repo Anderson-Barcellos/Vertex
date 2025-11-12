@@ -282,7 +282,8 @@
 [data-radix-portal],
 [data-radix-popper-content-wrapper],
 [data-radix-select-content],
-[data-radix-dropdown-menu-content] {
+[data-radix-dropdown-menu-content],
+[data-custom-dropdown="open"] {
   z-index: 30 !important;
 }
 

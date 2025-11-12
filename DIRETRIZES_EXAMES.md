@@ -55,6 +55,113 @@ Quando um exame exigir campos especializados (ex.: Doppler de Carótidas), siga 
   - Fallback local: `src/services/reportGenerator.ts` → concatena os campos no texto básico.
 - Sempre considerar os nomes novos e, em fallback, os legados.
 
+## Layout Responsivo e Container (28/10/2025)
+
+### Container com Largura Máxima
+- Wrapper externo: `max-width: 1800px` e `margin: 0 auto` para centralizar em telas grandes
+- Padding lateral: `padding: 0 1rem` para margens em dispositivos menores
+- Aplicar no componente raiz ou em `GridExamLayout.tsx`
+
+### Grid Proporcional com fr units
+```css
+/* Substituir pixels fixos por proporções flexíveis */
+grid-template-columns:
+  minmax(200px, 1fr)    /* Sidebar: min 200px, expande até 1fr */
+  minmax(600px, 3fr)    /* Main: min 600px, expande até 3fr */
+  minmax(280px, 1.2fr); /* Panels: min 280px, expande até 1.2fr */
+```
+
+### Canvas A4 Fluido
+```css
+/* Canvas responsivo com clamp() */
+.a4-container-v2 {
+  width: 100%;
+  max-width: clamp(600px, 75vw, 850px); /* Fluido entre 600-850px */
+  aspect-ratio: 1 / 1.414; /* Proporção A4 real */
+}
+```
+
+### Painéis Flutuantes Adjacentes
+- Posicionamento fixo: `left-[272px]` para adjacência perfeita com sidebar de 256px
+- Breakpoints: `lg:left-[256px] md:left-[240px]` para diferentes tamanhos de sidebar
+- Evitar `left-6` ou outros valores que criem gap visual
+
+## Correção de Dropdowns (28/10/2025)
+
+### MutationObserver para Detecção Dinâmica
+Substituir polling por observação eficiente de mudanças no DOM:
+
+```javascript
+useEffect(() => {
+  const observer = new MutationObserver(() => {
+    // Detectar novos dropdowns/selects/portais Radix
+    const hasDropdowns = document.querySelector(
+      'select, [role="listbox"], [data-radix-portal], ...'
+    );
+    setHasOpenDropdowns(!!hasDropdowns);
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['data-state', 'aria-expanded', 'open']
+  });
+
+  return () => observer.disconnect();
+}, []);
+```
+
+### Debounce no Click-Outside
+Prevenir fechamento prematuro com delay de 50ms:
+
+```javascript
+const debounceRef = useRef<NodeJS.Timeout>();
+
+const handleClickOutside = (e: MouseEvent) => {
+  clearTimeout(debounceRef.current);
+  debounceRef.current = setTimeout(() => {
+    // Lógica de verificação após 50ms
+    if (shouldClosePanel) {
+      setIsMinimized(true);
+    }
+  }, 50);
+};
+```
+
+### Lista Completa de Seletores Radix UI
+```javascript
+const radixSelectors = [
+  '[data-radix-portal]',
+  '[data-radix-popper-content-wrapper]',
+  '[data-radix-menu-content]',
+  '[data-radix-select-content]',
+  '[data-radix-dropdown-menu-content]',
+  '[data-radix-popover-content]',
+  '[data-radix-dialog-content]',
+  '[data-radix-tooltip-content]',
+  '[data-radix-context-menu-content]',
+  '[data-radix-hover-card-content]',
+  '[data-radix-navigation-menu-content]',
+  '[role="listbox"]',
+  '[role="menu"]',
+  '[role="dialog"]',
+  '[data-state="open"]',
+  '[data-custom-dropdown="open"]'
+];
+```
+
+### Marcação de Dropdowns Customizados
+Adicionar atributo em dropdowns próprios:
+```jsx
+<div
+  className="dropdown-menu"
+  data-custom-dropdown="open"
+>
+  {/* Opções do dropdown */}
+</div>
+```
+
 ## Checklist de Nova Seção de Exame
 - Estrutura de página segue “Layout Padrão”.
 - `Sidebar` com `showSummary` ajustado conforme necessidade.

@@ -63,7 +63,10 @@
       "Bash(npm run typecheck:*)",
       "Bash(npm run lint:*)",
       "Bash(npx tsc:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(fuser:*)",
+      "Read(//tmp/**)",
+      "Bash(find:*)"
     ]
   },
   "outputStyle": "Explanatory"

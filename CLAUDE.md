@@ -1,8 +1,9 @@
 
 # SEMPRE LEIA  DIRETRIZES_EXAMES.md PARA PADRÕES DE EXAMES.
+
 # 📋 Documentação do Projeto - Vertex US
 **Data de Configuração:** 14 de Setembro de 2025
-**Última Atualização:** 22 de Outubro de 2025
+**Última Atualização:** 28 de Outubro de 2025
 **Configurado por:** Claude + Vertex Team
 **Projeto:** Sistema de Geração de Laudos Ultrassonográficos com IA
 **Repositório GitHub:** https://github.com/Anderson-Barcellos/Vertex
@@ -12,6 +13,27 @@
 ---
 
 ## 🔥 ATUALIZAÇÕES MAJOR - Outubro 2025
+
+### Correções de Dropdowns e Layout Responsivo (28/10/2025)
+
+**Objetivo:** Resolver problemas de fechamento indevido de painéis flutuantes e melhorar responsividade do layout.
+
+#### 🐛 Correção de Dropdowns Fechando Painéis
+- **Problema:** Dropdowns nativos e do Radix UI fechavam painéis flutuantes ao serem clicados
+- **Solução:** Implementado MutationObserver para detectar dropdowns dinamicamente
+- **Técnica:** Debounce de 50ms no click-outside + lista completa de seletores Radix
+- **Arquivos:** `AbdomeTotalExam.tsx`, `CarotidExam.tsx`, `SelectedFindingsPanel.tsx`
+
+#### 📐 Layout Responsivo Aprimorado
+- **Container limitado:** `max-width: 1800px` para telas grandes
+- **Grid proporcional:** Uso de `fr` units com `minmax()` para flexibilidade
+- **A4 fluido:** Canvas com `clamp(600px, 75vw, 850px)`
+- **Posicionamento fixo:** Painéis flutuantes em `left-[272px]` adjacentes à sidebar
+
+#### 🔧 Serviço Systemd
+- **Criado:** `/etc/systemd/system/vertex-v2.service`
+- **Status:** Configurado mas requer ajuste de PATH do npm
+- **Pendente:** Corrigir caminho absoluto do Node.js no ExecStart
 
 ### Layout Centralizado + Diretrizes de Exames (22/10/2025)
 

@@ -17,7 +17,7 @@ export default defineConfig({
     }
   },
   server: {
-    port: 8198,
+    port: 8200,
     // Escutar em todas as interfaces para permitir acesso externo quando necessário
     host: '0.0.0.0',
     strictPort: true,

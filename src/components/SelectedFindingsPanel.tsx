@@ -289,7 +289,7 @@ export default function SelectedFindingsPanel({
           </h3>
           <div className="flex gap-2">
             {/* Gemini Button with Dropdown */}
-            <div className="flex-1 relative z-50">
+            <div className="flex-1 relative">
               <button
                 onClick={() => {
                   setSelectedModel('gemini');
@@ -311,7 +311,10 @@ export default function SelectedFindingsPanel({
 
               {/* Gemini Dropdown */}
               {showGeminiDropdown && (
-                <div className="absolute bottom-full left-0 right-0 mb-1 bg-sidebar-background border border-border/20 rounded-md shadow-lg overflow-hidden">
+                <div
+                  className="absolute bottom-full left-0 right-0 mb-1 bg-sidebar-background border border-border/20 rounded-md shadow-lg overflow-hidden"
+                  data-custom-dropdown="open"
+                >
                   {GEMINI_MODELS.map((model) => (
                     <button
                       key={model.id}
@@ -334,7 +337,7 @@ export default function SelectedFindingsPanel({
             </div>
 
             {/* OpenAI Button with Dropdown */}
-            <div className="flex-1 relative z-50">
+            <div className="flex-1 relative">
               <button
                 onClick={() => {
                   setSelectedModel('openai');
@@ -356,7 +359,10 @@ export default function SelectedFindingsPanel({
 
               {/* OpenAI Dropdown */}
               {showOpenAIDropdown && (
-                <div className="absolute bottom-full left-0 right-0 mb-1 bg-sidebar-background border border-border/20 rounded-md shadow-lg overflow-hidden">
+                <div
+                  className="absolute bottom-full left-0 right-0 mb-1 bg-sidebar-background border border-border/20 rounded-md shadow-lg overflow-hidden"
+                  data-custom-dropdown="open"
+                >
                   {OPENAI_MODELS.map((model) => (
                     <button
                       key={model.id}

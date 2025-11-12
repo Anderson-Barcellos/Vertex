@@ -37,74 +37,101 @@ function AbdomeTotalExam() {
   const aiDebounceRef = useRef<number | null>(null);
   const aiAbortRef = useRef<AbortController | null>(null);
   const statusUnsubscribeRef = useRef<(() => void) | null>(null);
+  const clickOutsideDebounceRef = useRef<number | null>(null);
 
-  // Monitor all dropdowns state
+  // Monitor dropdowns state via MutationObserver (more efficient than polling)
   useEffect(() => {
-    const checkDropdowns = () => {
-      const hasOpenDropdown = document.querySelector('[data-state="open"]') !== null ||
-        document.querySelector('[aria-expanded="true"]') !== null;
+    const observer = new MutationObserver(() => {
+      const hasOpenDropdown =
+        document.querySelector('[data-state="open"]') !== null ||
+        document.querySelector('[aria-expanded="true"]') !== null ||
+        document.querySelector('[data-custom-dropdown="open"]') !== null;
       setIsAnyDropdownOpen(hasOpenDropdown);
-    };
+    });
 
-    // Check periodically for dropdown state
-    const interval = setInterval(checkDropdowns, 100);
+    // Observe only the organ panel for dropdown changes
+    if (organPanelRef.current) {
+      observer.observe(organPanelRef.current, {
+        attributes: true,
+        attributeFilter: ['data-state', 'aria-expanded', 'data-custom-dropdown'],
+        subtree: true
+      });
+    }
 
-    return () => clearInterval(interval);
-  }, []);
+    // Also observe the document body for portals
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['data-state', 'aria-expanded', 'data-custom-dropdown'],
+      subtree: true,
+      childList: true
+    });
+
+    return () => observer.disconnect();
+  }, [selectedOrgan]); // Re-observe when organ changes
 
   // Handle click outside to minimize organ panel
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Don't minimize if any dropdown is open
-      if (isAnyDropdownOpen) {
-        console.log('Dropdown está aberto - não minimizando');
-        return;
+      // Clear any pending debounce
+      if (clickOutsideDebounceRef.current) {
+        clearTimeout(clickOutsideDebounceRef.current);
       }
 
-      if (
-        organPanelRef.current &&
-        !organPanelRef.current.contains(event.target as Node) &&
-        selectedOrgan &&
-        !isPanelMinimized
-      ) {
-        // Check if click is on a Radix UI portal (dropdowns, selects, etc)
-        const target = event.target as HTMLElement;
-        const isRadixPortal = target.closest('[data-radix-portal]') ||
-          target.closest('[data-radix-popper-content-wrapper]') ||
-          target.closest('[data-state="open"]') ||
-          target.closest('[role="listbox"]') ||
-          target.closest('[role="option"]') ||
-          target.closest('[role="combobox"]') ||
-          target.closest('[data-radix-select-content]') ||
-          target.closest('[data-radix-select-trigger]') ||
-          target.closest('[data-radix-select-viewport]') ||
-          target.closest('[data-radix-dropdown-menu-content]') ||
-          target.closest('.select-content') ||
-          target.closest('.select-trigger');
-
-        if (isRadixPortal) {
-          console.log('Click detectado em portal Radix UI - não minimizando');
-          return; // Don't minimize if clicking on a portal element
+      // Debounce the click handling to ensure dropdown state is updated
+      clickOutsideDebounceRef.current = window.setTimeout(() => {
+        // Don't minimize if any dropdown is open
+        if (isAnyDropdownOpen) {
+          return;
         }
 
-        // Debug: log what was clicked
-        console.log('Click fora detectado, minimizando. Target:', target);
-
-        // Check if click is not on sidebar or findings panel
-        const sidebar = document.querySelector('[data-sidebar]');
-        const findingsPanel = document.querySelector('[data-findings-panel]');
         if (
-          (!sidebar || !sidebar.contains(event.target as Node)) &&
-          (!findingsPanel || !findingsPanel.contains(event.target as Node))
+          organPanelRef.current &&
+          !organPanelRef.current.contains(event.target as Node) &&
+          selectedOrgan &&
+          !isPanelMinimized
         ) {
-          setIsPanelMinimized(true);
+          // Check if click is on a Radix UI portal (dropdowns, selects, etc) or custom dropdowns
+          const target = event.target as HTMLElement;
+          const isRadixPortal = target.closest('[data-radix-portal]') ||
+            target.closest('[data-radix-popper-content-wrapper]') ||
+            target.closest('[data-state="open"]') ||
+            target.closest('[role="listbox"]') ||
+            target.closest('[role="option"]') ||
+            target.closest('[role="combobox"]') ||
+            target.closest('[data-radix-select-content]') ||
+            target.closest('[data-radix-select-trigger]') ||
+            target.closest('[data-radix-select-viewport]') ||
+            target.closest('[data-radix-select-item]') ||
+            target.closest('[data-radix-select-portal]') ||
+            target.closest('[data-radix-combobox-viewport]') ||
+            target.closest('[data-radix-dropdown-menu-content]') ||
+            target.closest('[data-custom-dropdown="open"]') ||
+            target.closest('.select-content') ||
+            target.closest('.select-trigger');
+
+          if (isRadixPortal) {
+            return; // Don't minimize if clicking on a portal element
+          }
+
+          // Check if click is not on sidebar or findings panel
+          const sidebar = document.querySelector('[data-sidebar]');
+          const findingsPanel = document.querySelector('[data-findings-panel]');
+          if (
+            (!sidebar || !sidebar.contains(event.target as Node)) &&
+            (!findingsPanel || !findingsPanel.contains(event.target as Node))
+          ) {
+            setIsPanelMinimized(true);
+          }
         }
-      }
+      }, 50); // 50ms debounce to ensure state is updated
     };
 
     document.addEventListener('click', handleClickOutside);
     return () => {
       document.removeEventListener('click', handleClickOutside);
+      if (clickOutsideDebounceRef.current) {
+        clearTimeout(clickOutsideDebounceRef.current);
+      }
     };
   }, [selectedOrgan, isPanelMinimized, isAnyDropdownOpen]);
 
