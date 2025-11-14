@@ -30,6 +30,7 @@ import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelMode
 import QuickTemplatesPanel from '@/components/shared/QuickTemplatesPanel';
 import { buildSpecializedPrompt } from '@/services/promptBuilder';
 import { estimateCostUsd, estimateTokensFromText } from '@/utils/aiMetrics';
+import { buildBreastReport, buildBreastImpression } from '@/services/breastReportBuilder';
 
 function BreastUltrasoundExamModern() {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ function BreastUltrasoundExamModern() {
   const [aiImpression, setAiImpression] = useState('');
   const [currentAiModel, setCurrentAiModel] = useState<'gemini' | 'openai'>('gemini');
   const [currentModelId, setCurrentModelId] = useState<string>(GEMINI_MODEL);
-  const [autoGenerateAI, setAutoGenerateAI] = useState(false);
+  const [useAiRefinement, setUseAiRefinement] = useState(false); // Novo: controla se usa IA ou não
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiStatus, setAiStatus] = useState<AIStatus>('idle');
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
@@ -449,8 +450,26 @@ function BreastUltrasoundExamModern() {
     });
   }, [selectedFindings, normalOrgans, currentAiModel, isAiProcessing]);
 
+  /**
+   * ⚡ GERAÇÃO INSTANTÂNEA DE LAUDO (SEM IA)
+   * Atualiza o laudo automaticamente sempre que há mudanças nos achados
+   */
   useEffect(() => {
-    if (!autoGenerateAI) return;
+    // Gera laudo completo instantaneamente
+    const report = buildBreastReport(selectedFindings, normalOrgans, breastUltrasoundOrgans);
+    setGeneratedReport(report);
+
+    // Gera impressão clínica resumida
+    const impression = buildBreastImpression(selectedFindings, normalOrgans);
+    setAiImpression(impression);
+  }, [selectedFindings, normalOrgans]);
+
+  /**
+   * 🤖 REFINAMENTO COM IA (OPCIONAL)
+   * Apenas se o usuário explicitamente solicitar refinamento
+   */
+  useEffect(() => {
+    if (!useAiRefinement) return;
 
     const timer = setTimeout(() => {
       if (selectedFindings.length > 0 || normalOrgans.length > 0) {
@@ -460,15 +479,15 @@ function BreastUltrasoundExamModern() {
 
     return () => {
       clearTimeout(timer);
-      if (statusUnsubscribeRef.current && autoGenerateAI) {
+      if (statusUnsubscribeRef.current && useAiRefinement) {
         statusUnsubscribeRef.current();
         statusUnsubscribeRef.current = null;
       }
-      if (autoGenerateAI) {
+      if (useAiRefinement) {
         unifiedAIService.cancelClinicalImpression();
       }
     };
-  }, [selectedFindings, normalOrgans, currentAiModel, autoGenerateAI, generateAIImpression]);
+  }, [selectedFindings, normalOrgans, currentAiModel, useAiRefinement, generateAIImpression]);
 
   useEffect(() => {
     return () => {
@@ -543,8 +562,8 @@ function BreastUltrasoundExamModern() {
               currentAiModel={currentAiModel}
               currentModelId={currentModelId}
               onGenerateAI={generateAIImpression}
-              autoGenerateAI={autoGenerateAI}
-              onToggleAutoGenerate={setAutoGenerateAI}
+              autoGenerateAI={useAiRefinement}
+              onToggleAutoGenerate={setUseAiRefinement}
             />
           </div>
         )}
@@ -576,9 +595,6 @@ function BreastUltrasoundExamModern() {
               widthExpanded={'24rem'}
               maxHeight={'80vh'}
               FindingDetailsComponent={BreastUltrasoundFindingDetails}
-              followSidebar={true}
-              followGapPx={0}
-              followNudgePx={24}
             />
           ) : null
         )}
