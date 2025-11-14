@@ -138,6 +138,83 @@ export function LandingPageModern() {
           </div>
         </div>
 
+        {/* Breast Ultrasound Card - Segunda Linha */}
+        <div className="grid md:grid-cols-2 gap-8 mb-16">
+          {/* Ultrassom de Mama */}
+          <div
+            onClick={() => navigate('/mammography-modern')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+          >
+            {/* Gradient Overlay on Hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+            <div className="relative z-10">
+              {/* Icon */}
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+              </div>
+
+              {/* Content */}
+              <h3 className="text-3xl font-bold text-white mb-3">
+                Ultrassom de Mama
+              </h3>
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                Avaliação mamária completa com BI-RADS, análise de nódulos, cistos e alterações parenquimatosas
+              </p>
+
+              {/* Stats */}
+              <div className="flex gap-4 mb-6">
+                <div className="flex-1 glass-card">
+                  <div className="text-2xl font-bold text-pink-400">BI-RADS</div>
+                  <div className="text-xs text-gray-400">Classificação</div>
+                </div>
+                <div className="flex-1 glass-card">
+                  <div className="text-2xl font-bold text-rose-400">40+</div>
+                  <div className="text-xs text-gray-400">Achados</div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="flex items-center text-pink-400 font-semibold group-hover:translate-x-2 transition-transform duration-300">
+                <span>Acessar módulo</span>
+                <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Placeholder para futuro módulo */}
+          <div className="glass-panel p-8 opacity-50 cursor-not-allowed">
+            <div className="relative z-10">
+              {/* Icon */}
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center mb-6 shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+
+              {/* Content */}
+              <h3 className="text-3xl font-bold text-white mb-3">
+                Em Breve
+              </h3>
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                Novos módulos em desenvolvimento: Tireoide, Pélvico, Obstétrico e mais
+              </p>
+
+              {/* Stats */}
+              <div className="flex gap-4 mb-6">
+                <div className="flex-1 glass-card">
+                  <div className="text-2xl font-bold text-gray-400">🚧</div>
+                  <div className="text-xs text-gray-400">Em breve</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Features Grid */}
         <div className="glass-panel p-8 mb-12 animate-fade-up" style={{ animationDelay: '0.2s' }}>
           <h2 className="text-2xl font-bold text-white mb-8 text-center">
