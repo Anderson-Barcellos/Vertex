@@ -66,6 +66,23 @@ export interface ReportData {
 
 export type AIProvider = 'gemini' | 'openai';
 
+export interface AIGenerationStats {
+  provider: AIProvider;
+  model?: string;
+  status: 'idle' | 'running' | 'completed' | 'error';
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+  estimatedCostUsd?: number;
+  durationMs?: number;
+  startedAt?: number;
+  finishedAt?: number;
+  chunkCount?: number;
+  inputChars?: number;
+  outputChars?: number;
+  errorMessage?: string;
+}
+
 export interface GeminiPromptTemplate {
   roleDescription: string;
   language: string;

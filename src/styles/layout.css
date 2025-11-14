@@ -101,7 +101,7 @@
 
 /* Report content area with comfortable padding */
 .report-content {
-  padding: var(--spacing-6);
+  padding: var(--spacing-4) var(--spacing-6) var(--spacing-6);
   min-height: 400px;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -314,7 +314,7 @@
   }
 
   .report-content {
-    padding: var(--spacing-8);
+    padding: var(--spacing-5) var(--spacing-8) var(--spacing-7);
   }
 }
 

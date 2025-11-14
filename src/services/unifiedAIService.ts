@@ -6,7 +6,7 @@
 import { geminiStreamService } from './geminiStreamService';
 import { openaiStreamService } from './openaiStreamService';
 import type { SelectedFinding } from '@/types/report';
-import type { AIStatus } from '@/components/ReportCanvas';
+import type { AIStatus } from '@/components/original/ReportCanvas';
 
 type AIProvider = 'gemini' | 'openai';
 

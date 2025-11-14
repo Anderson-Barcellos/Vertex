@@ -127,8 +127,8 @@
 /* A4 Paper Styles with fixed width and proper z-index */
 .a4-container {
   width: 210mm;
-  min-height: 297mm;
-  /* Mínimo A4 */
+  min-height: 336mm;
+  /* Mínimo A4 com proporção 1:1.6 (13% mais alto) */
   max-height: calc(100vh - 120px);
   /* Limita altura à viewport com margem */
   min-width: 210mm;
@@ -258,38 +258,29 @@
 
 /* Z-Index Hierarchy */
 /* Base layer - main content and background */
-.main-content {
-  z-index: 1;
-}
+.main-content { z-index: var(--z-base); }
 
 /* A4 paper container - above main content */
-.a4-container {
-  z-index: 2;
-}
+.a4-container { z-index: var(--z-content); }
 
 /* Floating panels - above A4 paper */
-.floating-panels {
-  z-index: 10;
-}
+.floating-panels { z-index: var(--z-floating); }
 
 /* Organ section panel - above floating panels */
-.organ-section-panel {
-  z-index: 20;
-}
+.organ-section-panel { z-index: var(--z-floating); }
 
 /* Dropdowns and select menus - above panels */
 .dropdown-content,
 [data-radix-portal],
 [data-radix-popper-content-wrapper],
 [data-radix-select-content],
-[data-radix-dropdown-menu-content],
-[data-custom-dropdown="open"] {
-  z-index: 30 !important;
+[data-radix-dropdown-menu-content] {
+  z-index: var(--z-dropdown) !important;
 }
 
 /* Modals and dialogs - highest priority */
 .modal-content,
 [data-radix-dialog-overlay],
 [data-radix-dialog-content] {
-  z-index: 40 !important;
+  z-index: var(--z-modal) !important;
 }

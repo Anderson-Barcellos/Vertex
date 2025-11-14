@@ -1,5 +1,6 @@
 // OpenAI Streaming Integration via backend proxy
 import type { SelectedFinding } from '@/types/report';
+import { buildReportPrompt } from './promptBuilder';
 
 // Types for streaming
 export interface StreamCallbacks {
@@ -11,8 +12,17 @@ export interface StreamCallbacks {
 // Use proxy local para evitar CORS
 const OPENAI_API_ENDPOINT =
   import.meta.env.VITE_OPENAI_API_URL || '/api/openai';
-const OPENAI_MODEL =
-  import.meta.env.VITE_OPENAI_MODEL || 'gpt-4';
+export const OPENAI_MODEL =
+  import.meta.env.VITE_OPENAI_MODEL || 'gpt-5';
+
+function getSelectedOpenAIModel(): string {
+  try {
+    const fromSession = typeof window !== 'undefined' ? sessionStorage.getItem('selectedAIModel') : null;
+    return fromSession || OPENAI_MODEL;
+  } catch {
+    return OPENAI_MODEL;
+  }
+}
 
 // System instruction for the AI
 const SYSTEM_INSTRUCTION = `Você é um radiologista especialista em ultrassonografia com mais de 20 anos de experiência, responsável por revisar e aprimorar laudos médicos.
@@ -26,7 +36,7 @@ Analisar o texto fornecido pelo usuário:
 
 ## REFERÊNCIAS CLÍNICAS PARA DOPPLER DE CARÓTIDAS
 
-### CRITÉRIOS NASCET DE ESTENOSE CAROTÍDEA
+### CRITÉRIOS  DE ESTENOSE CAROTÍDEA
 - **Normal:** VPS < 125 cm/s | Razão ICA/CCA < 2.0
 - **<50%:** VPS < 125 cm/s | Razão ICA/CCA < 2.0
 - **50-69%:** VPS 125-230 cm/s | Razão ICA/CCA 2.0-4.0
@@ -41,10 +51,6 @@ Analisar o texto fornecido pelo usuário:
 - **Tipo 4 (Uniformemente ecogênica):** Homogeneamente hiperecóica, estável
 - **Tipo 5 (Calcificada):** Sombra acústica posterior, geralmente estável
 
-### VALORES DE REFERÊNCIA EMI
-- **Normal:** < 0.9 mm (adultos < 40 anos) | < 1.0 mm (adultos > 40 anos)
-- **Espessamento:** 1.0-1.2 mm
-- **Placa aterosclerótica:** > 1.2 mm
 
 ## METODOLOGIA
 
@@ -124,8 +130,13 @@ export class OpenAIStreamService {
     },
     callbacks: StreamCallbacks
   ): Promise<void> {
-    const prompt = this.buildPrompt(data);
-    await this.streamFromBackend(prompt, callbacks);
+    try {
+      const prompt = buildReportPrompt(data);
+      await this.streamFromBackend(prompt, callbacks);
+    } catch (error) {
+      console.error('Erro no streaming OpenAI:', error);
+      callbacks.onError?.(error as Error);
+    }
   }
 
   /**
@@ -140,99 +151,13 @@ export class OpenAIStreamService {
     },
     callbacks: StreamCallbacks
   ): Promise<void> {
-    const prompt = this.buildPrompt(data);
-    await this.streamFromBackend(prompt, callbacks);
-  }
-
-  /**
-   * Constrói o prompt baseado nos achados
-   */
-  private buildPrompt(data: {
-    examType?: string;
-    selectedFindings: SelectedFinding[];
-    normalOrgans: string[];
-    organsCatalog?: any[];
-  }): string {
-    let prompt = `Gere um laudo de ${data.examType || 'Ultrassonografia Abdominal'} baseado nos seguintes achados:\n\n`;
-
-    // Adicionar achados patológicos
-    if (data.selectedFindings.length > 0) {
-      prompt += 'ACHADOS PATOLÓGICOS:\n';
-
-      data.selectedFindings.forEach(finding => {
-        const organName = data.organsCatalog?.find(o => o.id === finding.organId)?.name || finding.organId;
-        prompt += `\n**${organName}:**\n`;
-        prompt += `- ${finding.finding.name}`;
-
-        if (finding.severity) {
-          prompt += ` (${finding.severity})`;
-        }
-
-        if (finding.instances && finding.instances.length > 0) {
-          prompt += '\n  Detalhes:\n';
-          finding.instances.forEach((instance, idx) => {
-            prompt += `  ${idx + 1}. `;
-
-            // Campos padrão
-            if (instance.measurements.size) {
-              prompt += `Tamanho: ${instance.measurements.size}`;
-            }
-            if (instance.measurements.location) {
-              prompt += ` | Localização: ${instance.measurements.location}`;
-            }
-            if (instance.measurements.segment) {
-              prompt += ` | Segmento: ${instance.measurements.segment}`;
-            }
-
-            // Campos específicos de Doppler de Carótidas
-            if (instance.measurements.vps) {
-              prompt += ` | VPS: ${instance.measurements.vps} cm/s`;
-            }
-            if (instance.measurements.vdf) {
-              prompt += ` | VDF: ${instance.measurements.vdf} cm/s`;
-            }
-            if (instance.measurements.ratioICA_CCA) {
-              prompt += ` | Razão ICA/CCA: ${instance.measurements.ratioICA_CCA}`;
-            }
-            if (instance.measurements.ratioICA_ICA) {
-              prompt += ` | Razão ICA/ICA contralateral: ${instance.measurements.ratioICA_ICA}`;
-            }
-            if (instance.measurements.emi) {
-              prompt += ` | EMI: ${instance.measurements.emi} mm`;
-            }
-            if (instance.measurements.plaqueEchogenicity) {
-              prompt += ` | Ecogenicidade da placa: ${instance.measurements.plaqueEchogenicity}`;
-            }
-            if (instance.measurements.plaqueComposition) {
-              prompt += ` | Composição da placa: ${instance.measurements.plaqueComposition}`;
-            }
-            if (instance.measurements.plaqueSurface) {
-              prompt += ` | Superfície da placa: ${instance.measurements.plaqueSurface}`;
-            }
-            if (instance.measurements.vertebralFlowPattern) {
-              prompt += ` | Padrão de fluxo vertebral: ${instance.measurements.vertebralFlowPattern}`;
-            }
-            if (instance.measurements.subclavianSteal) {
-              prompt += ` | Roubo da subclávia: ${instance.measurements.subclavianSteal}`;
-            }
-
-            prompt += '\n';
-          });
-        }
-        prompt += '\n';
-      });
+    try {
+      const prompt = buildReportPrompt(data);
+      await this.streamFromBackend(prompt, callbacks);
+    } catch (error) {
+      console.error('Erro ao gerar relatório completo:', error);
+      callbacks.onError?.(error as Error);
     }
-
-    // Adicionar órgãos normais
-    if (data.normalOrgans.length > 0) {
-      prompt += '\nÓRGÃOS NORMAIS:\n';
-      data.normalOrgans.forEach(organId => {
-        const organName = data.organsCatalog?.find(o => o.id === organId)?.name || organId;
-        prompt += `- ${organName}\n`;
-      });
-    }
-
-    return prompt;
   }
 
   /**
@@ -243,10 +168,11 @@ export class OpenAIStreamService {
     callbacks: StreamCallbacks
   ): Promise<void> {
     const requestUrl = createRequestUrl();
+    const selectedModel = getSelectedOpenAIModel();
 
-    // Construir payload no formato esperado pelo backend
+    // Construir payload no formato esperado pelo backend Python
     const payload = {
-      model: OPENAI_MODEL,
+      model: selectedModel,
       messages: [
         {
           role: 'system',
@@ -258,11 +184,13 @@ export class OpenAIStreamService {
         }
       ],
       temperature: 0.7,
-      max_tokens: 2000,
+      max_completion_tokens: 2000,
       stream: true
     };
 
-    console.log('[OpenAI] Enviando request para backend:', requestUrl);
+    console.log('[OpenAIStreamService] Usando modelo:', selectedModel);
+    console.log('[OpenAIStreamService] Request URL:', requestUrl);
+    console.log('[OpenAIStreamService] Payload:', JSON.stringify(payload, null, 2));
 
     const response = await fetch(requestUrl, {
       method: 'POST',
@@ -270,12 +198,42 @@ export class OpenAIStreamService {
       body: JSON.stringify(payload)
     });
 
+    console.log('[OpenAIStreamService] Response status:', response.status);
+    console.log('[OpenAIStreamService] Response OK?:', response.ok);
+    console.log('[OpenAIStreamService] Response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('[OpenAIStreamService] Response body exists?:', !!response.body);
+    console.log('[OpenAIStreamService] Response bodyUsed?:', response.bodyUsed);
+
     if (!response.ok) {
       const message = await response.text().catch(() => '');
+      console.error('[OpenAIStreamService] Error response:', message);
       throw new Error(`OpenAI backend error: ${response.status} ${message}`);
     }
 
+    // Clone response pra debug sem consumir o body
+    const clonedResponse = response.clone();
+    
+    // Tentar ler os primeiros bytes pra debug
+    try {
+      const reader = clonedResponse.body?.getReader();
+      if (reader) {
+        const { value, done } = await reader.read();
+        if (!done && value) {
+          const decoder = new TextDecoder();
+          const preview = decoder.decode(value.slice(0, 200));
+          console.log('[OpenAIStreamService] Preview dos primeiros bytes:', preview);
+        } else {
+          console.log('[OpenAIStreamService] Stream vazio ou já concluído');
+        }
+        reader.releaseLock();
+      }
+    } catch (e) {
+      console.error('[OpenAIStreamService] Erro ao ler preview:', e);
+    }
+
     const fullText = await readStream(response, callbacks);
+    console.log('[OpenAIStreamService] fullText recebido, length:', fullText.length);
+    console.log('[OpenAIStreamService] fullText preview:', fullText.substring(0, 200));
     callbacks.onComplete?.(fullText);
   }
 
@@ -285,15 +243,16 @@ export class OpenAIStreamService {
   async testConnection(): Promise<boolean> {
     try {
       const url = createRequestUrl();
+      const selectedModel = getSelectedOpenAIModel();
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: OPENAI_MODEL,
+          model: selectedModel,
           messages: [
             { role: 'user', content: 'Teste de conexão. Responda apenas: OK' }
           ],
-          max_tokens: 10,
+          max_completion_tokens: 10,
           stream: false
         })
       });
@@ -324,28 +283,42 @@ async function readStream(
   response: Response,
   callbacks: StreamCallbacks
 ): Promise<string> {
-  const reader = response.body?.getReader();
-  if (!reader) {
-    throw new Error('Response body is not readable');
+  console.log('[OpenAI readStream] Iniciando leitura do stream');
+  console.log('[OpenAI readStream] Content-Type:', response.headers.get('content-type'));
+  
+  if (!response.body) {
+    console.log('[OpenAI readStream] Sem body, lendo como texto');
+    const text = await response.text();
+    console.log('[OpenAI readStream] Texto recebido:', text.substring(0, 100));
+    return text.trim();
   }
 
+  const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let fullText = '';
+  let chunkCount = 0;
 
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-      fullText += chunk;
-      callbacks.onChunk?.(chunk);
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      console.log('[OpenAI readStream] Stream concluído. Total chunks:', chunkCount, 'Total chars:', fullText.length);
+      break;
     }
-  } finally {
-    reader.releaseLock();
+    if (value) {
+      chunkCount++;
+      const chunk = decoder.decode(value, { stream: true });
+      console.log(`[OpenAI readStream] Chunk ${chunkCount}:`, chunk.substring(0, 50));
+      if (chunk) {
+        fullText += chunk;
+        // Passa o texto ACUMULADO, não apenas o chunk
+        callbacks.onChunk?.(fullText);
+      }
+    }
   }
 
-  return fullText;
+  fullText += decoder.decode();
+  console.log('[OpenAI readStream] Texto final length:', fullText.length);
+  return fullText.trim();
 }
 
 // Check API endpoint on load (development only)

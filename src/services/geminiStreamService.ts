@@ -1,5 +1,6 @@
 // Gemini AI Streaming Integration via backend proxy
 import type { SelectedFinding } from '@/types/report';
+import { buildReportPrompt } from './promptBuilder';
 
 // Types for streaming
 export interface StreamCallbacks {
@@ -11,7 +12,7 @@ export interface StreamCallbacks {
 // Use proxy local para evitar CORS
 const GEMINI_API_ENDPOINT =
   import.meta.env.VITE_GEMINI_API_URL || '/api/gemini';
-const GEMINI_MODEL =
+export const GEMINI_MODEL =
   import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-pro';
 
 // System instruction for the AI (incorporated into prompt text)
@@ -125,136 +126,12 @@ export class GeminiStreamService {
     callbacks: StreamCallbacks
   ): Promise<void> {
     try {
-      const prompt = this.buildPrompt(data);
+      const prompt = appendSystemInstruction(buildReportPrompt(data));
       await this.streamFromBackend(prompt, callbacks);
     } catch (error) {
       console.error('Erro no streaming Gemini:', error);
       callbacks.onError?.(error as Error);
     }
-  }
-
-  /**
-   * Constrói o prompt baseado nos achados
-   */
-  private buildPrompt(data: {
-    examType?: string;
-    selectedFindings: SelectedFinding[];
-    normalOrgans: string[];
-    organsCatalog?: any[];
-  }): string {
-    let prompt = `
-     ${data.examType || 'Ultrassonografia Abdominal'} com  seguintes achados:\n\n`;
-
-    // Adicionar achados patológicos
-    if (data.selectedFindings.length > 0) {
-      prompt += 'ACHADOS PATOLÓGICOS:\n';
-
-      data.selectedFindings.forEach(finding => {
-        const organName = data.organsCatalog?.find(o => o.id === finding.organId)?.name || finding.organId;
-        prompt += `\n**${organName}:**\n`;
-        prompt += `- ${finding.finding.name}`;
-
-        if (finding.severity) {
-          prompt += ` (${finding.severity})`;
-        }
-
-        if (finding.instances && finding.instances.length > 0) {
-          prompt += '\n  Detalhes:\n';
-          finding.instances.forEach((instance, idx) => {
-            prompt += `  ${idx + 1}. `;
-
-            // Campos padrão
-            if (instance.measurements.size) {
-              prompt += `Tamanho: ${instance.measurements.size}`;
-            }
-            if (instance.measurements.location) {
-              prompt += ` | Localização: ${instance.measurements.location}`;
-            }
-            if (instance.measurements.segment) {
-              prompt += ` | Segmento: ${instance.measurements.segment}`;
-            }
-
-            // Campos específicos de Doppler de Carótidas
-            if (instance.measurements.vps) {
-              prompt += ` | VPS: ${instance.measurements.vps} cm/s`;
-            }
-            if (instance.measurements.vdf) {
-              prompt += ` | VDF: ${instance.measurements.vdf} cm/s`;
-            }
-            if (instance.measurements.ratioICA_CCA) {
-              prompt += ` | Razão ICA/CCA: ${instance.measurements.ratioICA_CCA}`;
-            }
-            if (!instance.measurements.ratioICA_CCA && instance.measurements.ratio) {
-              prompt += ` | Razão ICA/CCA: ${instance.measurements.ratio}`;
-            }
-            if (instance.measurements.ratioICA_ICA) {
-              prompt += ` | Razão ICA/ICA contralateral: ${instance.measurements.ratioICA_ICA}`;
-            }
-            if (instance.measurements.nascetGrade) {
-              prompt += ` | Grau NASCET: ${instance.measurements.nascetGrade}`;
-            }
-            if (!instance.measurements.nascetGrade && instance.measurements.nascet) {
-              prompt += ` | Grau NASCET: ${instance.measurements.nascet}`;
-            }
-            if (instance.measurements.emi) {
-              prompt += ` | EMI: ${instance.measurements.emi} mm`;
-            }
-            if (!instance.measurements.emi && instance.measurements.emiValue) {
-              prompt += ` | EMI: ${instance.measurements.emiValue} mm`;
-            }
-            if (instance.measurements.emiClassification) {
-              prompt += ` | Classificação EMI: ${instance.measurements.emiClassification}`;
-            }
-            if (instance.measurements.plaqueEchogenicity) {
-              prompt += ` | Ecogenicidade da placa: ${instance.measurements.plaqueEchogenicity}`;
-            }
-            if (instance.measurements.plaqueComposition) {
-              prompt += ` | Composição da placa: ${instance.measurements.plaqueComposition}`;
-            }
-            if (instance.measurements.plaqueSurface) {
-              prompt += ` | Superfície da placa: ${instance.measurements.plaqueSurface}`;
-            }
-            if (instance.measurements.plaqueRisk) {
-              prompt += ` | Risco da placa: ${instance.measurements.plaqueRisk}`;
-            }
-            if (!instance.measurements.plaqueRisk && instance.measurements.risk) {
-              prompt += ` | Risco da placa: ${instance.measurements.risk}`;
-            }
-            if (instance.measurements.vertebralFlowPattern) {
-              prompt += ` | Padrão de fluxo vertebral: ${instance.measurements.vertebralFlowPattern}`;
-            }
-            if (!instance.measurements.vertebralFlowPattern && instance.measurements.flowPattern) {
-              prompt += ` | Padrão de fluxo vertebral: ${instance.measurements.flowPattern}`;
-            }
-            if (instance.measurements.vertebralVelocity) {
-              prompt += ` | Velocidade vertebral: ${instance.measurements.vertebralVelocity}`;
-            }
-            if (instance.measurements.vertebralIR) {
-              prompt += ` | IR vertebral: ${instance.measurements.vertebralIR}`;
-            }
-            if (instance.measurements.subclavianSteal) {
-              prompt += ` | Roubo da subclávia: ${instance.measurements.subclavianSteal}`;
-            }
-
-            prompt += '\n';
-          });
-        }
-        prompt += '\n';
-      });
-    }
-
-    // Adicionar órgãos normais
-    if (data.normalOrgans.length > 0) {
-      prompt += '\nÓRGÃOS NORMAIS:\n';
-      data.normalOrgans.forEach(organId => {
-        const organName = data.organsCatalog?.find(o => o.id === organId)?.name || organId;
-        prompt += `- ${organName}\n`;
-      });
-    }
-
-
-
-    return prompt;
   }
 
   /**
@@ -285,10 +162,11 @@ export class GeminiStreamService {
         prompt += `DATA: ${data.examDate}\n`;
       }
 
-      prompt += '\n' + this.buildPrompt(data);
+      prompt += '\n' + buildReportPrompt(data);
       prompt += '\nGere um laudo completo e detalhado, incluindo técnica do exame, todos os achados e impressão diagnóstica.';
 
-      await this.streamFromBackend(prompt, callbacks);
+      const enrichedPrompt = appendSystemInstruction(prompt);
+      await this.streamFromBackend(enrichedPrompt, callbacks);
     } catch (error) {
       console.error('Erro ao gerar relatório completo:', error);
       callbacks.onError?.(error as Error);
