@@ -14,6 +14,7 @@ import { ArrowLeft } from '@phosphor-icons/react';
 // Imports originais
 import Sidebar from '@/components/original/Sidebar';
 import ReportCanvas from '@/components/original/ReportCanvas';
+import type { AIStatus } from '@/components/original/ReportCanvas';
 import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
 import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
 import BreastUltrasoundFindingDetails from '@/components/original/BreastUltrasoundFindingDetails';
@@ -43,7 +44,7 @@ function BreastUltrasoundExamModern() {
   const [currentModelId, setCurrentModelId] = useState<string>(GEMINI_MODEL);
   const [autoGenerateAI, setAutoGenerateAI] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [aiStatus, setAiStatus] = useState<AIStatus>('idle');
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
   const [aiGenerationStats, setAiGenerationStats] = useState<AIGenerationStats | null>(null);
   const statusUnsubscribeRef = useRef<(() => void) | null>(null);
@@ -380,11 +381,11 @@ function BreastUltrasoundExamModern() {
 
     // Métricas
     const startedAt = Date.now();
-    const promptText = buildReportPrompt({
+    const promptText = buildSpecializedPrompt({
       examType: 'Ultrassonografia Mamária (BI-RADS)',
       selectedFindings,
       normalOrgans,
-      organsCatalog: mammographyOrgans
+      organsCatalog: breastUltrasoundOrgans
     });
     const promptTokenEstimate = estimateTokensFromText(promptText);
     let chunkCount = 0;

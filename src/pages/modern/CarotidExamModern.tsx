@@ -17,15 +17,17 @@ import CarotidFindingDetails from '@/components/original/CarotidFindingDetails';
 
 // Dados & Tipos
 import { carotidOrgans } from '@/data/carotidOrgans';
-import { SelectedFinding, ReportData, FindingInstance, type AIProvider } from '@/types/report';
+import { SelectedFinding, ReportData, FindingInstance, type AIProvider, type AIGenerationStats } from '@/types/report';
 import type { AIStatus } from '@/components/original/ReportCanvas';
 import type { Finding } from '@/data/organs';
 
 // Serviços de IA
 import { generateReport } from '@/services/reportGenerator';
-import { geminiStreamService } from '@/services/geminiStreamService';
-import { openaiStreamService } from '@/services/openaiStreamService';
+import { geminiStreamService, GEMINI_MODEL } from '@/services/geminiStreamService';
+import { openaiStreamService, OPENAI_MODEL } from '@/services/openaiStreamService';
 import { unifiedAIService } from '@/services/unifiedAIService';
+import { buildSpecializedPrompt } from '@/services/promptBuilder';
+import { estimateCostUsd, estimateTokensFromText } from '@/utils/aiMetrics';
 
 // Layout moderno compartilhado
 import '@/styles/modern-design.css';
@@ -46,13 +48,14 @@ function CarotidExamModern() {
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiImpression, setAiImpression] = useState('');
   const [currentAiModel, setCurrentAiModel] = useState<'gemini' | 'openai'>('gemini');
+  const [currentModelId, setCurrentModelId] = useState<string>(GEMINI_MODEL);
   const [autoGenerateAI, setAutoGenerateAI] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiStatus, setAiStatus] = useState<AIStatus>('idle');
+  const [aiGenerationStats, setAiGenerationStats] = useState<AIGenerationStats | null>(null);
 
   // Painel flutuante
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout>();
   const statusUnsubscribeRef = useRef<(() => void) | null>(null);
 
   const handleOrganSelect = (organId: string) => {
@@ -110,7 +113,7 @@ function CarotidExamModern() {
 
   const handleGenerateReport = async (
     data: ReportData,
-    options: { model: AIProvider }
+    options: { model: AIProvider; specificModel?: string }
   ) => {
     setIsGenerating(true);
     try {
@@ -118,13 +121,33 @@ function CarotidExamModern() {
       setCurrentAiModel(provider as 'gemini' | 'openai');
       setGeneratedReport('');
 
+      // Persistir o modelo específico selecionado
+      if (options?.specificModel) {
+        try { sessionStorage.setItem('selectedAIModel', options.specificModel); } catch {}
+        setCurrentModelId(options.specificModel);
+      } else {
+        setCurrentModelId(provider === 'openai' ? OPENAI_MODEL : GEMINI_MODEL);
+      }
+
+      // Métricas
+      const startedAt = Date.now();
+      const promptText = buildSpecializedPrompt({
+        examType: 'Ecodoppler de Carótidas e Vertebrais',
+        selectedFindings: data.selectedFindings,
+        normalOrgans: data.normalOrgans,
+        organsCatalog: carotidOrgans
+      });
+      const promptTokenEstimate = estimateTokensFromText(promptText);
+      let chunkCount = 0;
+      let outputChars = 0;
+
       if (provider === 'openai') {
         if (!openaiStreamService.isConfigured()) {
           toast.error('OpenAI API não está configurada.');
           setIsGenerating(false);
           return;
         }
-        let fullReport = '';
+
         await openaiStreamService.generateFullReportStream(
           {
             examType: 'Ecodoppler de Carótidas e Vertebrais',
@@ -133,17 +156,49 @@ function CarotidExamModern() {
             organsCatalog: carotidOrgans
           },
           {
-            onChunk: (text) => {
-              fullReport += text;
-              setGeneratedReport(fullReport);
+            onChunk: (accumulated) => {
+              setGeneratedReport(accumulated);
+              chunkCount += 1;
+              outputChars = accumulated.length;
             },
             onComplete: (finalText) => {
               setGeneratedReport(finalText);
               toast.success('Relatório gerado com sucesso!');
+              const finishedAt = Date.now();
+              const completionTokens = estimateTokensFromText(finalText);
+              setAiGenerationStats({
+                provider: 'openai',
+                model: OPENAI_MODEL,
+                status: 'completed',
+                promptTokens: promptTokenEstimate,
+                completionTokens,
+                totalTokens: promptTokenEstimate + completionTokens,
+                estimatedCostUsd: estimateCostUsd('openai', promptTokenEstimate, completionTokens),
+                startedAt,
+                finishedAt,
+                durationMs: finishedAt - startedAt,
+                chunkCount,
+                inputChars: promptText.length,
+                outputChars
+              });
             },
             onError: (error) => {
               console.error('Erro no OpenAI:', error);
               toast.error('Erro ao gerar relatório.');
+              const finishedAt = Date.now();
+              setAiGenerationStats({
+                provider: 'openai',
+                model: OPENAI_MODEL,
+                status: 'error',
+                promptTokens: promptTokenEstimate,
+                startedAt,
+                finishedAt,
+                durationMs: finishedAt - startedAt,
+                chunkCount,
+                inputChars: promptText.length,
+                outputChars,
+                errorMessage: error?.message || 'Erro desconhecido'
+              });
             }
           }
         );
@@ -155,6 +210,23 @@ function CarotidExamModern() {
           });
           setGeneratedReport(report);
           toast.success('Relatório gerado!');
+          const finishedAt = Date.now();
+          const completionTokens = estimateTokensFromText(report);
+          setAiGenerationStats({
+            provider: 'gemini',
+            model: GEMINI_MODEL,
+            status: 'completed',
+            promptTokens: promptTokenEstimate,
+            completionTokens,
+            totalTokens: promptTokenEstimate + completionTokens,
+            estimatedCostUsd: estimateCostUsd('gemini', promptTokenEstimate, completionTokens),
+            startedAt,
+            finishedAt,
+            durationMs: finishedAt - startedAt,
+            chunkCount,
+            inputChars: promptText.length,
+            outputChars: report.length
+          });
         } else {
           await geminiStreamService.generateFullReportStream(
             {
@@ -166,10 +238,29 @@ function CarotidExamModern() {
             {
               onChunk: (accumulatedText) => {
                 setGeneratedReport(accumulatedText);
+                chunkCount += 1;
+                outputChars = accumulatedText.length;
               },
               onComplete: (finalText) => {
                 setGeneratedReport(finalText);
                 toast.success('Relatório gerado!');
+                const finishedAt = Date.now();
+                const completionTokens = estimateTokensFromText(finalText);
+                setAiGenerationStats({
+                  provider: 'gemini',
+                  model: GEMINI_MODEL,
+                  status: 'completed',
+                  promptTokens: promptTokenEstimate,
+                  completionTokens,
+                  totalTokens: promptTokenEstimate + completionTokens,
+                  estimatedCostUsd: estimateCostUsd('gemini', promptTokenEstimate, completionTokens),
+                  startedAt,
+                  finishedAt,
+                  durationMs: finishedAt - startedAt,
+                  chunkCount,
+                  inputChars: promptText.length,
+                  outputChars
+                });
               },
               onError: async (error) => {
                 console.error('Erro no Gemini:', error);
@@ -184,9 +275,41 @@ function CarotidExamModern() {
                   );
                   setGeneratedReport(fallback);
                   toast.error('Falha no endpoint de IA. Exibindo laudo básico.');
+                  const finishedAt = Date.now();
+                  const completionTokens = estimateTokensFromText(fallback);
+                  setAiGenerationStats({
+                    provider: 'gemini',
+                    model: GEMINI_MODEL,
+                    status: 'error',
+                    promptTokens: promptTokenEstimate,
+                    completionTokens,
+                    totalTokens: promptTokenEstimate + completionTokens,
+                    estimatedCostUsd: estimateCostUsd('gemini', promptTokenEstimate, completionTokens),
+                    startedAt,
+                    finishedAt,
+                    durationMs: finishedAt - startedAt,
+                    chunkCount,
+                    inputChars: promptText.length,
+                    outputChars: fallback.length,
+                    errorMessage: error?.message || 'Erro desconhecido'
+                  });
                 } catch (fallbackErr) {
                   console.error('Falha no fallback:', fallbackErr);
                   toast.error('Erro ao gerar relatório.');
+                  const finishedAt = Date.now();
+                  setAiGenerationStats({
+                    provider: 'gemini',
+                    model: GEMINI_MODEL,
+                    status: 'error',
+                    promptTokens: promptTokenEstimate,
+                    startedAt,
+                    finishedAt,
+                    durationMs: finishedAt - startedAt,
+                    chunkCount,
+                    inputChars: promptText.length,
+                    outputChars,
+                    errorMessage: String(fallbackErr)
+                  });
                 }
               }
             }
@@ -258,7 +381,16 @@ function CarotidExamModern() {
         generateAIImpression();
       }
     }, 2000);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (statusUnsubscribeRef.current && autoGenerateAI) {
+        statusUnsubscribeRef.current();
+        statusUnsubscribeRef.current = null;
+      }
+      if (autoGenerateAI) {
+        unifiedAIService.cancelClinicalImpression();
+      }
+    };
   }, [selectedFindings, normalOrgans, currentAiModel, autoGenerateAI, generateAIImpression]);
 
   useEffect(() => {
@@ -317,6 +449,7 @@ function CarotidExamModern() {
               aiStatus={aiStatus}
               organsList={carotidOrgans}
               currentAiModel={currentAiModel}
+              currentModelId={currentModelId}
               onGenerateAI={generateAIImpression}
               autoGenerateAI={autoGenerateAI}
               onToggleAutoGenerate={setAutoGenerateAI}
