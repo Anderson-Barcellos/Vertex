@@ -226,7 +226,7 @@ vertex-v2/
 
 | Serviço | Porta | Protocolo | Acesso |
 |---------|-------|-----------|---------|
-| Vite Dev | 8200 | HTTP | http://localhost:8200 |
+| Vite Dev | 8201 | HTTP | http://localhost:8201 |
 | Backend IA | 8177 | HTTPS | https://ultrassom.ai:8177 |
 | Gemini API | 8177 | HTTPS | /geminiCall |
 | OpenAI API | 8177 | HTTPS | /openaiCall |
@@ -234,7 +234,7 @@ vertex-v2/
 ### Configuração Vite (vite.config.ts)
 ```typescript
 server: {
-  port: 8200,
+  port: 8201,
   host: '0.0.0.0',
   strictPort: true,
   proxy: {
@@ -386,7 +386,7 @@ ps aux | grep vite
 - **Gray-Weale** - Classificação de placas ateroscleróticas
 
 ### Links Úteis
-- **Produção:** https://ultrassom.ai:8200
+- **Produção:** https://ultrassom.ai:8201
 - **GitHub:** https://github.com/Anderson-Barcellos/Vertex
 - **Radix UI:** https://www.radix-ui.com/
 - **Tailwind CSS:** https://tailwindcss.com/

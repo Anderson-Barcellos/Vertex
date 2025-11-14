@@ -17,7 +17,7 @@ export default defineConfig({
     }
   },
   server: {
-    port: 8200, // Porta alternativa (8199 estava em uso)
+    port: 8201, // Porta alternativa (8199 estava em uso)
     host: '0.0.0.0',
     strictPort: true,
     proxy: {

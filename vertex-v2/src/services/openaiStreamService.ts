@@ -130,8 +130,13 @@ export class OpenAIStreamService {
     },
     callbacks: StreamCallbacks
   ): Promise<void> {
-    const prompt = buildReportPrompt(data);
-    await this.streamFromBackend(prompt, callbacks);
+    try {
+      const prompt = buildReportPrompt(data);
+      await this.streamFromBackend(prompt, callbacks);
+    } catch (error) {
+      console.error('Erro no streaming OpenAI:', error);
+      callbacks.onError?.(error as Error);
+    }
   }
 
   /**
@@ -146,8 +151,13 @@ export class OpenAIStreamService {
     },
     callbacks: StreamCallbacks
   ): Promise<void> {
-    const prompt = buildReportPrompt(data);
-    await this.streamFromBackend(prompt, callbacks);
+    try {
+      const prompt = buildReportPrompt(data);
+      await this.streamFromBackend(prompt, callbacks);
+    } catch (error) {
+      console.error('Erro ao gerar relatório completo:', error);
+      callbacks.onError?.(error as Error);
+    }
   }
 
   /**
@@ -160,7 +170,7 @@ export class OpenAIStreamService {
     const requestUrl = createRequestUrl();
     const selectedModel = getSelectedOpenAIModel();
 
-    // Construir payload no formato esperado pelo backend
+    // Construir payload no formato esperado pelo backend Python
     const payload = {
       model: selectedModel,
       messages: [
@@ -178,7 +188,9 @@ export class OpenAIStreamService {
       stream: true
     };
 
-    console.log('[OpenAI] Enviando request para backend:', requestUrl);
+    console.log('[OpenAIStreamService] Usando modelo:', selectedModel);
+    console.log('[OpenAIStreamService] Request URL:', requestUrl);
+    console.log('[OpenAIStreamService] Payload:', JSON.stringify(payload, null, 2));
 
     const response = await fetch(requestUrl, {
       method: 'POST',
@@ -186,12 +198,42 @@ export class OpenAIStreamService {
       body: JSON.stringify(payload)
     });
 
+    console.log('[OpenAIStreamService] Response status:', response.status);
+    console.log('[OpenAIStreamService] Response OK?:', response.ok);
+    console.log('[OpenAIStreamService] Response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('[OpenAIStreamService] Response body exists?:', !!response.body);
+    console.log('[OpenAIStreamService] Response bodyUsed?:', response.bodyUsed);
+
     if (!response.ok) {
       const message = await response.text().catch(() => '');
+      console.error('[OpenAIStreamService] Error response:', message);
       throw new Error(`OpenAI backend error: ${response.status} ${message}`);
     }
 
+    // Clone response pra debug sem consumir o body
+    const clonedResponse = response.clone();
+    
+    // Tentar ler os primeiros bytes pra debug
+    try {
+      const reader = clonedResponse.body?.getReader();
+      if (reader) {
+        const { value, done } = await reader.read();
+        if (!done && value) {
+          const decoder = new TextDecoder();
+          const preview = decoder.decode(value.slice(0, 200));
+          console.log('[OpenAIStreamService] Preview dos primeiros bytes:', preview);
+        } else {
+          console.log('[OpenAIStreamService] Stream vazio ou já concluído');
+        }
+        reader.releaseLock();
+      }
+    } catch (e) {
+      console.error('[OpenAIStreamService] Erro ao ler preview:', e);
+    }
+
     const fullText = await readStream(response, callbacks);
+    console.log('[OpenAIStreamService] fullText recebido, length:', fullText.length);
+    console.log('[OpenAIStreamService] fullText preview:', fullText.substring(0, 200));
     callbacks.onComplete?.(fullText);
   }
 
@@ -241,125 +283,42 @@ async function readStream(
   response: Response,
   callbacks: StreamCallbacks
 ): Promise<string> {
-  const reader = response.body?.getReader();
-  if (!reader) {
-    throw new Error('Response body is not readable');
+  console.log('[OpenAI readStream] Iniciando leitura do stream');
+  console.log('[OpenAI readStream] Content-Type:', response.headers.get('content-type'));
+  
+  if (!response.body) {
+    console.log('[OpenAI readStream] Sem body, lendo como texto');
+    const text = await response.text();
+    console.log('[OpenAI readStream] Texto recebido:', text.substring(0, 100));
+    return text.trim();
   }
 
+  const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  const contentType = (response.headers.get('content-type') || '').toLowerCase();
-  let buffer = '';
   let fullText = '';
+  let chunkCount = 0;
 
-  // Helper: extrai texto de diferentes formatos de payload
-  const extractText = (obj: any): string => {
-    // OpenAI Chat Completions streaming (SSE): choices[].delta.content
-    if (obj?.choices && Array.isArray(obj.choices)) {
-      return obj.choices
-        .map((c: any) => c?.delta?.content || '')
-        .join('');
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      console.log('[OpenAI readStream] Stream concluído. Total chunks:', chunkCount, 'Total chars:', fullText.length);
+      break;
     }
-    // OpenAI Responses API streaming event
-    // e.g. {"type":"response.output_text.delta","delta":"..."}
-    if (obj?.type === 'response.output_text.delta' && typeof obj?.delta === 'string') {
-      return obj.delta;
-    }
-    // Alguns backends custom podem usar { text: "..." }
-    if (typeof obj?.text === 'string') return obj.text;
-    if (typeof obj?.output_text === 'string') return obj.output_text;
-    if (typeof obj?.content === 'string') return obj.content;
-    return '';
-  };
-
-  const flushSSEBlocks = (blocks: string[]) => {
-    for (const block of blocks) {
-      const lines = block.split(/\r?\n/);
-      for (const line of lines) {
-        if (!line.startsWith('data:')) continue;
-        const data = line.slice(5).trim();
-        if (!data || data === '[DONE]') continue;
-        try {
-          const json = JSON.parse(data);
-          const text = extractText(json);
-          if (text) {
-            fullText += text;
-            // Envia conteúdo ACUMULADO (compatível com Gemini)
-            callbacks.onChunk?.(fullText);
-          }
-        } catch {
-          // Se não for JSON válido, trata como texto direto
-          fullText += data;
-          callbacks.onChunk?.(fullText);
-        }
-      }
-    }
-  };
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    if (value) {
+      chunkCount++;
       const chunk = decoder.decode(value, { stream: true });
-
-      // text/event-stream ou ndjson/jsonlines
-      if (contentType.includes('text/event-stream')) {
-        buffer += chunk;
-        const parts = buffer.split(/\n\n/); // SSE eventos separados por linha em branco
-        buffer = parts.pop() || '';
-        flushSSEBlocks(parts);
-        continue;
-      }
-
-      if (contentType.includes('ndjson') || contentType.includes('jsonlines')) {
-        buffer += chunk;
-        const lines = buffer.split(/\r?\n/);
-        buffer = lines.pop() || '';
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const json = JSON.parse(line);
-            const text = extractText(json);
-            if (text) {
-              fullText += text;
-              callbacks.onChunk?.(fullText);
-            }
-          } catch {
-            // linha não JSON — repassa bruto
-            fullText += line;
-            callbacks.onChunk?.(fullText);
-          }
-        }
-        continue;
-      }
-
-      // Fallback: texto plano (sem envelope)
-      fullText += chunk;
-      callbacks.onChunk?.(fullText);
-    }
-  } finally {
-    reader.releaseLock();
-  }
-
-  // Processa resquício de buffer (SSE/NDJSON)
-  if (buffer && (contentType.includes('text/event-stream') || contentType.includes('ndjson') || contentType.includes('jsonlines'))) {
-    if (contentType.includes('text/event-stream')) {
-      flushSSEBlocks([buffer]);
-    } else {
-      try {
-        const json = JSON.parse(buffer);
-        const text = extractText(json);
-        if (text) {
-          fullText += text;
-          callbacks.onChunk?.(fullText);
-        }
-      } catch {
-        fullText += buffer;
+      console.log(`[OpenAI readStream] Chunk ${chunkCount}:`, chunk.substring(0, 50));
+      if (chunk) {
+        fullText += chunk;
+        // Passa o texto ACUMULADO, não apenas o chunk
         callbacks.onChunk?.(fullText);
       }
     }
   }
 
-  return fullText;
+  fullText += decoder.decode();
+  console.log('[OpenAI readStream] Texto final length:', fullText.length);
+  return fullText.trim();
 }
 
 // Check API endpoint on load (development only)

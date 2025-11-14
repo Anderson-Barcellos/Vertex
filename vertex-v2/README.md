@@ -2,7 +2,8 @@
 
 **Versão:** 2.0.0
 **Data:** Novembro 2025
-**Porta:** 8200
+**Porta:** 8201
+**Reverse Proxy:** vertex.ultrassom.ai
 **Status:** ✅ Em Produção
 
 ---

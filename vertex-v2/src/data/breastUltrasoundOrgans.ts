@@ -1,9 +1,9 @@
 /**
- * Vertex V2 - Mammography Organs Data
+ * Vertex V2 - Breast Ultrasound Organs Data
  * Estrutura completa para Ultrassonografia Mamária com BI-RADS 2013/2023
  *
  * @author Vertex Team
- * @date 2025-11-11
+ * @date 2025-11-13
  */
 
 import { Organ, OrganCategory, Finding } from './organs';
@@ -196,6 +196,65 @@ export const LYMPH_NODE_HILUS = [
   'Ausente (muito suspeito)'
 ];
 
+/**
+ * Clock position - Posição horária na mama
+ */
+export const CLOCK_POSITION = [
+  { value: '1h', label: '1 hora' },
+  { value: '2h', label: '2 horas' },
+  { value: '3h', label: '3 horas (lateral)' },
+  { value: '4h', label: '4 horas' },
+  { value: '5h', label: '5 horas' },
+  { value: '6h', label: '6 horas (inferior)' },
+  { value: '7h', label: '7 horas' },
+  { value: '8h', label: '8 horas' },
+  { value: '9h', label: '9 horas (lateral)' },
+  { value: '10h', label: '10 horas' },
+  { value: '11h', label: '11 horas' },
+  { value: '12h', label: '12 horas (superior)' }
+];
+
+/**
+ * Scores de elastografia - Classificação de Tsukuba
+ */
+export const ELASTOGRAPHY_SCORES = [
+  { value: '1', label: 'Score 1 - Totalmente elástico (verde)', risk: 'low' },
+  { value: '2', label: 'Score 2 - Parcialmente elástico (verde/azul)', risk: 'low' },
+  { value: '3', label: 'Score 3 - Parcialmente rígido (azul/verde)', risk: 'medium' },
+  { value: '4', label: 'Score 4 - Totalmente rígido (azul)', risk: 'high' },
+  { value: '5', label: 'Score 5 - Rigidez estendida (azul+)', risk: 'high' }
+];
+
+/**
+ * Strain ratio - Índice de rigidez relativa
+ */
+export const STRAIN_RATIO_CATEGORIES = [
+  { value: 'normal', label: 'Normal (<2.0)', risk: 'low' },
+  { value: 'borderline', label: 'Limítrofe (2.0-3.0)', risk: 'medium' },
+  { value: 'suspicious', label: 'Suspeito (3.0-4.0)', risk: 'high' },
+  { value: 'highly-suspicious', label: 'Altamente suspeito (>4.0)', risk: 'high' }
+];
+
+/**
+ * Mobilidade das lesões
+ */
+export const LESION_MOBILITY = [
+  'Móvel (desliza livremente)',
+  'Parcialmente móvel',
+  'Fixa (aderida aos tecidos)'
+];
+
+/**
+ * Pattern vascular - Doppler
+ */
+export const VASCULAR_PATTERN = [
+  'Ausente',
+  'Periférico (rim vascular)',
+  'Central (nutrício)',
+  'Misto (central + periférico)',
+  'Difuso/caótico (suspeito)'
+];
+
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
@@ -234,6 +293,190 @@ export const getBiradsColor = (category: string): string => {
 export const getBiradsRiskLevel = (category: string): 'low' | 'medium' | 'high' | 'critical' | 'incomplete' => {
   const birads = BIRADS_CATEGORIES.find(c => category.includes(c.value));
   return (birads?.risk as any) || 'low';
+};
+
+/**
+ * Calculadora BI-RADS Inteligente
+ * Sugere categoria baseada nas características ultrassonográficas
+ */
+export const calculateBiradsCategory = (characteristics: {
+  shape?: string;
+  margins?: string;
+  echogenicity?: string;
+  posteriorFeatures?: string;
+  orientation?: string;
+  vascularization?: string;
+  elastographyScore?: string;
+  strainRatio?: string;
+  isComplex?: boolean;
+  hasCalcifications?: boolean;
+}): { 
+  suggestedCategory: string; 
+  confidence: 'high' | 'medium' | 'low';
+  reasoning: string[];
+  alerts: string[];
+} => {
+  const {
+    shape,
+    margins,
+    echogenicity,
+    posteriorFeatures,
+    orientation,
+    vascularization,
+    elastographyScore,
+    strainRatio,
+    isComplex,
+    hasCalcifications
+  } = characteristics;
+
+  const reasoning: string[] = [];
+  const alerts: string[] = [];
+  let score = 0; // Score de suspeição (0-100)
+
+  // Análise da forma
+  if (shape === 'Irregular') {
+    score += 25;
+    reasoning.push('Forma irregular (suspeita)');
+  } else if (shape === 'Oval' || shape === 'Redondo') {
+    score -= 10;
+    reasoning.push('Forma regular (favorável)');
+  }
+
+  // Análise das margens (mais importante)
+  if (margins === 'Espiculadas') {
+    score += 40;
+    reasoning.push('Margens espiculadas (altamente suspeitas)');
+    alerts.push('⚠️ Margens espiculadas sugerem malignidade');
+  } else if (margins === 'Anguladas' || margins === 'Microlobuladas') {
+    score += 30;
+    reasoning.push('Margens suspeitas');
+  } else if (margins === 'Indistintas') {
+    score += 15;
+    reasoning.push('Margens indistintas');
+  } else if (margins === 'Circunscritas') {
+    score -= 15;
+    reasoning.push('Margens circunscritas (favorável)');
+  }
+
+  // Análise da ecogenicidade
+  if (echogenicity === 'Hipoecóica') {
+    score += 10;
+    reasoning.push('Lesão hipoecóica');
+  } else if (echogenicity === 'Hiperecóica') {
+    score -= 20;
+    reasoning.push('Lesão hiperecóica (possivelmente gordurosa)');
+  }
+
+  // Características posteriores
+  if (posteriorFeatures === 'Sombra acústica posterior') {
+    score += 20;
+    reasoning.push('Sombra acústica posterior');
+    alerts.push('⚠️ Sombra acústica pode indicar malignidade');
+  } else if (posteriorFeatures === 'Reforço acústico posterior') {
+    score -= 5;
+    reasoning.push('Reforço acústico posterior');
+  }
+
+  // Orientação
+  if (orientation === 'Não paralela ao plano da pele (vertical)') {
+    score += 15;
+    reasoning.push('Orientação vertical (suspeita)');
+  } else if (orientation === 'Paralela ao plano da pele') {
+    score -= 5;
+    reasoning.push('Orientação paralela (favorável)');
+  }
+
+  // Vascularização
+  if (vascularization === 'Acentuada (>4 pontos ou fluxo penetrante)') {
+    score += 15;
+    reasoning.push('Hipervascularização');
+  } else if (vascularization === 'Difuso/caótico (suspeito)') {
+    score += 25;
+    reasoning.push('Padrão vascular suspeito');
+    alerts.push('⚠️ Padrão vascular caótico é suspeito');
+  }
+
+  // Elastografia
+  if (elastographyScore === 'Score 4 - Totalmente rígido (azul)' || 
+      elastographyScore === 'Score 5 - Rigidez estendida (azul+)') {
+    score += 20;
+    reasoning.push('Elastografia suspeita (score 4-5)');
+    alerts.push('⚠️ Elastografia com rigidez alta');
+  } else if (elastographyScore === 'Score 1 - Totalmente elástico (verde)' ||
+             elastographyScore === 'Score 2 - Parcialmente elástico (verde/azul)') {
+    score -= 10;
+    reasoning.push('Elastografia favorável (score 1-2)');
+  }
+
+  // Strain ratio
+  if (strainRatio) {
+    const ratio = parseFloat(strainRatio);
+    if (!isNaN(ratio)) {
+      if (ratio > 4.0) {
+        score += 25;
+        reasoning.push(`Strain ratio elevado (${ratio})`);
+        alerts.push('⚠️ Strain ratio >4.0 é altamente suspeito');
+      } else if (ratio > 3.0) {
+        score += 15;
+        reasoning.push(`Strain ratio suspeito (${ratio})`);
+      } else if (ratio < 2.0) {
+        score -= 5;
+        reasoning.push(`Strain ratio normal (${ratio})`);
+      }
+    }
+  }
+
+  // Lesões complexas
+  if (isComplex) {
+    score += 10;
+    reasoning.push('Lesão complexa');
+  }
+
+  // Calcificações
+  if (hasCalcifications) {
+    score += 15;
+    reasoning.push('Presença de calcificações');
+  }
+
+  // Determinar categoria baseada no score
+  let suggestedCategory: string;
+  let confidence: 'high' | 'medium' | 'low';
+
+  if (score >= 70) {
+    suggestedCategory = 'BI-RADS 5 - Altamente suspeito (>95% malignidade)';
+    confidence = 'high';
+    alerts.push('🚨 ALTA SUSPEITA - Biópsia indicada');
+  } else if (score >= 50) {
+    suggestedCategory = 'BI-RADS 4C - Suspeita moderada (50-95% malignidade)';
+    confidence = 'high';
+    alerts.push('⚠️ MODERADA SUSPEITA - Biópsia recomendada');
+  } else if (score >= 30) {
+    suggestedCategory = 'BI-RADS 4B - Suspeita intermediária (10-50% malignidade)';
+    confidence = 'medium';
+  } else if (score >= 15) {
+    suggestedCategory = 'BI-RADS 4A - Suspeita baixa (2-10% malignidade)';
+    confidence = 'medium';
+  } else if (score >= 5) {
+    suggestedCategory = 'BI-RADS 3 - Provavelmente benigno (<2% malignidade)';
+    confidence = 'medium';
+  } else {
+    suggestedCategory = 'BI-RADS 2 - Achado benigno';
+    confidence = score < -10 ? 'high' : 'medium';
+  }
+
+  // Ajustar confiança baseado na quantidade de características avaliadas
+  const totalCharacteristics = Object.values(characteristics).filter(v => v !== undefined && v !== '').length;
+  if (totalCharacteristics < 3) {
+    confidence = 'low';
+    alerts.push('ℹ️ Poucos dados para análise precisa');
+  }
+
+  return {
+    suggestedCategory,
+    confidence,
+    reasoning,
+    alerts
+  };
 };
 
 // ============================================================================
@@ -301,6 +544,48 @@ const mamaDireitaCategories: OrganCategory[] = [
             label: 'Distância do Mamilo (cm)',
             type: 'text',
             placeholder: 'Ex: 3.5 cm'
+          },
+          {
+            id: 'clockPosition',
+            label: 'Posição (Horário)',
+            type: 'select',
+            options: CLOCK_POSITION.map(c => c.label)
+          },
+          {
+            id: 'mobility',
+            label: 'Mobilidade',
+            type: 'select',
+            options: LESION_MOBILITY
+          },
+          {
+            id: 'elastographyScore',
+            label: 'Elastografia (Tsukuba)',
+            type: 'select',
+            options: ELASTOGRAPHY_SCORES.map(e => e.label)
+          },
+          {
+            id: 'strainRatio',
+            label: 'Strain Ratio',
+            type: 'text',
+            placeholder: 'Ex: 2.5'
+          },
+          {
+            id: 'vascularPattern',
+            label: 'Padrão Vascular',
+            type: 'select',
+            options: VASCULAR_PATTERN
+          },
+          {
+            id: 'peakVelocity',
+            label: 'Velocidade de Pico (cm/s)',
+            type: 'text',
+            placeholder: 'Ex: 15.2 cm/s'
+          },
+          {
+            id: 'pulsatilityIndex',
+            label: 'Índice de Pulsatilidade',
+            type: 'text',
+            placeholder: 'Ex: 0.8'
           },
           {
             id: 'biradsCategory',
@@ -775,6 +1060,251 @@ const mamaDireitaCategories: OrganCategory[] = [
         ]
       }
     ]
+  },
+  {
+    id: 'lesoes-inflamatorias',
+    name: 'Lesões Inflamatórias e Infecciosas',
+    findings: [
+      {
+        id: 'abscesso',
+        name: 'Abscesso Mamário',
+        description: 'Coleção líquida inflamatória/purulenta',
+        hasDetails: true,
+        hasMeasurement: true,
+        hasLocation: true,
+        extraFields: [
+          {
+            id: 'clockPosition',
+            label: 'Posição (Horário)',
+            type: 'select',
+            options: CLOCK_POSITION.map(c => c.label)
+          },
+          {
+            id: 'internalContent',
+            label: 'Conteúdo',
+            type: 'select',
+            options: ['Anecoico', 'Debris ecogênicos', 'Septações', 'Nível líquido-debris']
+          },
+          {
+            id: 'wallThickness',
+            label: 'Espessura da Parede (mm)',
+            type: 'text',
+            placeholder: 'Ex: 3mm'
+          },
+          {
+            id: 'surroundingEdema',
+            label: 'Edema Circundante',
+            type: 'select',
+            options: ['Presente', 'Ausente', 'Leve', 'Moderado', 'Acentuado']
+          },
+          {
+            id: 'vascularization',
+            label: 'Vascularização Parietal',
+            type: 'select',
+            options: ['Presente', 'Ausente', 'Hipervascularizada']
+          },
+          {
+            id: 'biradsCategory',
+            label: 'Categoria BI-RADS',
+            type: 'select',
+            options: ['BI-RADS 2 - Achado benigno']
+          }
+        ]
+      },
+      {
+        id: 'mastite',
+        name: 'Mastite',
+        description: 'Processo inflamatório do parênquima mamário',
+        hasDetails: true,
+        hasLocation: true,
+        extraFields: [
+          {
+            id: 'pattern',
+            label: 'Padrão',
+            type: 'select',
+            options: ['Focal', 'Segmentar', 'Difuso']
+          },
+          {
+            id: 'echotexture',
+            label: 'Ecotextura',
+            type: 'select',
+            options: ['Hipoecóica heterogênea', 'Hiperecóica (gordurosa)', 'Mista']
+          },
+          {
+            id: 'skinThickening',
+            label: 'Espessamento Cutâneo',
+            type: 'select',
+            options: ['Presente', 'Ausente']
+          },
+          {
+            id: 'type',
+            label: 'Tipo',
+            type: 'select',
+            options: ['Aguda', 'Crônica', 'Granulomatosa']
+          }
+        ]
+      },
+      {
+        id: 'necrose-gordurosa',
+        name: 'Necrose Gordurosa',
+        description: 'Necrose do tecido adiposo mamário',
+        hasDetails: true,
+        hasMeasurement: true,
+        hasLocation: true,
+        extraFields: [
+          {
+            id: 'clockPosition',
+            label: 'Posição (Horário)',
+            type: 'select',
+            options: CLOCK_POSITION.map(c => c.label)
+          },
+          {
+            id: 'appearance',
+            label: 'Aspecto',
+            type: 'select',
+            options: ['Cisto oleoso', 'Massa hipoecóica', 'Calcificação distrófica']
+          },
+          {
+            id: 'history',
+            label: 'História Relevante',
+            type: 'text',
+            placeholder: 'Ex: trauma, cirurgia prévia'
+          },
+          {
+            id: 'biradsCategory',
+            label: 'Categoria BI-RADS',
+            type: 'select',
+            options: ['BI-RADS 2 - Achado benigno', 'BI-RADS 3 - Provavelmente benigno (<2% malignidade)']
+          }
+        ]
+      },
+      {
+        id: 'seroma-hematoma',
+        name: 'Seroma/Hematoma',
+        description: 'Coleção líquida pós-procedimento',
+        hasDetails: true,
+        hasMeasurement: true,
+        hasLocation: true,
+        extraFields: [
+          {
+            id: 'type',
+            label: 'Tipo',
+            type: 'select',
+            options: ['Seroma', 'Hematoma agudo', 'Hematoma organizando']
+          },
+          {
+            id: 'internalContent',
+            label: 'Conteúdo',
+            type: 'select',
+            options: ['Anecoico', 'Ecos finos', 'Níveis líquido-líquido', 'Debris']
+          },
+          {
+            id: 'postProcedure',
+            label: 'Pós-procedimento',
+            type: 'text',
+            placeholder: 'Ex: biópsia, cirurgia (tempo decorrido)'
+          },
+          {
+            id: 'biradsCategory',
+            label: 'Categoria BI-RADS',
+            type: 'select',
+            options: ['BI-RADS 2 - Achado benigno']
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'implantes',
+    name: 'Implantes e Complicações',
+    findings: [
+      {
+        id: 'ruptura-implante',
+        name: 'Ruptura de Implante',
+        description: 'Ruptura intracapsular ou extracapsular',
+        hasDetails: true,
+        hasLocation: true,
+        extraFields: [
+          {
+            id: 'ruptureType',
+            label: 'Tipo de Ruptura',
+            type: 'select',
+            options: ['Intracapsular', 'Extracapsular', 'Ambas']
+          },
+          {
+            id: 'implantType',
+            label: 'Tipo de Implante',
+            type: 'select',
+            options: ['Silicone', 'Salina', 'Desconhecido']
+          },
+          {
+            id: 'signs',
+            label: 'Sinais Ultrassonográficos',
+            type: 'text',
+            placeholder: 'Ex: stepladder sign, snowstorm'
+          },
+          {
+            id: 'siliconoma',
+            label: 'Siliconoma',
+            type: 'select',
+            options: ['Presente', 'Ausente']
+          }
+        ]
+      },
+      {
+        id: 'contratura-capsular',
+        name: 'Contratura Capsular',
+        description: 'Espessamento e fibrose da cápsula periprotésica',
+        hasDetails: true,
+        hasLocation: true,
+        extraFields: [
+          {
+            id: 'bakerGrade',
+            label: 'Classificação de Baker',
+            type: 'select',
+            options: [
+              'Baker I - Normal',
+              'Baker II - Palpável mas não visível',
+              'Baker III - Visível e firme',
+              'Baker IV - Dura e dolorosa'
+            ]
+          },
+          {
+            id: 'capsuleThickness',
+            label: 'Espessura Capsular (mm)',
+            type: 'text',
+            placeholder: 'Normal <2mm'
+          },
+          {
+            id: 'implantDistortion',
+            label: 'Distorção do Implante',
+            type: 'select',
+            options: ['Presente', 'Ausente']
+          }
+        ]
+      },
+      {
+        id: 'dobras-radiais',
+        name: 'Dobras Radiais (Radial Folds)',
+        description: 'Dobras na superfície do implante',
+        hasDetails: true,
+        hasLocation: true,
+        extraFields: [
+          {
+            id: 'severity',
+            label: 'Intensidade',
+            type: 'select',
+            options: ['Leve', 'Moderada', 'Acentuada']
+          },
+          {
+            id: 'location',
+            label: 'Localização no Implante',
+            type: 'select',
+            options: ['Superior', 'Inferior', 'Medial', 'Lateral', 'Múltiplas']
+          }
+        ]
+      }
+    ]
   }
 ];
 
@@ -865,7 +1395,7 @@ const linfonodosCategories: OrganCategory[] = [
 // EXPORTAÇÃO DOS ÓRGÃOS
 // ============================================================================
 
-export const mammographyOrgans: Organ[] = [
+export const breastUltrasoundOrgans: Organ[] = [
   {
     id: 'mama-direita',
     name: 'Mama Direita',
@@ -896,4 +1426,4 @@ export const mammographyOrgans: Organ[] = [
   }
 ];
 
-export default mammographyOrgans;
+export default breastUltrasoundOrgans;

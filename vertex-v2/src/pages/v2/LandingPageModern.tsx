@@ -190,7 +190,7 @@ export function LandingPageModern() {
 
         {/* Footer */}
         <div className="text-center text-gray-500 text-sm">
-          <p>Vertex V2.0.0 • Redesign Completo • localhost:8200</p>
+          <p>Vertex V2.0.0 • Redesign Completo • localhost:8201</p>
           <p className="mt-2 text-gray-600">Desenvolvido com ❤️ por Claude + Anders</p>
         </div>
       </div>

@@ -1,9 +1,9 @@
 /**
- * Vertex V2 - Mammography Exam (MODERN DESIGN)
+ * Vertex V2 - Breast Ultrasound Exam (MODERN DESIGN)
  * Layout moderno para Ultrassom de Mamas com classificação BI-RADS
  *
  * @author Vertex Team
- * @date 2025-11-11
+ * @date 2025-11-13
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -16,8 +16,8 @@ import Sidebar from '@/components/original/Sidebar';
 import ReportCanvas from '@/components/original/ReportCanvas';
 import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
 import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
-import MammographyFindingDetails from '@/components/original/MammographyFindingDetails';
-import { mammographyOrgans } from '@/data/mammographyOrgans';
+import BreastUltrasoundFindingDetails from '@/components/original/BreastUltrasoundFindingDetails';
+import { breastUltrasoundOrgans } from '@/data/breastUltrasoundOrgans';
 import { SelectedFinding, ReportData, FindingInstance, type AIProvider, type AIGenerationStats } from '@/types/report';
 import { Finding } from '@/data/organs';
 import { generateReport } from '@/services/reportGenerator';
@@ -26,10 +26,11 @@ import { openaiStreamService, OPENAI_MODEL } from '@/services/openaiStreamServic
 import { unifiedAIService } from '@/services/unifiedAIService';
 import ModernExamLayout from '@/layouts/ModernExamLayout';
 import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelModern';
-import { buildReportPrompt } from '@/services/promptBuilder';
+import QuickTemplatesPanel from '@/components/shared/QuickTemplatesPanel';
+import { buildSpecializedPrompt } from '@/services/promptBuilder';
 import { estimateCostUsd, estimateTokensFromText } from '@/utils/aiMetrics';
 
-function MammographyExamModern() {
+function BreastUltrasoundExamModern() {
   const navigate = useNavigate();
   const [selectedOrgan, setSelectedOrgan] = useState('');
   const [selectedFindings, setSelectedFindings] = useState<SelectedFinding[]>([]);
@@ -152,11 +153,11 @@ function MammographyExamModern() {
       }
       // Métricas
       const startedAt = Date.now();
-      const promptText = buildReportPrompt({
+      const promptText = buildSpecializedPrompt({
         examType: 'Ultrassonografia Mamária (BI-RADS)',
         selectedFindings: data.selectedFindings,
         normalOrgans: data.normalOrgans,
-        organsCatalog: mammographyOrgans
+        organsCatalog: breastUltrasoundOrgans
       });
       const promptTokenEstimate = estimateTokensFromText(promptText);
       let chunkCount = 0;
@@ -174,7 +175,7 @@ function MammographyExamModern() {
             examType: 'Ultrassonografia Mamária (BI-RADS)',
             selectedFindings: data.selectedFindings,
             normalOrgans: data.normalOrgans,
-            organsCatalog: mammographyOrgans
+            organsCatalog: breastUltrasoundOrgans
           },
           {
             onChunk: (accumulated) => {
@@ -226,7 +227,7 @@ function MammographyExamModern() {
       } else {
         if (!geminiStreamService.isConfigured()) {
           const report = await generateReport(data, {
-            organsList: mammographyOrgans,
+            organsList: breastUltrasoundOrgans,
             provider
           });
           setGeneratedReport(report);
@@ -255,7 +256,7 @@ function MammographyExamModern() {
               examType: 'Ultrassonografia Mamária (BI-RADS)',
               selectedFindings: data.selectedFindings,
               normalOrgans: data.normalOrgans,
-              organsCatalog: mammographyOrgans
+              organsCatalog: breastUltrasoundOrgans
             },
             {
               onChunk: (accumulatedText) => {
@@ -294,7 +295,7 @@ function MammographyExamModern() {
                       normalOrgans: data.normalOrgans,
                       additionalNotes: ''
                     },
-                    { organsList: mammographyOrgans, provider }
+                    { organsList: breastUltrasoundOrgans, provider }
                   );
                   setGeneratedReport(fallback);
                   toast.error('Falha no endpoint de IA. Exibindo laudo básico.');
@@ -393,7 +394,7 @@ function MammographyExamModern() {
         examType: 'Ultrassonografia Mamária (BI-RADS)',
         selectedFindings,
         normalOrgans,
-        organsCatalog: mammographyOrgans
+        organsCatalog: breastUltrasoundOrgans
       },
       {
         onChunk: (text) => {
@@ -478,9 +479,24 @@ function MammographyExamModern() {
     };
   }, []);
 
-  const currentOrgan = mammographyOrgans.find(organ => organ.id === selectedOrgan);
+  const currentOrgan = breastUltrasoundOrgans.find(organ => organ.id === selectedOrgan);
   const currentOrganFindings = selectedFindings.filter(f => f.organId === selectedOrgan);
   const isCurrentOrganNormal = normalOrgans.includes(selectedOrgan);
+
+  /**
+   * Aplica um template rápido
+   */
+  const handleApplyTemplate = (template: {
+    name: string;
+    normalOrgans: string[];
+    findings: SelectedFinding[];
+    reportText: string;
+  }) => {
+    setNormalOrgans(template.normalOrgans);
+    setSelectedFindings(template.findings);
+    setGeneratedReport(template.reportText);
+    toast.success(`Template "${template.name}" aplicado!`);
+  };
 
   return (
     <>
@@ -507,7 +523,7 @@ function MammographyExamModern() {
             onNormalChange={handleNormalChange}
             selectedFindings={selectedFindings}
             normalOrgans={normalOrgans}
-            organsList={mammographyOrgans}
+            organsList={breastUltrasoundOrgans}
             showSummary={false}
           />
         )}
@@ -522,7 +538,7 @@ function MammographyExamModern() {
               aiError={aiError}
               isAiLoading={isAiProcessing}
               aiStatus={aiStatus}
-              organsList={mammographyOrgans}
+              organsList={breastUltrasoundOrgans}
               currentAiModel={currentAiModel}
               currentModelId={currentModelId}
               onGenerateAI={generateAIImpression}
@@ -532,15 +548,18 @@ function MammographyExamModern() {
           </div>
         )}
         panels={(
-          <SelectedFindingsPanel
-            className="glass-panel flex-1"
-            selectedFindings={selectedFindings}
-            normalOrgans={normalOrgans}
-            organsList={mammographyOrgans}
-            onGenerateReport={handleGenerateReport}
-            isGenerating={isGenerating}
-            expandToContent
-          />
+          <div className="space-y-4">
+            <QuickTemplatesPanel onApplyTemplate={handleApplyTemplate} />
+            <SelectedFindingsPanel
+              className="glass-panel flex-1"
+              selectedFindings={selectedFindings}
+              normalOrgans={normalOrgans}
+              organsList={breastUltrasoundOrgans}
+              onGenerateReport={handleGenerateReport}
+              isGenerating={isGenerating}
+              expandToContent
+            />
+          </div>
         )}
         floatingPanel={(
           currentOrgan ? (
@@ -555,7 +574,7 @@ function MammographyExamModern() {
               leftCss={'calc(25% + 1.5rem)'}
               widthExpanded={'24rem'}
               maxHeight={'80vh'}
-              FindingDetailsComponent={MammographyFindingDetails}
+              FindingDetailsComponent={BreastUltrasoundFindingDetails}
               followSidebar={true}
               followGapPx={0}
               followNudgePx={24}
@@ -568,4 +587,4 @@ function MammographyExamModern() {
   );
 }
 
-export default MammographyExamModern;
+export default BreastUltrasoundExamModern;

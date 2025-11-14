@@ -1,9 +1,9 @@
 /**
- * Vertex V2 - Mammography Finding Details Component
- * Campos especializados para achados mamários com classificação BI-RADS
+ * Vertex V2 - Breast Ultrasound Finding Details Component
+ * Campos especializados para achados de ultrassonografia mamária com classificação BI-RADS
  *
  * @author Vertex Team
- * @date 2025-11-11
+ * @date 2025-11-13
  */
 
 import React, { useState, useEffect } from 'react';
@@ -13,14 +13,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Finding } from '@/data/organs';
 import { FindingMeasurement, FindingInstance } from '@/types/report';
-import { Ruler, MapPin, Plus, X, Save, Activity } from 'lucide-react';
+import { Ruler, MapPin, Plus, X, Save, Activity, Calculator, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import {
   BREAST_QUADRANTS,
   BREAST_DEPTH,
-  getBiradsColor
-} from '@/data/mammographyOrgans';
+  CLOCK_POSITION,
+  ELASTOGRAPHY_SCORES,
+  getBiradsColor,
+  calculateBiradsCategory
+} from '@/data/breastUltrasoundOrgans';
 
-interface MammographyFindingDetailsProps {
+interface BreastUltrasoundFindingDetailsProps {
   finding: Finding;
   organId: string;
   severity?: string;
@@ -33,14 +36,14 @@ interface MammographyFindingDetailsProps {
  * Componente para detalhes especializados de achados mamários
  * Renderiza campos dinâmicos baseados no tipo de achado e diretrizes BI-RADS
  */
-export default function MammographyFindingDetails({
+export default function BreastUltrasoundFindingDetails({
   finding,
   organId,
   severity,
   instances = [],
   onSeverityChange,
   onInstancesChange
-}: MammographyFindingDetailsProps) {
+}: BreastUltrasoundFindingDetailsProps) {
   const [currentMeasurement, setCurrentMeasurement] = useState<FindingMeasurement>({});
   const [isEditing, setIsEditing] = useState(false);
 
@@ -383,6 +386,121 @@ export default function MammographyFindingDetails({
     );
   };
 
+  /**
+   * Renderiza a calculadora BI-RADS inteligente
+   */
+  const renderBiradsCalculator = () => {
+    // Só mostra para nódulos sólidos, complexos ou agrupamentos
+    if (!isNodule || !currentMeasurement || Object.keys(currentMeasurement).length === 0) {
+      return null;
+    }
+
+    const characteristics = {
+      shape: currentMeasurement.shape as string,
+      margins: currentMeasurement.margins as string,
+      echogenicity: currentMeasurement.echogenicity as string,
+      posteriorFeatures: currentMeasurement.posteriorFeatures as string,
+      orientation: currentMeasurement.orientation as string,
+      vascularization: currentMeasurement.vascularization as string,
+      elastographyScore: currentMeasurement.elastographyScore as string,
+      strainRatio: currentMeasurement.strainRatio as string,
+      isComplex: finding.id.includes('complexo'),
+      hasCalcifications: finding.id.includes('calcificacoes')
+    };
+
+    // Só calcula se tiver pelo menos 2 características
+    const filledCharacteristics = Object.values(characteristics).filter(v => v && v !== '').length;
+    if (filledCharacteristics < 2) {
+      return null;
+    }
+
+    const calculation = calculateBiradsCategory(characteristics);
+
+    const getConfidenceColor = (confidence: string) => {
+      switch (confidence) {
+        case 'high': return 'text-green-400';
+        case 'medium': return 'text-yellow-400';
+        case 'low': return 'text-red-400';
+        default: return 'text-gray-400';
+      }
+    };
+
+    const getConfidenceIcon = (confidence: string) => {
+      switch (confidence) {
+        case 'high': return <CheckCircle size={12} className="text-green-400" />;
+        case 'medium': return <AlertTriangle size={12} className="text-yellow-400" />;
+        case 'low': return <Info size={12} className="text-red-400" />;
+        default: return <Info size={12} className="text-gray-400" />;
+      }
+    };
+
+    return (
+      <div className="space-y-2 border-t border-border pt-3">
+        <div className="flex items-center gap-2">
+          <Calculator size={14} className="text-blue-400" />
+          <span className="text-xs font-medium text-blue-400">Calculadora BI-RADS</span>
+        </div>
+
+        <div className="bg-background/50 rounded-md p-2 space-y-2">
+          {/* Sugestão */}
+          <div className="flex items-center gap-2">
+            <Badge className={`text-xs ${getBiradsColor(calculation.suggestedCategory)}`}>
+              {calculation.suggestedCategory.split(' - ')[0]}
+            </Badge>
+            <div className="flex items-center gap-1">
+              {getConfidenceIcon(calculation.confidence)}
+              <span className={`text-xs ${getConfidenceColor(calculation.confidence)}`}>
+                {calculation.confidence === 'high' ? 'Alta confiança' : 
+                 calculation.confidence === 'medium' ? 'Média confiança' : 'Baixa confiança'}
+              </span>
+            </div>
+          </div>
+
+          {/* Alertas */}
+          {calculation.alerts.length > 0 && (
+            <div className="space-y-1">
+              {calculation.alerts.map((alert, index) => (
+                <div key={index} className="flex items-start gap-1">
+                  <AlertTriangle size={10} className="text-orange-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-xs text-orange-400">{alert}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Raciocínio */}
+          {calculation.reasoning.length > 0 && (
+            <div className="space-y-0.5">
+              <span className="text-xs font-medium text-muted-foreground">Análise:</span>
+              <ul className="space-y-0.5">
+                {calculation.reasoning.map((reason, index) => (
+                  <li key={index} className="text-xs text-muted-foreground pl-2">• {reason}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Botão para aplicar sugestão */}
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setCurrentMeasurement({
+                  ...currentMeasurement,
+                  biradsCategory: calculation.suggestedCategory
+                });
+              }}
+              className="h-6 text-xs"
+            >
+              Aplicar sugestão
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div
       className="ml-6 mt-2 p-3 bg-muted/50 rounded-md space-y-3 border-l-2 border-accent max-h-[calc(100vh-400px)] overflow-y-auto modern-scrollbar"
@@ -395,6 +513,7 @@ export default function MammographyFindingDetails({
         <>
           {instances.length > 0 && <div className="border-t border-border pt-2" />}
           {renderNewInstanceForm()}
+          {renderBiradsCalculator()}
         </>
       )}
     </div>
