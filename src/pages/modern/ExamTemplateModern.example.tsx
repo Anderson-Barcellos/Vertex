@@ -546,9 +546,10 @@ export default function ExamTemplateModern() {
             />
             <ExamStatisticsPanel
               className="glass-panel"
-              selectedFindings={selectedFindings}
-              normalOrgans={normalOrgans}
-              organsList={exampleOrgans}
+              stats={aiGenerationStats}
+              isGenerating={isGenerating}
+              currentProvider={currentAiModel === 'gemini' ? 'gemini' : 'openai'}
+              currentModel={currentModelId}
             />
           </>
         )}

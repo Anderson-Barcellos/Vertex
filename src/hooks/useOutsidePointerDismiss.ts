@@ -1,8 +1,8 @@
 import { RefObject, useEffect } from 'react';
 import { isDropdownRelated } from './useDropdownGuard';
 
-type UseOutsidePointerDismissParams = {
-  containerRef: RefObject<HTMLElement>;
+type UseOutsidePointerDismissParams<T extends HTMLElement = HTMLElement> = {
+  containerRef: RefObject<T | null>;
   isDisabled?: boolean;
   isDropdownOpen?: boolean;
   extraSafeSelectors?: string[];
@@ -14,13 +14,13 @@ type UseOutsidePointerDismissParams = {
  * Dispara `onDismiss` ao clicar fora de `containerRef`, ignorando cliques
  * que partem de elementos de dropdown/portal (Radix) e seletores extras.
  */
-export function useOutsidePointerDismiss({
+export function useOutsidePointerDismiss<T extends HTMLElement = HTMLElement>({
   containerRef,
   isDisabled = false,
   isDropdownOpen = false,
   extraSafeSelectors = [],
   onDismiss
-}: UseOutsidePointerDismissParams) {
+}: UseOutsidePointerDismissParams<T>) {
   useEffect(() => {
     if (isDisabled) return;
 

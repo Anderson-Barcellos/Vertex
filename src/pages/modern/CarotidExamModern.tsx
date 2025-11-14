@@ -469,9 +469,10 @@ function CarotidExamModern() {
             />
             <ExamStatisticsPanel
               className="glass-panel"
-              selectedFindings={selectedFindings}
-              normalOrgans={normalOrgans}
-              organsList={carotidOrgans}
+              stats={aiGenerationStats}
+              isGenerating={isGenerating}
+              currentProvider={currentAiModel === 'gemini' ? 'gemini' : 'openai'}
+              currentModel={currentModelId}
             />
           </>
         )}

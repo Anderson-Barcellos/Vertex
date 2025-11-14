@@ -26,6 +26,52 @@ export interface FindingMeasurement {
   vertebralFlowPattern?: string; // Padrão de fluxo vertebral
   subclavianSteal?: string; // Roubo da subclávia (Sim/Não)
 
+  // Breast Ultrasound specific fields
+  biradsCategory?: string; // BI-RADS categorization (1-6)
+  depth?: string; // Profundidade da lesão (superficial, intermediária, profunda)
+  distanceFromNipple?: string; // Distância do mamilo em cm
+  clockPosition?: string; // Posição em horas do relógio (1-12)
+  quadrant?: string; // Quadrante mamário (QSE, QSI, QIE, QII, retroareolar)
+
+  // Nodule/Mass characteristics
+  shape?: string; // Forma da lesão (oval, redonda, irregular)
+  margins?: string; // Margens (circunscritas, indistintas, microlobuladas, espiculadas)
+  orientation?: string; // Orientação (paralela, não paralela)
+  posteriorFeatures?: string; // Características acústicas posteriores (sombra, reforço, sem alterações)
+
+  // Doppler/Vascular
+  vascularization?: string; // Vascularização (ausente, periférica, central, mista)
+  vascularPattern?: string; // Padrão vascular (penetrante, radiado, arboriforme)
+  peakVelocity?: string; // Velocidade de pico em cm/s
+  pulsatilityIndex?: string; // Índice de pulsatilidade
+  resistivityIndex?: string; // Índice de resistividade
+
+  // Physical properties
+  mobility?: string; // Mobilidade da lesão
+  elastographyScore?: string; // Score elastográfico (1-5)
+  strainRatio?: string; // Razão de strain
+
+  // Calcifications
+  calcificationMorphology?: string; // Morfologia das calcificações
+  calcificationDistribution?: string; // Distribuição das calcificações
+  distribution?: string; // Distribuição genérica (calcificações, cistos, etc)
+
+  // Cyst characteristics
+  internalContent?: string; // Conteúdo interno (anecoico, debris, septos)
+  wallThickness?: string; // Espessura de parede
+  surroundingEdema?: string; // Edema circundante
+
+  // Implant specific
+  implantType?: string; // Tipo de implante (silicone, salina, etc)
+  ruptureType?: string; // Tipo de ruptura (intracapsular, extracapsular)
+  bakerGrade?: string; // Grau de contratura capsular (Baker I-IV)
+
+  // Lymph node characteristics
+  corticalThickness?: string; // Espessura cortical do linfonodo em mm
+  hilusPresence?: string; // Presença de hilo (presente, ausente)
+  morphology?: string; // Morfologia do linfonodo
+  axillaryLevel?: string; // Nível axilar (I, II, III)
+
   // Legacy fields (manter compatibilidade)
   ratio?: string; // Razão VPS ACI/ACC (deprecated, usar ratioICA_CCA)
   nascet?: string; // Grau NASCET de estenose (deprecated)

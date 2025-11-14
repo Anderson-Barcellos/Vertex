@@ -25,10 +25,10 @@ export default function ResolutionGuard({ children }: ResolutionGuardProps) {
     checkResolution();
 
     // Listener para mudanças de resolução (debounced)
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: number;
     const debouncedCheck = () => {
       clearTimeout(timeoutId);
-      timeoutId = setTimeout(checkResolution, 300);
+      timeoutId = window.setTimeout(checkResolution, 300);
     };
 
     window.addEventListener('resize', debouncedCheck);

@@ -499,9 +499,10 @@ function AbdomeTotalExamModern() {
             />
             <ExamStatisticsPanel
               className="glass-panel"
-              selectedFindings={selectedFindings}
-              normalOrgans={normalOrgans}
-              organsList={organs}
+              stats={aiGenerationStats}
+              isGenerating={isGenerating}
+              currentProvider={currentAiModel === 'gemini' ? 'gemini' : 'openai'}
+              currentModel={currentModelId}
             />
           </>
         )}

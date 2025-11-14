@@ -29,7 +29,7 @@ const isDropdownRelated = (el: Element | null): boolean => {
  * useDropdownGuard
  * Observa o DOM por sinais de dropdowns/portais abertos (Radix) e retorna booleano.
  */
-export function useDropdownGuard(refs: RefObject<HTMLElement>[] = []) {
+export function useDropdownGuard<T extends HTMLElement = HTMLElement>(refs: RefObject<T | null>[] = []) {
   const [isAnyDropdownOpen, setIsAnyDropdownOpen] = useState(false);
 
   useEffect(() => {
