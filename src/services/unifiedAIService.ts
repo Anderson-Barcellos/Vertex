@@ -1,425 +1,171 @@
-// Unified AI Service - Provides consistent interface for both Gemini and OpenAI
+/**
+ * Unified AI Service - Gerencia ambos Gemini e OpenAI de forma unificada
+ * Permite troca de provider sem alterar código consumidor
+ */
+
 import { geminiStreamService } from './geminiStreamService';
 import { openaiStreamService } from './openaiStreamService';
-import { aiCallManager, type AICallData, type AIStreamCallbacks, type AIProvider } from './aiCallManager';
 import type { SelectedFinding } from '@/types/report';
+import type { AIStatus } from '@/components/original/ReportCanvas';
 
-export type AIModel = 'gemini' | 'openai';
+type AIProvider = 'gemini' | 'openai';
 
-export interface AIStatus {
-  isProcessing: boolean;
-  isStreaming: boolean;
-  isComplete: boolean;
-  hasError: boolean;
-  errorMessage?: string;
-  currentModel?: AIModel;
-  activeCallsCount: number;
+interface StreamCallbacks {
+  onChunk?: (text: string) => void;
+  onComplete?: (fullText: string) => void;
+  onError?: (error: Error) => void;
 }
 
-export interface AICallOptions {
-  signal?: AbortSignal;
-  timeout?: number;
-}
-
-export interface EnhancedAICallbacks extends AIStreamCallbacks {
-  onStatusChange?: (status: AIStatus) => void;
+interface ClinicalImpressionData {
+  examType?: string;
+  selectedFindings: SelectedFinding[];
+  normalOrgans: string[];
+  organsCatalog?: any[];
 }
 
 /**
- * Unified AI Service that manages both Gemini and OpenAI integrations
+ * Serviço unificado para gerenciar chamadas de IA
  */
-export class UnifiedAIService {
-  private currentModel: AIModel = 'gemini';
-  private currentStatus: AIStatus = {
-    isProcessing: false,
-    isStreaming: false,
-    isComplete: false,
-    hasError: false,
-    activeCallsCount: 0
-  };
-
+class UnifiedAIService {
+  private currentProvider: AIProvider = 'gemini';
   private statusCallbacks: Set<(status: AIStatus) => void> = new Set();
+  private currentAbortController: AbortController | null = null;
 
-  constructor() {
-    // Set initial model based on availability
-    this.detectBestAvailableModel();
+  /**
+   * Define o provider de IA atual
+   */
+  setProvider(provider: AIProvider): void {
+    this.currentProvider = provider;
   }
 
   /**
-   * Detect the best available AI model
+   * Obtém o provider atual
    */
-  private detectBestAvailableModel(): void {
-    if (geminiStreamService.isConfigured()) {
-      this.currentModel = 'gemini';
-    } else if (openaiStreamService.isConfigured()) {
-      this.currentModel = 'openai';
-    } else {
-      console.warn('No AI services are configured');
-    }
+  getProvider(): AIProvider {
+    return this.currentProvider;
   }
 
   /**
-   * Set the current AI model
+   * Registra callback para mudanças de status
    */
-  public setModel(model: AIModel): void {
-    const service = this.getService(model);
-    if (!service?.isConfigured()) {
-      throw new Error(`AI model ${model} is not configured`);
-    }
-    this.currentModel = model;
-    this.updateStatus({ currentModel: model });
-  }
-
-  /**
-   * Get the current AI model
-   */
-  public getCurrentModel(): AIModel {
-    return this.currentModel;
-  }
-
-  /**
-   * Check if any AI service is available
-   */
-  public isAvailable(): boolean {
-    return geminiStreamService.isConfigured() || openaiStreamService.isConfigured();
-  }
-
-  /**
-   * Get list of available models
-   */
-  public getAvailableModels(): AIModel[] {
-    const models: AIModel[] = [];
-    if (geminiStreamService.isConfigured()) models.push('gemini');
-    if (openaiStreamService.isConfigured()) models.push('openai');
-    return models;
-  }
-
-  /**
-   * Get the service for a specific model
-   */
-  private getService(model: AIModel) {
-    switch (model) {
-      case 'gemini':
-        return geminiStreamService;
-      case 'openai':
-        return openaiStreamService;
-      default:
-        throw new Error(`Unknown AI model: ${model}`);
-    }
-  }
-
-  /**
-   * Subscribe to status changes
-   */
-  public onStatusChange(callback: (status: AIStatus) => void): () => void {
+  onStatusChange(callback: (status: AIStatus) => void): () => void {
     this.statusCallbacks.add(callback);
-    // Send current status immediately
-    callback(this.currentStatus);
-
-    // Return unsubscribe function
     return () => {
       this.statusCallbacks.delete(callback);
     };
   }
 
   /**
-   * Update status and notify subscribers
+   * Notifica mudança de status
    */
-  private updateStatus(updates: Partial<AIStatus>): void {
-    this.currentStatus = {
-      ...this.currentStatus,
-      ...updates,
-      activeCallsCount: aiCallManager.getActiveCallsCount()
-    };
-
-    for (const callback of this.statusCallbacks) {
-      callback(this.currentStatus);
-    }
+  private notifyStatus(status: AIStatus): void {
+    this.statusCallbacks.forEach(callback => callback(status));
   }
 
   /**
-   * Generate clinical impression with streaming
+   * Gera impressão clínica com streaming
    */
-  public async generateClinicalImpression(
-    data: {
-      examType?: string;
-      selectedFindings: SelectedFinding[];
-      normalOrgans: string[];
-      organsCatalog?: any[];
-    },
-    callbacks: EnhancedAICallbacks,
-    options: AICallOptions = {}
+  async generateClinicalImpression(
+    data: ClinicalImpressionData,
+    callbacks: StreamCallbacks
   ): Promise<void> {
-    const service = this.getService(this.currentModel);
-    if (!service?.isConfigured()) {
-      const error = new Error(`AI model ${this.currentModel} is not configured`);
-      this.updateStatus({
-        hasError: true,
-        errorMessage: error.message,
-        isProcessing: false
-      });
-      callbacks.onError?.(error);
-      return;
-    }
-
-    // Update status to processing
-    this.updateStatus({
-      isProcessing: true,
-      isStreaming: false,
-      isComplete: false,
-      hasError: false,
-      errorMessage: undefined
-    });
-
-    const aiCallData: AICallData = {
-      examType: data.examType || 'Ultrassonografia Abdominal Total',
-      selectedFindings: data.selectedFindings,
-      normalOrgans: data.normalOrgans,
-      organsCatalog: data.organsCatalog
-    };
-
-    const enhancedCallbacks: AIStreamCallbacks = {
-      onChunk: (text: string) => {
-        if (!options.signal?.aborted) {
-          this.updateStatus({ isStreaming: true });
-          callbacks.onChunk?.(text);
-        }
-      },
-      onComplete: (fullText: string) => {
-        if (!options.signal?.aborted) {
-          this.updateStatus({
-            isProcessing: false,
-            isStreaming: false,
-            isComplete: true,
-            hasError: false
-          });
-          callbacks.onComplete?.(fullText);
-        }
-      },
-      onError: (error: Error) => {
-        if (!options.signal?.aborted) {
-          this.updateStatus({
-            isProcessing: false,
-            isStreaming: false,
-            isComplete: false,
-            hasError: true,
-            errorMessage: error.message
-          });
-          callbacks.onError?.(error);
-        }
-      }
-    };
-
     try {
-      await aiCallManager.makeCall(
-        'impression',
-        this.currentModel,
-        aiCallData,
-        service,
-        enhancedCallbacks
-      );
-    } catch (error) {
-      if (!options.signal?.aborted) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-        this.updateStatus({
-          isProcessing: false,
-          isStreaming: false,
-          hasError: true,
-          errorMessage: errorMsg
-        });
-        callbacks.onError?.(error as Error);
+      // Cancelar operação anterior se existir
+      if (this.currentAbortController) {
+        this.currentAbortController.abort();
       }
-    }
-  }
 
-  /**
-   * Generate full report with streaming
-   */
-  public async generateFullReport(
-    data: {
-      patientName?: string;
-      patientAge?: string;
-      examDate?: string;
-      examType?: string;
-      selectedFindings: SelectedFinding[];
-      normalOrgans: string[];
-      organsCatalog?: any[];
-    },
-    callbacks: EnhancedAICallbacks,
-    options: AICallOptions = {}
-  ): Promise<void> {
-    const service = this.getService(this.currentModel);
-    if (!service?.isConfigured()) {
-      const error = new Error(`AI model ${this.currentModel} is not configured`);
-      this.updateStatus({
-        hasError: true,
-        errorMessage: error.message,
-        isProcessing: false
-      });
-      callbacks.onError?.(error);
-      return;
-    }
+      this.currentAbortController = new AbortController();
+      this.notifyStatus('loading');
 
-    // Update status to processing
-    this.updateStatus({
-      isProcessing: true,
-      isStreaming: false,
-      isComplete: false,
-      hasError: false,
-      errorMessage: undefined
-    });
-
-    const aiCallData: AICallData = {
-      examType: data.examType || 'Ultrassonografia Abdominal Total',
-      selectedFindings: data.selectedFindings,
-      normalOrgans: data.normalOrgans,
-      organsCatalog: data.organsCatalog
-    };
-
-    const enhancedCallbacks: AIStreamCallbacks = {
-      onChunk: (text: string) => {
-        if (!options.signal?.aborted) {
-          this.updateStatus({ isStreaming: true });
+      const wrappedCallbacks: StreamCallbacks = {
+        onChunk: (text) => {
+          this.notifyStatus('streaming');
           callbacks.onChunk?.(text);
-        }
-      },
-      onComplete: (fullText: string) => {
-        if (!options.signal?.aborted) {
-          this.updateStatus({
-            isProcessing: false,
-            isStreaming: false,
-            isComplete: true,
-            hasError: false
-          });
+        },
+        onComplete: (fullText) => {
+          this.notifyStatus('completed');
           callbacks.onComplete?.(fullText);
-        }
-      },
-      onError: (error: Error) => {
-        if (!options.signal?.aborted) {
-          this.updateStatus({
-            isProcessing: false,
-            isStreaming: false,
-            isComplete: false,
-            hasError: true,
-            errorMessage: error.message
-          });
+          this.currentAbortController = null;
+        },
+        onError: (error) => {
+          this.notifyStatus('error');
           callbacks.onError?.(error);
+          this.currentAbortController = null;
         }
-      }
-    };
+      };
 
-    try {
-      await aiCallManager.makeCall(
-        'fullReport',
-        this.currentModel,
-        aiCallData,
-        service,
-        enhancedCallbacks
-      );
-    } catch (error) {
-      if (!options.signal?.aborted) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-        this.updateStatus({
-          isProcessing: false,
-          isStreaming: false,
-          hasError: true,
-          errorMessage: errorMsg
-        });
-        callbacks.onError?.(error as Error);
+      if (this.currentProvider === 'openai') {
+        if (!openaiStreamService.isConfigured()) {
+          throw new Error('OpenAI não está configurado. Configure VITE_OPENAI_API_KEY.');
+        }
+        await openaiStreamService.generateClinicalImpressionStream(data, wrappedCallbacks);
+      } else {
+        if (!geminiStreamService.isConfigured()) {
+          throw new Error('Gemini não está configurado. Configure VITE_GEMINI_API_URL.');
+        }
+        await geminiStreamService.generateClinicalImpressionStream(data, wrappedCallbacks);
       }
+    } catch (error: any) {
+      this.notifyStatus('error');
+      const errorObj = error instanceof Error ? error : new Error(error?.message || 'Erro ao gerar impressão clínica');
+      callbacks.onError?.(errorObj);
     }
   }
 
   /**
-   * Cancel all active calls
+   * Cancela geração de impressão clínica em andamento
    */
-  public cancelAllCalls(): void {
-    aiCallManager.cancelAllCalls();
-    this.updateStatus({
-      isProcessing: false,
-      isStreaming: false,
-      isComplete: false,
-      hasError: false,
-      errorMessage: undefined
-    });
+  cancelClinicalImpression(): void {
+    if (this.currentAbortController) {
+      this.currentAbortController.abort();
+      this.currentAbortController = null;
+      this.notifyStatus('idle');
+    }
   }
 
   /**
-   * Cancel calls of a specific type
+   * Cancela todas as operações
    */
-  public cancelImpressionCalls(): void {
-    aiCallManager.cancelCallsOfType('impression');
-  }
-
-  // Alias for backward compatibility
-  public cancelClinicalImpression(): void {
-    this.cancelImpressionCalls();
-  }
-
-  public cancelReportCalls(): void {
-    aiCallManager.cancelCallsOfType('fullReport');
+  cancelAllOperations(): void {
+    this.cancelClinicalImpression();
   }
 
   /**
-   * Cleanup all resources
+   * Limpa recursos
    */
-  public cleanup(): void {
-    this.cancelAllCalls();
+  cleanup(): void {
+    this.cancelAllOperations();
     this.statusCallbacks.clear();
   }
 
   /**
-   * Get current status
+   * Verifica se o provider atual está configurado
    */
-  public getStatus(): AIStatus {
-    return { ...this.currentStatus };
+  isConfigured(): boolean {
+    if (this.currentProvider === 'openai') {
+      return openaiStreamService.isConfigured();
+    }
+    return geminiStreamService.isConfigured();
   }
 
   /**
-   * Test connection for current model
+   * Testa conexão com o provider atual
    */
-  public async testConnection(): Promise<boolean> {
-    const service = this.getService(this.currentModel);
-    if (!service?.isConfigured()) {
-      return false;
-    }
-
+  async testConnection(): Promise<boolean> {
     try {
-      return await service.testConnection();
+      if (this.currentProvider === 'openai') {
+        return await openaiStreamService.testConnection();
+      }
+      return await geminiStreamService.testConnection();
     } catch (error) {
-      console.error(`Connection test failed for ${this.currentModel}:`, error);
+      console.error('Erro ao testar conexão:', error);
       return false;
     }
-  }
-
-  /**
-   * Get debug information
-   */
-  public getDebugInfo(): {
-    currentModel: AIModel;
-    status: AIStatus;
-    availableModels: AIModel[];
-    callManagerInfo: any;
-  } {
-    return {
-      currentModel: this.currentModel,
-      status: this.currentStatus,
-      availableModels: this.getAvailableModels(),
-      callManagerInfo: aiCallManager.getDebugInfo()
-    };
   }
 }
 
-// Export singleton instance
+// Singleton instance
 export const unifiedAIService = new UnifiedAIService();
 
-// Development logging
-if (import.meta.env.DEV) {
-  const availableModels = unifiedAIService.getAvailableModels();
-  if (availableModels.length > 0) {
-    console.log(`✅ Unified AI Service configured with: ${availableModels.join(', ')}`);
-    console.log(`📡 Current model: ${unifiedAIService.getCurrentModel()}`);
-  } else {
-    console.warn('⚠️ No AI models are configured');
-  }
-}
+export default unifiedAIService;

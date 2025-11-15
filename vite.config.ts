@@ -17,24 +17,30 @@ export default defineConfig({
     }
   },
   server: {
-    port: 8134,
-    host: '127.0.0.1', // Apenas localhost (mais seguro para proxy interno)
-    strictPort: true, // Força usar exatamente a porta 8134
-    proxy: {}, // Habilita detecção de proxy
-    hmr: {
-      protocol: 'ws', // WebSocket normal para desenvolvimento local
-      host: 'localhost',
-      port: 8134 // Porta do HMR (mesma do servidor)
+    port: 8201, // Porta alternativa (8199 estava em uso)
+    host: '0.0.0.0',
+    strictPort: true,
+    proxy: {
+      '/api/gemini': {
+        target: 'https://ultrassom.ai:8177',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api\/gemini/, '/geminiCall')
+      },
+      '/api/openai': {
+        target: 'https://ultrassom.ai:8177',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api\/openai/, '/openaiCall')
+      }
     },
-    // Permitir requisições dos domínios configurados
     allowedHosts: [
       'localhost',
       '127.0.0.1',
       'ultrassom.ai',
       'www.ultrassom.ai',
-      '.ultrassom.ai' // Permite subdomínios
+      '.ultrassom.ai'
     ],
-    // Configuração para confiar nos headers do proxy
     headers: {
       'Access-Control-Allow-Origin': '*'
     }

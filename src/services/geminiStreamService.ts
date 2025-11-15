@@ -1,6 +1,6 @@
-// Gemini AI Streaming Integration
-import { GoogleGenerativeAI } from '@google/generative-ai';
+// Gemini AI Streaming Integration via backend proxy
 import type { SelectedFinding } from '@/types/report';
+import { buildReportPrompt } from './promptBuilder';
 
 // Types for streaming
 export interface StreamCallbacks {
@@ -9,22 +9,49 @@ export interface StreamCallbacks {
   onError?: (error: Error) => void;
 }
 
-// System instruction for the AI
-const SYSTEM_INSTRUCTION = `Você é um radiologista especialista em ultrassonografia com mais de 20 anos de experiência, responsável por revisar e aprimorar laudos médicos baseados em texto extraído por OCR de imagens ultrassonográficas.
+// Use proxy local para evitar CORS
+const GEMINI_API_ENDPOINT =
+  import.meta.env.VITE_GEMINI_API_URL || '/api/gemini';
+export const GEMINI_MODEL =
+  import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-pro';
+
+// System instruction for the AI (incorporated into prompt text)
+const SYSTEM_INSTRUCTION = `Você é um radiologista especialista em ultrassonografia com mais de 20 anos de experiência, responsável por revisar e aprimorar laudos médicos
 
 ## OBJETIVO PRINCIPAL
-Analisar o texto fornecido pelo usuário (extraído por OCR) e reescrevê-lo de forma a:
+Analisar o texto fornecido pelo usuário:
 1. **ESTABELECER CORRELAÇÕES INTELIGENTES** entre achados de diferentes estruturas
 2. **MANTER COERÊNCIA TÉCNICA** em toda a narrativa
 3. **APRIMORAR O DETALHAMENTO TÉCNICO** com terminologia ultrassonográfica precisa
 4. **ESTRUTURAR LOGICAMENTE** as informações em formato de laudo profissional
 
-## METODOLOGIA DE ANÁLISE E REESCRITA
+## REFERÊNCIAS CLÍNICAS PARA DOPPLER DE CARÓTIDAS
 
-### FASE 1: ANÁLISE CRÍTICA DO TEXTO OCR
-- Identifique inconsistências, medidas isoladas, achados fragmentados
-- Reconheça padrões que sugerem correlações não explicitadas
-- Detecte lacunas na descrição técnica ou terminologia imprecisa
+### CRITÉRIOS NASCET DE ESTENOSE CAROTÍDEA
+- **Normal:** VPS < 125 cm/s | Razão ICA/CCA < 2.0
+- **<50%:** VPS < 125 cm/s | Razão ICA/CCA < 2.0
+- **50-69%:** VPS 125-230 cm/s | Razão ICA/CCA 2.0-4.0
+- **≥70% sem oclusão:** VPS > 230 cm/s | Razão ICA/CCA > 4.0 | VDF > 100 cm/s
+- **Oclusão total:** Ausência de fluxo detectável
+- **Pré-oclusiva:** VPS reduzida com estenose visual severa
+
+### CLASSIFICAÇÃO GRAY-WEALE DE PLACAS
+- **Tipo 1 (Anecóica):** Homogeneamente hipoecóica/anecóica, instável
+- **Tipo 2 (Predominantemente hipoecóica):** < 50% ecogênica, moderadamente instável
+- **Tipo 3 (Predominantemente ecogênica):** > 50% ecogênica, mais estável
+- **Tipo 4 (Uniformemente ecogênica):** Homogeneamente hiperecóica, estável
+- **Tipo 5 (Calcificada):** Sombra acústica posterior, geralmente estável
+
+### VALORES DE REFERÊNCIA EMI
+- **Normal:** < 0.9 mm (adultos < 40 anos) | < 1.0 mm (adultos > 40 anos)
+- **Espessamento:** 1.0-1.2 mm
+- **Placa aterosclerótica:** > 1.2 mm
+
+## METODOLOGIA
+
+### FASE 1: ANÁLISE CRÍTICA 
+
+- Reconheça padrões 
 - Mapeie a modalidade do exame e estruturas envolvidas
 
 ### FASE 2: ESTABELECIMENTO DE CORRELAÇÕES
@@ -48,15 +75,22 @@ Analisar o texto fornecido pelo usuário (extraído por OCR) e reescrevê-lo de 
 ## DIRETRIZES ESPECÍFICAS
 
 - FIDELIDADE AOS DADOS: Reescreva apenas com base no texto fornecido, não invente achados
-- MANUTENÇÃO DE MEDIDAS: Preserve todas as medidas exatas mencionadas no texto original
 - APRIMORAMENTO SEM INVENÇÃO: Melhore a descrição sem adicionar informações não presentes
 - CORRELAÇÃO BASEADA EM EVIDÊNCIA: Estabeleça apenas correlações logicamente suportadas pelos achados descritos
 - LINGUAGEM PROFISSIONAL: Mantenha terminologia médica apropriada e registro formal
+
+### PARA LAUDOS DE DOPPLER DE CARÓTIDAS:
+- **INTERPRETAÇÃO DE VELOCIDADES:** Correlacione valores de VPS e VDF com os critérios NASCET para determinar grau de estenose
+- **ANÁLISE DE PLACAS:** Descreva características usando classificação Gray-Weale (ecogenicidade, composição, superfície)
+- **ESTRATIFICAÇÃO DE RISCO:** Relacione EMI aumentado, placas instáveis e estenoses hemodinamicamente significativas
+- **FLUXO VERTEBRAL:** Interprete padrões anormais (reverso/alternante) no contexto de roubo da subclávia
+- **CORRELAÇÃO BILATERAL:** Compare achados entre carótidas direita e esquerda para detecção de assimetrias
 
 ## FORMATO DE SAÍDA
 
 Use markdown para formatar o laudo com as seguintes seções:
 
+SOMENTE AS SEÇÕES A SEGUIR SERÃO CONSIDERADAS. NAO INSIRA NOME DE PACIENTE, NEM DATA DE EXAME, NEM MEDICO SOLICITANTE
 # Ultrassonografia [MODALIDADE]
 
 ## Descrição Técnica:
@@ -69,24 +103,14 @@ Use markdown para formatar o laudo com as seguintes seções:
 [Síntese interpretativa correlacionando todos os achados]`;
 
 /**
- * Classe para gerenciar streaming do Gemini
+ * Classe para gerenciar streaming do Gemini via backend
  */
 export class GeminiStreamService {
-  private genAI: GoogleGenerativeAI | null = null;
-  private apiKey: string | undefined;
-
-  constructor() {
-    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (this.apiKey) {
-      this.genAI = new GoogleGenerativeAI(this.apiKey);
-    }
-  }
-
   /**
    * Verifica se a API está configurada
    */
   isConfigured(): boolean {
-    return !!this.apiKey && !!this.genAI;
+    return Boolean(GEMINI_API_ENDPOINT);
   }
 
   /**
@@ -101,109 +125,13 @@ export class GeminiStreamService {
     },
     callbacks: StreamCallbacks
   ): Promise<void> {
-    if (!this.genAI) {
-      callbacks.onError?.(new Error('Gemini API não configurada'));
-      return;
-    }
-
     try {
-      const model = this.genAI.getGenerativeModel({
-        model: 'gemini-1.5-pro',
-        systemInstruction: SYSTEM_INSTRUCTION,
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 2048,
-          topP: 0.95,
-          topK: 40,
-        },
-      });
-
-      const prompt = this.buildPrompt(data);
-
-      // Start streaming
-      const result = await model.generateContentStream(prompt);
-
-      let fullText = '';
-
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        fullText += chunkText;
-        callbacks.onChunk?.(chunkText);
-      }
-
-      callbacks.onComplete?.(fullText);
-
+      const prompt = appendSystemInstruction(buildReportPrompt(data));
+      await this.streamFromBackend(prompt, callbacks);
     } catch (error) {
       console.error('Erro no streaming Gemini:', error);
       callbacks.onError?.(error as Error);
     }
-  }
-
-  /**
-   * Constrói o prompt baseado nos achados
-   */
-  private buildPrompt(data: {
-    examType?: string;
-    selectedFindings: SelectedFinding[];
-    normalOrgans: string[];
-    organsCatalog?: any[];
-  }): string {
-    let prompt = `Gere um laudo de ${data.examType || 'Ultrassonografia Abdominal'} baseado nos seguintes achados:\n\n`;
-
-    // Adicionar achados patológicos
-    if (data.selectedFindings.length > 0) {
-      prompt += 'ACHADOS PATOLÓGICOS:\n';
-
-      data.selectedFindings.forEach(finding => {
-        const organName = data.organsCatalog?.find(o => o.id === finding.organId)?.name || finding.organId;
-        prompt += `\n**${organName}:**\n`;
-        prompt += `- ${finding.finding.name}`;
-
-        if (finding.severity) {
-          prompt += ` (${finding.severity})`;
-        }
-
-        if (finding.instances && finding.instances.length > 0) {
-          prompt += '\n  Detalhes:\n';
-          finding.instances.forEach((instance, idx) => {
-            prompt += `  ${idx + 1}. `;
-            if (instance.measurements.size) {
-              prompt += `Tamanho: ${instance.measurements.size}`;
-            }
-            if (instance.measurements.location) {
-              prompt += ` | Localização: ${instance.measurements.location}`;
-            }
-            if (instance.measurements.segment) {
-              prompt += ` | Segmento: ${instance.measurements.segment}`;
-            }
-            prompt += '\n';
-          });
-        }
-        prompt += '\n';
-      });
-    }
-
-    // Adicionar órgãos normais
-    if (data.normalOrgans.length > 0) {
-      prompt += '\nÓRGÃOS NORMAIS:\n';
-      data.normalOrgans.forEach(organId => {
-        const organName = data.organsCatalog?.find(o => o.id === organId)?.name || organId;
-        prompt += `- ${organName}\n`;
-      });
-    }
-
-    prompt += `
-
-INSTRUÇÕES IMPORTANTES:
-1. Gere um laudo completo em formato markdown
-2. Use terminologia médica apropriada em português brasileiro
-3. Estabeleça correlações entre os achados quando relevante
-4. Mantenha coerência técnica em toda a narrativa
-5. Inclua uma impressão diagnóstica ao final
-6. Se houver achados significativos, sugira acompanhamento quando apropriado
-`;
-
-    return prompt;
   }
 
   /**
@@ -221,23 +149,7 @@ INSTRUÇÕES IMPORTANTES:
     },
     callbacks: StreamCallbacks
   ): Promise<void> {
-    if (!this.genAI) {
-      callbacks.onError?.(new Error('Gemini API não configurada'));
-      return;
-    }
-
     try {
-      const model = this.genAI.getGenerativeModel({
-        model: 'gemini-1.5-pro',
-        systemInstruction: SYSTEM_INSTRUCTION,
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 4096,
-          topP: 0.95,
-          topK: 40,
-        },
-      });
-
       let prompt = `Gere um LAUDO COMPLETO de ${data.examType || 'Ultrassonografia'} com os seguintes dados:\n\n`;
 
       if (data.patientName) {
@@ -250,47 +162,58 @@ INSTRUÇÕES IMPORTANTES:
         prompt += `DATA: ${data.examDate}\n`;
       }
 
-      prompt += '\n' + this.buildPrompt(data);
+      prompt += '\n' + buildReportPrompt(data);
       prompt += '\nGere um laudo completo e detalhado, incluindo técnica do exame, todos os achados e impressão diagnóstica.';
 
-      const result = await model.generateContentStream(prompt);
-
-      let fullText = '';
-
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        fullText += chunkText;
-        callbacks.onChunk?.(chunkText);
-      }
-
-      callbacks.onComplete?.(fullText);
-
+      const enrichedPrompt = appendSystemInstruction(prompt);
+      await this.streamFromBackend(enrichedPrompt, callbacks);
     } catch (error) {
       console.error('Erro ao gerar relatório completo:', error);
       callbacks.onError?.(error as Error);
     }
   }
 
+  private async streamFromBackend(
+    prompt: string,
+    callbacks: StreamCallbacks
+  ): Promise<void> {
+    const requestUrl = createRequestUrl('');
+
+    // Obter modelo selecionado do sessionStorage
+    const selectedModel = sessionStorage.getItem('selectedAIModel') || GEMINI_MODEL;
+
+    console.log('[GeminiStreamService] Usando modelo:', selectedModel);
+
+    const response = await fetch(requestUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: prompt,
+        model: selectedModel
+        // NÃO enviar 'prompt' - deixar backend usar seu system_prompt padrão
+      })
+    });
+    if (!response.ok) {
+      const message = await response.text().catch(() => '');
+      throw new Error(`Gemini backend error: ${response.status} ${message}`);
+    }
+
+    const fullText = await readStream(response, callbacks);
+    callbacks.onComplete?.(fullText);
+  }
+
   /**
    * Teste de conexão
    */
   async testConnection(): Promise<boolean> {
-    if (!this.genAI) {
-      console.error('❌ Gemini API não configurada');
-      return false;
-    }
-
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
-      const result = await model.generateContent('Teste de conexão. Responda apenas: OK');
-      const response = await result.response;
-      const text = response.text();
-
-      if (text) {
-        console.log('✅ Conexão com Gemini API funcionando!');
-        return true;
-      }
-      return false;
+      const url = createRequestUrl();
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: 'Teste de conexão. Responda apenas: OK' })
+      });
+      return response.ok;
     } catch (error) {
       console.error('❌ Erro ao testar conexão:', error);
       return false;
@@ -301,11 +224,47 @@ INSTRUÇÕES IMPORTANTES:
 // Singleton instance
 export const geminiStreamService = new GeminiStreamService();
 
-// Check API key on load (development only)
-if (import.meta.env.DEV) {
-  if (geminiStreamService.isConfigured()) {
-    console.log('✅ Gemini Stream Service configurado');
-  } else {
-    console.warn('⚠️ Gemini API Key não encontrada');
+function createRequestUrl(_unused?: string): string {
+  try {
+    if (GEMINI_API_ENDPOINT.startsWith('http')) {
+      return GEMINI_API_ENDPOINT;
+    }
+    const base = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+    return new URL(GEMINI_API_ENDPOINT, base).toString();
+  } catch (error) {
+    throw new Error(`Endpoint do Gemini inválido (${GEMINI_API_ENDPOINT}): ${String(error)}`);
   }
+}
+
+async function readStream(
+  response: Response,
+  callbacks: StreamCallbacks
+): Promise<string> {
+  if (!response.body) {
+    return (await response.text()).trim();
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let fullText = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) {
+      const chunk = decoder.decode(value, { stream: true });
+      if (chunk) {
+        fullText += chunk;
+        // Passa o texto ACUMULADO, não apenas o chunk
+        callbacks.onChunk?.(fullText);
+      }
+    }
+  }
+
+  fullText += decoder.decode();
+  return fullText.trim();
+}
+
+function appendSystemInstruction(prompt: string): string {
+  return `${SYSTEM_INSTRUCTION}\n\n${prompt}`;
 }

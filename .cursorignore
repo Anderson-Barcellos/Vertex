@@ -1,0 +1,45 @@
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+# Ignore cache, logs and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+*.env
+.env
+venv/
+env/
+build/
+dist/
+*.egg-info/
+.idea/
+.vscode/
+.DS_Store
+*.bak
+*.swp
+# Ignore data and outputs
+*.csv
+*.tsv
+*.xls
+*.xlsx
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.pickle
+*.joblib
+outputs/
+logs/
+data/
+.temp/
+.cache/
+# Ignore system files
+Thumbs.db
+# Ignore test and coverage artifacts
+htmlcov/
+.tox/
+.coverage
+coverage.*
+.pytest_cache/
