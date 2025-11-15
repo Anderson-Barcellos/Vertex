@@ -1,58 +1,101 @@
 /**
- * ExamTemplateModern.example
- * Exemplo de página de exame usando ModernExamLayout + FloatingOrganPanelModern
+ * ExamTemplateModern.example.tsx
+ *
+ * Template padronizado para criar novas páginas de exame no Vertex V2
+ * Inclui todas as melhores práticas consolidadas:
+ * - Sistema de métricas de IA
+ * - Cleanup robusto de recursos
+ * - Suporte a seleção de modelo específico
+ * - Streaming progressivo
+ * - FloatingPanel com configurações otimizadas
+ *
+ * COMO USAR:
+ * 1. Copie este arquivo e renomeie para seu exame (ex: ThyroidExamModern.tsx)
+ * 2. Substitua "NOME_DO_EXAME" e "TIPO_DO_EXAME" nos comentários
+ * 3. Importe o catálogo de órgãos correto (ex: thyroidOrgans)
+ * 4. Configure os campos específicos se necessário (ex: FindingDetailsComponent)
+ * 5. Atualize rotas em App.tsx
+ *
+ * @author Vertex Team
+ * @version 2.0.0
+ * @updated 2025-11-14
  */
 
-import React, { useState, useRef, useCallback } from 'react';
-import { ArrowLeft } from '@phosphor-icons/react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
+import { ArrowLeft } from '@phosphor-icons/react';
 
-import ModernExamLayout from '@/layouts/ModernExamLayout';
-import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelModern';
+// Componentes base
 import Sidebar from '@/components/original/Sidebar';
 import ReportCanvas from '@/components/original/ReportCanvas';
+import type { AIStatus } from '@/components/original/ReportCanvas';
 import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
 import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
 
-// Tipos e dados
-import type { SelectedFinding, FindingInstance } from '@/types/report';
-import type { Organ, Finding } from '@/data/organs';
+// Layout moderno
+import ModernExamLayout from '@/layouts/ModernExamLayout';
+import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelModern';
 
-// Trocar por seu catálogo de órgãos
+// Tipos e dados
+import type { SelectedFinding, ReportData, FindingInstance, AIProvider, AIGenerationStats } from '@/types/report';
+import type { Finding } from '@/data/organs';
+
+// ⚠️ SUBSTITUIR: Importe seu catálogo de órgãos aqui
 import { organs as exampleOrgans } from '@/data/organs';
+
+// Serviços de IA
+import { generateReport } from '@/services/reportGenerator';
+import { geminiStreamService, GEMINI_MODEL } from '@/services/geminiStreamService';
+import { openaiStreamService, OPENAI_MODEL } from '@/services/openaiStreamService';
+import { unifiedAIService } from '@/services/unifiedAIService';
+import { buildSpecializedPrompt } from '@/services/promptBuilder';
+import { estimateCostUsd, estimateTokensFromText } from '@/utils/aiMetrics';
 
 export default function ExamTemplateModern() {
   const navigate = useNavigate();
+
+  // Estado principal
   const [selectedOrgan, setSelectedOrgan] = useState('');
   const [selectedFindings, setSelectedFindings] = useState<SelectedFinding[]>([]);
   const [normalOrgans, setNormalOrgans] = useState<string[]>([]);
   const [generatedReport, setGeneratedReport] = useState('');
+
+  // Estado IA
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiImpression, setAiImpression] = useState('');
-  const [aiError, setAiError] = useState<string | null>(null);
-  const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'streaming' | 'completed' | 'error'>('idle');
   const [currentAiModel, setCurrentAiModel] = useState<'gemini' | 'openai'>('gemini');
+  const [currentModelId, setCurrentModelId] = useState<string>(GEMINI_MODEL);
   const [autoGenerateAI, setAutoGenerateAI] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiStatus, setAiStatus] = useState<AIStatus>('idle');
+  const [aiGenerationStats, setAiGenerationStats] = useState<AIGenerationStats | null>(null);
+
+  // Painel flutuante
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
+  const statusUnsubscribeRef = useRef<(() => void) | null>(null);
 
-  const getComponentFileName = (): string => {
-    const fullPath = import.meta.url;
-    const fileName = fullPath.split('/').pop() || '';
-    return fileName;
-  };
+  // ⚠️ SUBSTITUIR: Nome do exame para métricas
+  const EXAM_TYPE = 'Nome do Exame Aqui'; // Ex: "Ultrassonografia de Tireoide"
 
-  // Uso no componente:
-  const CURRENT_FILE = getComponentFileName();
-  const examType = CURRENT_FILE.split('.')[0];
-  console.log('[🔎]:', CURRENT_FILE); // "ExamTemplateModern.example.tsx"
-  console.log('[✅]:', examType);      // "ExamTemplateModern.example"
-
+  /**
+   * Handler para seleção de órgão
+   * Minimiza/maximiza painel ao clicar no mesmo órgão
+   */
   const handleOrganSelect = (organId: string) => {
-    if (selectedOrgan === organId) setIsPanelMinimized(!isPanelMinimized);
-    else { setSelectedOrgan(organId); setIsPanelMinimized(false); }
+    if (selectedOrgan === organId) {
+      setIsPanelMinimized(!isPanelMinimized);
+    } else {
+      setSelectedOrgan(organId);
+      setIsPanelMinimized(false);
+    }
   };
 
+  /**
+   * Handler para mudança de achados
+   * Gerencia estado de achados selecionados e suas instâncias
+   */
   const handleFindingChange = (
     organId: string,
     categoryId: string,
@@ -62,29 +105,382 @@ export default function ExamTemplateModern() {
     severity?: string,
     instances?: FindingInstance[]
   ) => {
-    setSelectedFindings(list => checked
-      ? (() => {
-          const i = list.findIndex(f => f.findingId === findingId);
-          if (i >= 0) { const up = [...list]; up[i] = { ...up[i], severity, instances }; return up; }
-          return [...list, { organId, categoryId, findingId, finding, severity, instances }];
-        })()
-      : list.filter(f => f.findingId !== findingId)
-    );
-    if (checked) setNormalOrgans(ns => ns.filter(id => id !== organId));
-  };
+    setSelectedFindings(currentFindings => {
+      if (checked) {
+        const existingIndex = currentFindings.findIndex(f => f.findingId === findingId);
+        if (existingIndex >= 0) {
+          const updated = [...currentFindings];
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            severity,
+            instances
+          };
+          return updated;
+        } else {
+          return [...currentFindings, {
+            organId,
+            categoryId,
+            findingId,
+            finding,
+            severity,
+            instances
+          }];
+        }
+      } else {
+        return currentFindings.filter(f => f.findingId !== findingId);
+      }
+    });
 
-  const handleNormalChange = (organId: string, isNormal: boolean) => {
-    if (isNormal) {
-      setNormalOrgans(ns => ns.includes(organId) ? ns : [...ns, organId]);
-      setSelectedFindings(list => list.filter(f => f.organId !== organId));
-    } else {
-      setNormalOrgans(ns => ns.filter(id => id !== organId));
+    if (checked) {
+      setNormalOrgans(current => current.filter(id => id !== organId));
     }
   };
 
-  const currentOrgan = exampleOrgans.find(o => o.id === selectedOrgan);
+  /**
+   * Handler para marcar órgão como normal
+   * Remove todos os achados do órgão ao marcar como normal
+   */
+  const handleNormalChange = (organId: string, isNormal: boolean) => {
+    if (isNormal) {
+      setNormalOrgans(current => {
+        if (!current.includes(organId)) {
+          return [...current, organId];
+        }
+        return current;
+      });
+      setSelectedFindings(current => current.filter(f => f.organId !== organId));
+    } else {
+      setNormalOrgans(current => current.filter(id => id !== organId));
+    }
+  };
+
+  /**
+   * Gera relatório completo com streaming progressivo e métricas
+   */
+  const handleGenerateReport = async (
+    data: ReportData,
+    options: { model: AIProvider; specificModel?: string }
+  ) => {
+    setIsGenerating(true);
+    try {
+      const provider = options?.model ?? 'gemini';
+      setCurrentAiModel(provider as 'gemini' | 'openai');
+      setGeneratedReport('');
+
+      // Persistir modelo selecionado
+      if (options?.specificModel) {
+        try { sessionStorage.setItem('selectedAIModel', options.specificModel); } catch {}
+        setCurrentModelId(options.specificModel);
+      } else {
+        setCurrentModelId(provider === 'openai' ? OPENAI_MODEL : GEMINI_MODEL);
+      }
+
+      // Inicializar métricas
+      const startedAt = Date.now();
+      const promptText = buildSpecializedPrompt({
+        examType: EXAM_TYPE,
+        selectedFindings: data.selectedFindings,
+        normalOrgans: data.normalOrgans,
+        organsCatalog: exampleOrgans
+      });
+      const promptTokenEstimate = estimateTokensFromText(promptText);
+      let chunkCount = 0;
+      let outputChars = 0;
+
+      if (provider === 'openai') {
+        if (!openaiStreamService.isConfigured()) {
+          toast.error('OpenAI API não está configurada.');
+          setIsGenerating(false);
+          return;
+        }
+
+        await openaiStreamService.generateFullReportStream(
+          {
+            examType: EXAM_TYPE,
+            selectedFindings: data.selectedFindings,
+            normalOrgans: data.normalOrgans,
+            organsCatalog: exampleOrgans
+          },
+          {
+            onChunk: (accumulated) => {
+              setGeneratedReport(accumulated);
+              chunkCount += 1;
+              outputChars = accumulated.length;
+            },
+            onComplete: (finalText) => {
+              setGeneratedReport(finalText);
+              toast.success('Relatório gerado com sucesso!');
+              const finishedAt = Date.now();
+              const completionTokens = estimateTokensFromText(finalText);
+              setAiGenerationStats({
+                provider: 'openai',
+                model: OPENAI_MODEL,
+                status: 'completed',
+                promptTokens: promptTokenEstimate,
+                completionTokens,
+                totalTokens: promptTokenEstimate + completionTokens,
+                estimatedCostUsd: estimateCostUsd('openai', promptTokenEstimate, completionTokens),
+                startedAt,
+                finishedAt,
+                durationMs: finishedAt - startedAt,
+                chunkCount,
+                inputChars: promptText.length,
+                outputChars
+              });
+            },
+            onError: (error) => {
+              console.error('Erro no OpenAI:', error);
+              toast.error('Erro ao gerar relatório.');
+              const finishedAt = Date.now();
+              setAiGenerationStats({
+                provider: 'openai',
+                model: OPENAI_MODEL,
+                status: 'error',
+                promptTokens: promptTokenEstimate,
+                startedAt,
+                finishedAt,
+                durationMs: finishedAt - startedAt,
+                chunkCount,
+                inputChars: promptText.length,
+                outputChars,
+                errorMessage: error?.message || 'Erro desconhecido'
+              });
+            }
+          }
+        );
+      } else {
+        // Gemini
+        if (!geminiStreamService.isConfigured()) {
+          const report = await generateReport(data, {
+            organsList: exampleOrgans,
+            provider
+          });
+          setGeneratedReport(report);
+          toast.success('Relatório gerado!');
+          const finishedAt = Date.now();
+          const completionTokens = estimateTokensFromText(report);
+          setAiGenerationStats({
+            provider: 'gemini',
+            model: GEMINI_MODEL,
+            status: 'completed',
+            promptTokens: promptTokenEstimate,
+            completionTokens,
+            totalTokens: promptTokenEstimate + completionTokens,
+            estimatedCostUsd: estimateCostUsd('gemini', promptTokenEstimate, completionTokens),
+            startedAt,
+            finishedAt,
+            durationMs: finishedAt - startedAt,
+            chunkCount,
+            inputChars: promptText.length,
+            outputChars: report.length
+          });
+        } else {
+          await geminiStreamService.generateFullReportStream(
+            {
+              examType: EXAM_TYPE,
+              selectedFindings: data.selectedFindings,
+              normalOrgans: data.normalOrgans,
+              organsCatalog: exampleOrgans
+            },
+            {
+              onChunk: (accumulatedText) => {
+                setGeneratedReport(accumulatedText);
+                chunkCount += 1;
+                outputChars = accumulatedText.length;
+              },
+              onComplete: (finalText) => {
+                setGeneratedReport(finalText);
+                toast.success('Relatório gerado!');
+                const finishedAt = Date.now();
+                const completionTokens = estimateTokensFromText(finalText);
+                setAiGenerationStats({
+                  provider: 'gemini',
+                  model: GEMINI_MODEL,
+                  status: 'completed',
+                  promptTokens: promptTokenEstimate,
+                  completionTokens,
+                  totalTokens: promptTokenEstimate + completionTokens,
+                  estimatedCostUsd: estimateCostUsd('gemini', promptTokenEstimate, completionTokens),
+                  startedAt,
+                  finishedAt,
+                  durationMs: finishedAt - startedAt,
+                  chunkCount,
+                  inputChars: promptText.length,
+                  outputChars
+                });
+              },
+              onError: async (error) => {
+                console.error('Erro no Gemini:', error);
+                try {
+                  const fallback = await generateReport(
+                    {
+                      selectedFindings: data.selectedFindings,
+                      normalOrgans: data.normalOrgans,
+                      additionalNotes: ''
+                    },
+                    { organsList: exampleOrgans, provider }
+                  );
+                  setGeneratedReport(fallback);
+                  toast.error('Falha no endpoint de IA. Exibindo laudo básico.');
+                  const finishedAt = Date.now();
+                  const completionTokens = estimateTokensFromText(fallback);
+                  setAiGenerationStats({
+                    provider: 'gemini',
+                    model: GEMINI_MODEL,
+                    status: 'error',
+                    promptTokens: promptTokenEstimate,
+                    completionTokens,
+                    totalTokens: promptTokenEstimate + completionTokens,
+                    estimatedCostUsd: estimateCostUsd('gemini', promptTokenEstimate, completionTokens),
+                    startedAt,
+                    finishedAt,
+                    durationMs: finishedAt - startedAt,
+                    chunkCount,
+                    inputChars: promptText.length,
+                    outputChars: fallback.length,
+                    errorMessage: error?.message || 'Erro desconhecido'
+                  });
+                } catch (fallbackErr) {
+                  console.error('Falha no fallback:', fallbackErr);
+                  toast.error('Erro ao gerar relatório.');
+                  const finishedAt = Date.now();
+                  setAiGenerationStats({
+                    provider: 'gemini',
+                    model: GEMINI_MODEL,
+                    status: 'error',
+                    promptTokens: promptTokenEstimate,
+                    startedAt,
+                    finishedAt,
+                    durationMs: finishedAt - startedAt,
+                    chunkCount,
+                    inputChars: promptText.length,
+                    outputChars,
+                    errorMessage: String(fallbackErr)
+                  });
+                }
+              }
+            }
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error generating report:', error);
+      toast.error('Erro ao gerar relatório.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  /**
+   * Gera impressão clínica com IA baseada nos achados
+   */
+  const generateAIImpression = useCallback(() => {
+    if (statusUnsubscribeRef.current) {
+      statusUnsubscribeRef.current();
+      statusUnsubscribeRef.current = null;
+    }
+
+    if (!isAiProcessing) {
+      unifiedAIService.cancelAllOperations();
+    }
+
+    if (selectedFindings.length === 0 && normalOrgans.length === 0) {
+      setAiImpression('');
+      setAiError('Adicione achados primeiro');
+      setIsAiProcessing(false);
+      setAiStatus('idle');
+      return;
+    }
+
+    unifiedAIService.setProvider(currentAiModel);
+
+    statusUnsubscribeRef.current = unifiedAIService.onStatusChange((status) => {
+      setAiStatus(status);
+      setIsAiProcessing(status === 'loading' || status === 'streaming');
+      if (status === 'error') {
+        setAiError('Erro ao consultar a IA');
+      } else {
+        setAiError(null);
+      }
+    });
+
+    let accumulatedText = '';
+    unifiedAIService.generateClinicalImpression(
+      {
+        examType: EXAM_TYPE,
+        selectedFindings,
+        normalOrgans,
+        organsCatalog: exampleOrgans
+      },
+      {
+        onChunk: (text) => {
+          accumulatedText += text;
+          setAiImpression(accumulatedText);
+        },
+        onComplete: (finalText) => {
+          setAiImpression(finalText);
+          setAiError(null);
+        },
+        onError: (error) => {
+          setAiImpression('');
+          setAiError(error.message || 'Erro desconhecido');
+        }
+      }
+    ).catch((error) => {
+      console.error('AI failed:', error);
+      setAiError('Falha na geração');
+    });
+  }, [selectedFindings, normalOrgans, currentAiModel, isAiProcessing]);
+
+  /**
+   * Auto-geração de impressão clínica com debounce
+   */
+  useEffect(() => {
+    if (!autoGenerateAI) return;
+
+    const timer = setTimeout(() => {
+      if (selectedFindings.length > 0 || normalOrgans.length > 0) {
+        generateAIImpression();
+      }
+    }, 2000);
+
+    return () => {
+      clearTimeout(timer);
+      if (statusUnsubscribeRef.current && autoGenerateAI) {
+        statusUnsubscribeRef.current();
+        statusUnsubscribeRef.current = null;
+      }
+      if (autoGenerateAI) {
+        unifiedAIService.cancelClinicalImpression();
+      }
+    };
+  }, [selectedFindings, normalOrgans, currentAiModel, autoGenerateAI, generateAIImpression]);
+
+  /**
+   * Cleanup ao desmontar componente
+   */
+  useEffect(() => {
+    return () => {
+      if (statusUnsubscribeRef.current) {
+        statusUnsubscribeRef.current();
+        statusUnsubscribeRef.current = null;
+      }
+      unifiedAIService.cleanup();
+    };
+  }, []);
+
+  // Derivar valores atuais
+  const currentOrgan = exampleOrgans.find(organ => organ.id === selectedOrgan);
   const currentOrganFindings = selectedFindings.filter(f => f.organId === selectedOrgan);
   const isCurrentOrganNormal = normalOrgans.includes(selectedOrgan);
+
+  /**
+   * Props opcionais do FloatingOrganPanelModern:
+   * - FindingDetailsComponent: Componente customizado para campos específicos
+   * - followSidebar: true para acompanhar sidebar em scroll
+   * - followGapPx: Gap entre sidebar e painel
+   * - followNudgePx: Ajuste fino de posicionamento
+   */
 
   return (
     <>
@@ -96,12 +492,11 @@ export default function ExamTemplateModern() {
               <span className="hidden md:inline">Voltar</span>
             </button>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold">US</span>
-              </div>
+              <img src="/logo-vertex.svg" alt="Vertex Ultrasound" className="h-10 w-10" />
               <div>
-                <h1 className="text-xl font-bold text-white">TÍTULO DO EXAME</h1>
-                <p className="text-xs text-gray-400">Subtítulo</p>
+                {/* ⚠️ SUBSTITUIR: Título e subtítulo do exame */}
+                <h1 className="text-xl font-bold text-white">NOME DO EXAME</h1>
+                <p className="text-xs text-gray-400">Subtítulo do Exame</p>
               </div>
             </div>
           </div>
@@ -126,11 +521,12 @@ export default function ExamTemplateModern() {
               isGenerating={isGenerating}
               aiImpression={aiImpression}
               aiError={aiError}
-              isAiLoading={false}
+              isAiLoading={isAiProcessing}
               aiStatus={aiStatus}
               organsList={exampleOrgans}
               currentAiModel={currentAiModel}
-              onGenerateAI={() => {}}
+              currentModelId={currentModelId}
+              onGenerateAI={generateAIImpression}
               autoGenerateAI={autoGenerateAI}
               onToggleAutoGenerate={setAutoGenerateAI}
             />
@@ -138,20 +534,22 @@ export default function ExamTemplateModern() {
         )}
         panels={(
           <>
+            {/* ⚠️ OPCIONAL: Adicionar QuickTemplatesPanel aqui se necessário */}
             <SelectedFindingsPanel
               className="glass-panel flex-1"
               selectedFindings={selectedFindings}
               normalOrgans={normalOrgans}
               organsList={exampleOrgans}
-              onGenerateReport={() => {}}
+              onGenerateReport={handleGenerateReport}
               isGenerating={isGenerating}
               expandToContent
             />
             <ExamStatisticsPanel
               className="glass-panel"
-              selectedFindings={selectedFindings}
-              normalOrgans={normalOrgans}
-              organsList={exampleOrgans}
+              stats={aiGenerationStats}
+              isGenerating={isGenerating}
+              currentProvider={currentAiModel === 'gemini' ? 'gemini' : 'openai'}
+              currentModel={currentModelId}
             />
           </>
         )}

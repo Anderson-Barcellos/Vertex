@@ -11,16 +11,18 @@ import { ArrowLeft } from '@phosphor-icons/react';
 // Imports originais
 import Sidebar from '@/components/original/Sidebar';
 import ReportCanvas from '@/components/original/ReportCanvas';
+import type { AIStatus } from '@/components/original/ReportCanvas';
 import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
 import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
 import { organs } from '@/data/organs';
-import { SelectedFinding, ReportData, FindingInstance, type AIProvider } from '@/types/report';
+import { SelectedFinding, ReportData, FindingInstance, type AIProvider, type AIGenerationStats } from '@/types/report';
 import { Finding } from '@/data/organs';
 import { generateReport } from '@/services/reportGenerator';
-import { generateGeminiClinicalImpression } from '@/services/geminiClient';
-import { geminiStreamService } from '@/services/geminiStreamService';
-import { openaiStreamService } from '@/services/openaiStreamService';
+import { geminiStreamService, GEMINI_MODEL } from '@/services/geminiStreamService';
+import { openaiStreamService, OPENAI_MODEL } from '@/services/openaiStreamService';
 import { unifiedAIService } from '@/services/unifiedAIService';
+import { buildSpecializedPrompt } from '@/services/promptBuilder';
+import { estimateCostUsd, estimateTokensFromText } from '@/utils/aiMetrics';
 import { toast } from 'sonner';
 import ModernExamLayout from '@/layouts/ModernExamLayout';
 import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelModern';
@@ -35,9 +37,11 @@ function AbdomeTotalExamModern() {
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiImpression, setAiImpression] = useState('');
   const [currentAiModel, setCurrentAiModel] = useState<'gemini' | 'openai'>('gemini');
+  const [currentModelId, setCurrentModelId] = useState<string>(GEMINI_MODEL);
   const [autoGenerateAI, setAutoGenerateAI] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [aiStatus, setAiStatus] = useState<AIStatus>('idle');
+  const [aiGenerationStats, setAiGenerationStats] = useState<AIGenerationStats | null>(null);
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
   const statusUnsubscribeRef = useRef<(() => void) | null>(null);
 
@@ -129,13 +133,33 @@ function AbdomeTotalExamModern() {
 
   const handleGenerateReport = async (
     data: ReportData,
-    options: { model: AIProvider }
+    options: { model: AIProvider; specificModel?: string }
   ) => {
     setIsGenerating(true);
     try {
       const provider = options?.model ?? 'gemini';
       setCurrentAiModel(provider as 'gemini' | 'openai');
       setGeneratedReport('');
+
+      // Persistir o modelo específico selecionado
+      if (options?.specificModel) {
+        try { sessionStorage.setItem('selectedAIModel', options.specificModel); } catch {}
+        setCurrentModelId(options.specificModel);
+      } else {
+        setCurrentModelId(provider === 'openai' ? OPENAI_MODEL : GEMINI_MODEL);
+      }
+
+      // Métricas
+      const startedAt = Date.now();
+      const promptText = buildSpecializedPrompt({
+        examType: 'Ultrassonografia Abdominal Total',
+        selectedFindings: data.selectedFindings,
+        normalOrgans: data.normalOrgans,
+        organsCatalog: organs
+      });
+      const promptTokenEstimate = estimateTokensFromText(promptText);
+      let chunkCount = 0;
+      let outputChars = 0;
 
       if (provider === 'openai') {
         if (!openaiStreamService.isConfigured()) {
@@ -144,26 +168,57 @@ function AbdomeTotalExamModern() {
           return;
         }
 
-        let fullReport = '';
         await openaiStreamService.generateFullReportStream(
           {
-            examType: examType,
+            examType: 'Ultrassonografia Abdominal Total',
             selectedFindings: data.selectedFindings,
             normalOrgans: data.normalOrgans,
             organsCatalog: organs
           },
           {
-            onChunk: (text) => {
-              fullReport += text;
-              setGeneratedReport(fullReport);
+            onChunk: (accumulated) => {
+              setGeneratedReport(accumulated);
+              chunkCount += 1;
+              outputChars = accumulated.length;
             },
             onComplete: (finalText) => {
               setGeneratedReport(finalText);
               toast.success('Relatório gerado com sucesso!');
+              const finishedAt = Date.now();
+              const completionTokens = estimateTokensFromText(finalText);
+              setAiGenerationStats({
+                provider: 'openai',
+                model: OPENAI_MODEL,
+                status: 'completed',
+                promptTokens: promptTokenEstimate,
+                completionTokens,
+                totalTokens: promptTokenEstimate + completionTokens,
+                estimatedCostUsd: estimateCostUsd('openai', promptTokenEstimate, completionTokens),
+                startedAt,
+                finishedAt,
+                durationMs: finishedAt - startedAt,
+                chunkCount,
+                inputChars: promptText.length,
+                outputChars
+              });
             },
             onError: (error) => {
               console.error('Erro no OpenAI:', error);
               toast.error('Erro ao gerar relatório.');
+              const finishedAt = Date.now();
+              setAiGenerationStats({
+                provider: 'openai',
+                model: OPENAI_MODEL,
+                status: 'error',
+                promptTokens: promptTokenEstimate,
+                startedAt,
+                finishedAt,
+                durationMs: finishedAt - startedAt,
+                chunkCount,
+                inputChars: promptText.length,
+                outputChars,
+                errorMessage: error?.message || 'Erro desconhecido'
+              });
             }
           }
         );
@@ -175,6 +230,23 @@ function AbdomeTotalExamModern() {
           });
           setGeneratedReport(report);
           toast.success('Relatório gerado!');
+          const finishedAt = Date.now();
+          const completionTokens = estimateTokensFromText(report);
+          setAiGenerationStats({
+            provider: 'gemini',
+            model: GEMINI_MODEL,
+            status: 'completed',
+            promptTokens: promptTokenEstimate,
+            completionTokens,
+            totalTokens: promptTokenEstimate + completionTokens,
+            estimatedCostUsd: estimateCostUsd('gemini', promptTokenEstimate, completionTokens),
+            startedAt,
+            finishedAt,
+            durationMs: finishedAt - startedAt,
+            chunkCount,
+            inputChars: promptText.length,
+            outputChars: report.length
+          });
         } else {
           await geminiStreamService.generateFullReportStream(
             {
@@ -186,10 +258,29 @@ function AbdomeTotalExamModern() {
             {
               onChunk: (accumulatedText) => {
                 setGeneratedReport(accumulatedText);
+                chunkCount += 1;
+                outputChars = accumulatedText.length;
               },
               onComplete: (finalText) => {
                 setGeneratedReport(finalText);
                 toast.success('Relatório gerado!');
+                const finishedAt = Date.now();
+                const completionTokens = estimateTokensFromText(finalText);
+                setAiGenerationStats({
+                  provider: 'gemini',
+                  model: GEMINI_MODEL,
+                  status: 'completed',
+                  promptTokens: promptTokenEstimate,
+                  completionTokens,
+                  totalTokens: promptTokenEstimate + completionTokens,
+                  estimatedCostUsd: estimateCostUsd('gemini', promptTokenEstimate, completionTokens),
+                  startedAt,
+                  finishedAt,
+                  durationMs: finishedAt - startedAt,
+                  chunkCount,
+                  inputChars: promptText.length,
+                  outputChars
+                });
               },
               onError: async (error) => {
                 console.error('Erro no Gemini:', error);
@@ -204,9 +295,41 @@ function AbdomeTotalExamModern() {
                   );
                   setGeneratedReport(fallback);
                   toast.error('Falha no endpoint de IA. Exibindo laudo básico.');
+                  const finishedAt = Date.now();
+                  const completionTokens = estimateTokensFromText(fallback);
+                  setAiGenerationStats({
+                    provider: 'gemini',
+                    model: GEMINI_MODEL,
+                    status: 'error',
+                    promptTokens: promptTokenEstimate,
+                    completionTokens,
+                    totalTokens: promptTokenEstimate + completionTokens,
+                    estimatedCostUsd: estimateCostUsd('gemini', promptTokenEstimate, completionTokens),
+                    startedAt,
+                    finishedAt,
+                    durationMs: finishedAt - startedAt,
+                    chunkCount,
+                    inputChars: promptText.length,
+                    outputChars: fallback.length,
+                    errorMessage: error?.message || 'Erro desconhecido'
+                  });
                 } catch (fallbackErr) {
                   console.error('Falha no fallback:', fallbackErr);
                   toast.error('Erro ao gerar relatório.');
+                  const finishedAt = Date.now();
+                  setAiGenerationStats({
+                    provider: 'gemini',
+                    model: GEMINI_MODEL,
+                    status: 'error',
+                    promptTokens: promptTokenEstimate,
+                    startedAt,
+                    finishedAt,
+                    durationMs: finishedAt - startedAt,
+                    chunkCount,
+                    inputChars: promptText.length,
+                    outputChars,
+                    errorMessage: String(fallbackErr)
+                  });
                 }
               }
             }
@@ -356,6 +479,7 @@ function AbdomeTotalExamModern() {
               aiStatus={aiStatus}
               organsList={organs}
               currentAiModel={currentAiModel}
+              currentModelId={currentModelId}
               onGenerateAI={generateAIImpression}
               autoGenerateAI={autoGenerateAI}
               onToggleAutoGenerate={setAutoGenerateAI}
@@ -375,9 +499,10 @@ function AbdomeTotalExamModern() {
             />
             <ExamStatisticsPanel
               className="glass-panel"
-              selectedFindings={selectedFindings}
-              normalOrgans={normalOrgans}
-              organsList={organs}
+              stats={aiGenerationStats}
+              isGenerating={isGenerating}
+              currentProvider={currentAiModel === 'gemini' ? 'gemini' : 'openai'}
+              currentModel={currentModelId}
             />
           </>
         )}

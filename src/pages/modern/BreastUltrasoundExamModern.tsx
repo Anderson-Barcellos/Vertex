@@ -14,6 +14,7 @@ import { ArrowLeft } from '@phosphor-icons/react';
 // Imports originais
 import Sidebar from '@/components/original/Sidebar';
 import ReportCanvas from '@/components/original/ReportCanvas';
+import type { AIStatus } from '@/components/original/ReportCanvas';
 import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
 import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
 import BreastUltrasoundFindingDetails from '@/components/original/BreastUltrasoundFindingDetails';
@@ -29,6 +30,7 @@ import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelMode
 import QuickTemplatesPanel from '@/components/shared/QuickTemplatesPanel';
 import { buildSpecializedPrompt } from '@/services/promptBuilder';
 import { estimateCostUsd, estimateTokensFromText } from '@/utils/aiMetrics';
+import { buildBreastReport, buildBreastImpression } from '@/services/breastReportBuilder';
 
 function BreastUltrasoundExamModern() {
   const navigate = useNavigate();
@@ -41,9 +43,9 @@ function BreastUltrasoundExamModern() {
   const [aiImpression, setAiImpression] = useState('');
   const [currentAiModel, setCurrentAiModel] = useState<'gemini' | 'openai'>('gemini');
   const [currentModelId, setCurrentModelId] = useState<string>(GEMINI_MODEL);
-  const [autoGenerateAI, setAutoGenerateAI] = useState(false);
+  const [useAiRefinement, setUseAiRefinement] = useState(false); // Novo: controla se usa IA ou não
   const [aiError, setAiError] = useState<string | null>(null);
-  const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [aiStatus, setAiStatus] = useState<AIStatus>('idle');
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
   const [aiGenerationStats, setAiGenerationStats] = useState<AIGenerationStats | null>(null);
   const statusUnsubscribeRef = useRef<(() => void) | null>(null);
@@ -380,11 +382,11 @@ function BreastUltrasoundExamModern() {
 
     // Métricas
     const startedAt = Date.now();
-    const promptText = buildReportPrompt({
+    const promptText = buildSpecializedPrompt({
       examType: 'Ultrassonografia Mamária (BI-RADS)',
       selectedFindings,
       normalOrgans,
-      organsCatalog: mammographyOrgans
+      organsCatalog: breastUltrasoundOrgans
     });
     const promptTokenEstimate = estimateTokensFromText(promptText);
     let chunkCount = 0;
@@ -448,8 +450,26 @@ function BreastUltrasoundExamModern() {
     });
   }, [selectedFindings, normalOrgans, currentAiModel, isAiProcessing]);
 
+  /**
+   * ⚡ GERAÇÃO INSTANTÂNEA DE LAUDO (SEM IA)
+   * Atualiza o laudo automaticamente sempre que há mudanças nos achados
+   */
   useEffect(() => {
-    if (!autoGenerateAI) return;
+    // Gera laudo completo instantaneamente
+    const report = buildBreastReport(selectedFindings, normalOrgans, breastUltrasoundOrgans);
+    setGeneratedReport(report);
+
+    // Gera impressão clínica resumida
+    const impression = buildBreastImpression(selectedFindings, normalOrgans);
+    setAiImpression(impression);
+  }, [selectedFindings, normalOrgans]);
+
+  /**
+   * 🤖 REFINAMENTO COM IA (OPCIONAL)
+   * Apenas se o usuário explicitamente solicitar refinamento
+   */
+  useEffect(() => {
+    if (!useAiRefinement) return;
 
     const timer = setTimeout(() => {
       if (selectedFindings.length > 0 || normalOrgans.length > 0) {
@@ -459,15 +479,15 @@ function BreastUltrasoundExamModern() {
 
     return () => {
       clearTimeout(timer);
-      if (statusUnsubscribeRef.current && autoGenerateAI) {
+      if (statusUnsubscribeRef.current && useAiRefinement) {
         statusUnsubscribeRef.current();
         statusUnsubscribeRef.current = null;
       }
-      if (autoGenerateAI) {
+      if (useAiRefinement) {
         unifiedAIService.cancelClinicalImpression();
       }
     };
-  }, [selectedFindings, normalOrgans, currentAiModel, autoGenerateAI, generateAIImpression]);
+  }, [selectedFindings, normalOrgans, currentAiModel, useAiRefinement, generateAIImpression]);
 
   useEffect(() => {
     return () => {
@@ -542,8 +562,8 @@ function BreastUltrasoundExamModern() {
               currentAiModel={currentAiModel}
               currentModelId={currentModelId}
               onGenerateAI={generateAIImpression}
-              autoGenerateAI={autoGenerateAI}
-              onToggleAutoGenerate={setAutoGenerateAI}
+              autoGenerateAI={useAiRefinement}
+              onToggleAutoGenerate={setUseAiRefinement}
             />
           </div>
         )}
@@ -575,9 +595,6 @@ function BreastUltrasoundExamModern() {
               widthExpanded={'24rem'}
               maxHeight={'80vh'}
               FindingDetailsComponent={BreastUltrasoundFindingDetails}
-              followSidebar={true}
-              followGapPx={0}
-              followNudgePx={24}
             />
           ) : null
         )}

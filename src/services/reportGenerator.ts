@@ -152,7 +152,7 @@ function generateBasicReport(
               if (m.plaqueEchogenicity || m.echogenicity) parts.push(`ecogenicidade ${m.plaqueEchogenicity || m.echogenicity}`);
               if (m.plaqueComposition || m.composition) parts.push(`composição ${m.plaqueComposition || m.composition}`);
               if (m.plaqueSurface || m.surface) parts.push(`superfície ${m.plaqueSurface || m.surface}`);
-              if (m.plaqueRisk || m.risk) parts.push(m.plaqueRisk || m.risk);
+              if (m.plaqueRisk || m.risk) parts.push(String(m.plaqueRisk || m.risk));
               if (m.vertebralFlowPattern || m.flowPattern) parts.push(`padrão de fluxo ${m.vertebralFlowPattern || m.flowPattern}`);
               if (m.subclavianSteal) parts.push(`roubo da subclávia ${m.subclavianSteal}`);
               if (m.vertebralVelocity) parts.push(`velocidade ${m.vertebralVelocity}`);
