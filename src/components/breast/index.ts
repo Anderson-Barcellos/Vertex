@@ -10,6 +10,10 @@ export type { BiRadsDisplayProps } from './BiRadsDisplay';
 export { LexicoDropdown } from './LexicoDropdown';
 export type { LexicoDropdownProps, OpcaoLexicoComPontuacao } from './LexicoDropdown';
 
+// Seções de Exame
+export { LinfonodosSection } from './LinfonodosSection';
+export type { LinfonodosSectionProps } from './LinfonodosSection';
+
 // Opções Pré-configuradas
 export {
   OPCOES_FORMA,
