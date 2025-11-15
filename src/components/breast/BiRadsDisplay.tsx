@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, AlertCircle, CheckCircle, Info } from 'phosphor-react';
+import { CaretDown, Warning, CheckCircle, Info } from '@phosphor-icons/react';
 import {
   Card,
   CardHeader,
@@ -146,9 +146,9 @@ export const BiRadsDisplay: React.FC<BiRadsDisplayProps> = ({
       case 'provavelmente-benigno':
         return <CheckCircle size={24} weight="fill" />;
       case 'suspeito':
-        return <AlertCircle size={24} weight="fill" />;
+        return <Warning size={24} weight="fill" />;
       case 'altamente-suspeito':
-        return <AlertCircle size={24} weight="fill" />;
+        return <Warning size={24} weight="fill" />;
       default:
         return <Info size={24} weight="fill" />;
     }
@@ -221,7 +221,7 @@ export const BiRadsDisplay: React.FC<BiRadsDisplayProps> = ({
               <span className={`font-semibold ${colors.badgeText}`}>
                 Detalhamento da Pontuação
               </span>
-              <ChevronDown
+              <CaretDown
                 size={20}
                 weight="bold"
                 className={`
