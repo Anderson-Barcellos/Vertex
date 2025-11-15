@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, AlertCircle, CheckCircle, Info } from 'phosphor-react';
+import { CaretDown, WarningCircle, CheckCircle, Info } from '@phosphor-icons/react';
 import {
   Card,
   CardHeader,
@@ -146,9 +146,9 @@ export const BiRadsDisplay: React.FC<BiRadsDisplayProps> = ({
       case 'provavelmente-benigno':
         return <CheckCircle size={24} weight="fill" />;
       case 'suspeito':
-        return <AlertCircle size={24} weight="fill" />;
+        return <WarningCircle size={24} weight="fill" />;
       case 'altamente-suspeito':
-        return <AlertCircle size={24} weight="fill" />;
+        return <WarningCircle size={24} weight="fill" />;
       default:
         return <Info size={24} weight="fill" />;
     }
@@ -221,7 +221,7 @@ export const BiRadsDisplay: React.FC<BiRadsDisplayProps> = ({
               <span className={`font-semibold ${colors.badgeText}`}>
                 Detalhamento da Pontuação
               </span>
-              <ChevronDown
+              <CaretDown
                 size={20}
                 weight="bold"
                 className={`
@@ -260,12 +260,11 @@ export const BiRadsDisplay: React.FC<BiRadsDisplayProps> = ({
                       <span
                         className={`
                           px-2 py-1 rounded text-xs font-bold
-                          ${
-                            detalhe.pontos > 0
-                              ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
-                              : detalhe.pontos < 0
-                                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'
+                          ${detalhe.pontos > 0
+                            ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
+                            : detalhe.pontos < 0
+                              ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'
                           }
                         `}
                       >
