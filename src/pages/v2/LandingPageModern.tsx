@@ -186,30 +186,48 @@ export function LandingPageModern() {
             </div>
           </div>
 
-          {/* Placeholder para futuro módulo */}
-          <div className="glass-panel p-8 opacity-50 cursor-not-allowed">
+          {/* Ecodoppler de Tireóide */}
+          <div
+            onClick={() => navigate('/thyroid-modern')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+          >
+            {/* Gradient Overlay on Hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
             <div className="relative z-10">
               {/* Icon */}
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center mb-6 shadow-lg">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                 <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
 
               {/* Content */}
               <h3 className="text-3xl font-bold text-white mb-3">
-                Em Breve
+                Ecodoppler de Tireóide
               </h3>
               <p className="text-gray-400 mb-6 leading-relaxed">
-                Novos módulos em desenvolvimento: Tireoide, Pélvico, Obstétrico e mais
+                Avaliação tireoidiana com TI-RADS automático, Doppler colorido e análise de linfonodos cervicais
               </p>
 
               {/* Stats */}
               <div className="flex gap-4 mb-6">
                 <div className="flex-1 glass-card">
-                  <div className="text-2xl font-bold text-gray-400">🚧</div>
-                  <div className="text-xs text-gray-400">Em breve</div>
+                  <div className="text-2xl font-bold text-emerald-400">TI-RADS</div>
+                  <div className="text-xs text-gray-400">ACR 2017</div>
                 </div>
+                <div className="flex-1 glass-card">
+                  <div className="text-2xl font-bold text-teal-400">4+</div>
+                  <div className="text-xs text-gray-400">Estruturas</div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="flex items-center text-emerald-400 font-semibold group-hover:translate-x-2 transition-transform duration-300">
+                <span>Acessar módulo</span>
+                <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
               </div>
             </div>
           </div>
