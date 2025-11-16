@@ -4,8 +4,7 @@ interface ResolutionGuardProps {
   children: ReactNode;
 }
 
-const MIN_WIDTH = 1280;
-const MIN_HEIGHT = 800;
+const MIN_WIDTH = 1230;
 
 export default function ResolutionGuard({ children }: ResolutionGuardProps) {
   const [isCompatible, setIsCompatible] = useState(true);
@@ -18,7 +17,7 @@ export default function ResolutionGuard({ children }: ResolutionGuardProps) {
       const height = window.innerHeight;
 
       setCurrentResolution({ width, height });
-      setIsCompatible(width >= MIN_WIDTH && height >= MIN_HEIGHT);
+      setIsCompatible(width >= MIN_WIDTH);
     };
 
     // Verificação inicial
@@ -64,7 +63,7 @@ export default function ResolutionGuard({ children }: ResolutionGuardProps) {
         {/* Descrição */}
         <div className="resolution-guard-description">
           <p className="text-lg mb-4">
-            Esta aplicação requer no mínimo:
+            Esta aplicação requer largura mínima de:
           </p>
 
           <div className="resolution-badge">
@@ -79,16 +78,16 @@ export default function ResolutionGuard({ children }: ResolutionGuardProps) {
               <line x1="12" y1="17" x2="12" y2="21" />
             </svg>
             <span className="resolution-value">
-              {MIN_WIDTH} × {MIN_HEIGHT} pixels
+              {MIN_WIDTH} pixels (largura)
             </span>
           </div>
 
           <div className="resolution-current">
             <p className="text-sm opacity-70">
-              Sua resolução atual:
+              Sua largura atual:
             </p>
             <p className="text-xl font-bold text-red-400">
-              {currentResolution.width} × {currentResolution.height} pixels
+              {currentResolution.width} pixels
             </p>
           </div>
 
