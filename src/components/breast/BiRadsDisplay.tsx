@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CaretDown, WarningCircle, CheckCircle, Info } from '@phosphor-icons/react';
+import { CaretDown, Warning, CheckCircle, Info } from '@phosphor-icons/react';
 import {
   Card,
   CardHeader,
@@ -146,9 +146,9 @@ export const BiRadsDisplay: React.FC<BiRadsDisplayProps> = ({
       case 'provavelmente-benigno':
         return <CheckCircle size={24} weight="fill" />;
       case 'suspeito':
-        return <WarningCircle size={24} weight="fill" />;
+        return <Warning size={24} weight="fill" />;
       case 'altamente-suspeito':
-        return <WarningCircle size={24} weight="fill" />;
+        return <Warning size={24} weight="fill" />;
       default:
         return <Info size={24} weight="fill" />;
     }
