@@ -13,6 +13,9 @@ export interface FindingMeasurement {
   ratioICA_CCA?: string; // Razão VPS ICA/CCA
   ratioICA_ICA?: string; // Razão VPS ICA/ICA contralateral
   nascetGrade?: string; // Grau NASCET
+  stenosis_percent?: string; // Percentual de estenose estimado visualmente
+  extension?: string; // Extensão longitudinal da placa em mm
+  diameter?: string; // Diâmetro do vaso (para vertebrais/hipoplasia) em mm
 
   // Carotid Doppler - Características de Placas
   plaqueEchogenicity?: string; // Ecogenicidade da placa (Gray-Weale)

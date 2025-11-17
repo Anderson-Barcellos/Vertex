@@ -38,6 +38,16 @@ export const PLAQUE_ECHOGENICITY = [
   'Hiperecogênica homogênea (tipo IV)'
 ];
 
+// Helper para classificação automática Gray-Weale baseada na ecogenicidade
+export const getGrayWealeType = (ecogenicity: string): string => {
+  const lower = ecogenicity.toLowerCase();
+  if (lower.includes('tipo i)') || lower.includes('hipoecogênica (tipo i')) return 'I';
+  if (lower.includes('tipo ii)') || lower.includes('hipoecogênica (tipo ii')) return 'II';
+  if (lower.includes('tipo iii)') || lower.includes('hiperecogênica (tipo iii')) return 'III';
+  if (lower.includes('tipo iv)') || lower.includes('hiperecogênica (tipo iv')) return 'IV';
+  return '';
+};
+
 export const PLAQUE_COMPOSITION = [
   'Homogênea',
   'Heterogênea',
@@ -79,6 +89,19 @@ export const VERTEBRAL_IR = [
   'Baixo (<0.55)',
   'Elevado (>0.75)'
 ];
+
+// Valores padrão normais para velocidades
+export const DEFAULT_VELOCITIES = {
+  CCA_VPS: '60 cm/s',
+  CCA_VDF: '20 cm/s',
+  ICA_VPS: '80 cm/s',
+  ICA_VDF: '25 cm/s',
+  ECA_VPS: '70 cm/s',
+  ECA_VDF: '18 cm/s',
+  VERTEBRAL_VPS: '50 cm/s',
+  VERTEBRAL_VDF: '15 cm/s',
+  RATIO_ICA_CCA: '1.2'
+};
 
 export const FLOW_PATTERN_VERTEBRAL = [
   'Anterógrado (normal)',
@@ -137,6 +160,12 @@ export const carotidOrgans: Organ[] = [
                 options: PLAQUE_SURFACE_TYPE
               },
               {
+                id: 'extension',
+                label: 'Extensão longitudinal',
+                type: 'text',
+                placeholder: 'Ex: 12 mm'
+              },
+              {
                 id: 'risk',
                 label: 'Estratificação de Risco',
                 type: 'select',
@@ -174,6 +203,12 @@ export const carotidOrgans: Organ[] = [
             hasLocation: true,
             hasSeverity: true,  // Leve (<50%), moderada (50-69%), acentuada (≥70%)
             extraFields: [
+              {
+                id: 'stenosis_percent',
+                label: 'Estenose estimada (%)',
+                type: 'text',
+                placeholder: 'Ex: 45%'
+              },
               {
                 id: 'vps',
                 label: 'VPS (Velocidade Pico Sistólico)',
@@ -243,6 +278,12 @@ export const carotidOrgans: Organ[] = [
                 options: PLAQUE_SURFACE_TYPE
               },
               {
+                id: 'extension',
+                label: 'Extensão longitudinal',
+                type: 'text',
+                placeholder: 'Ex: 12 mm'
+              },
+              {
                 id: 'risk',
                 label: 'Estratificação de Risco',
                 type: 'select',
@@ -280,6 +321,12 @@ export const carotidOrgans: Organ[] = [
             hasLocation: true,
             hasSeverity: true,
             extraFields: [
+              {
+                id: 'stenosis_percent',
+                label: 'Estenose estimada (%)',
+                type: 'text',
+                placeholder: 'Ex: 45%'
+              },
               {
                 id: 'vps',
                 label: 'VPS (Velocidade Pico Sistólico)',
@@ -349,6 +396,12 @@ export const carotidOrgans: Organ[] = [
                 options: PLAQUE_SURFACE_TYPE
               },
               {
+                id: 'extension',
+                label: 'Extensão longitudinal',
+                type: 'text',
+                placeholder: 'Ex: 12 mm'
+              },
+              {
                 id: 'risk',
                 label: 'Estratificação de Risco',
                 type: 'select',
@@ -377,6 +430,12 @@ export const carotidOrgans: Organ[] = [
                 options: PLAQUE_COMPOSITION
               },
               {
+                id: 'extension',
+                label: 'Extensão longitudinal',
+                type: 'text',
+                placeholder: 'Ex: 12 mm'
+              },
+              {
                 id: 'risk',
                 label: 'Estratificação de Risco',
                 type: 'select',
@@ -399,6 +458,12 @@ export const carotidOrgans: Organ[] = [
             hasLocation: true,
             hasSeverity: true,  // <50%, 50-69%, ≥70%
             extraFields: [
+              {
+                id: 'stenosis_percent',
+                label: 'Estenose estimada (%)',
+                type: 'text',
+                placeholder: 'Ex: 65%'
+              },
               {
                 id: 'vps',
                 label: 'VPS (Velocidade Pico Sistólico)',
@@ -493,6 +558,12 @@ export const carotidOrgans: Organ[] = [
                 options: PLAQUE_SURFACE_TYPE
               },
               {
+                id: 'extension',
+                label: 'Extensão longitudinal',
+                type: 'text',
+                placeholder: 'Ex: 12 mm'
+              },
+              {
                 id: 'risk',
                 label: 'Estratificação de Risco',
                 type: 'select',
@@ -521,6 +592,12 @@ export const carotidOrgans: Organ[] = [
                 options: PLAQUE_COMPOSITION
               },
               {
+                id: 'extension',
+                label: 'Extensão longitudinal',
+                type: 'text',
+                placeholder: 'Ex: 12 mm'
+              },
+              {
                 id: 'risk',
                 label: 'Estratificação de Risco',
                 type: 'select',
@@ -543,6 +620,12 @@ export const carotidOrgans: Organ[] = [
             hasLocation: true,
             hasSeverity: true,
             extraFields: [
+              {
+                id: 'stenosis_percent',
+                label: 'Estenose estimada (%)',
+                type: 'text',
+                placeholder: 'Ex: 65%'
+              },
               {
                 id: 'vps',
                 label: 'VPS (Velocidade Pico Sistólico)',
@@ -637,6 +720,12 @@ export const carotidOrgans: Organ[] = [
                 options: PLAQUE_SURFACE_TYPE
               },
               {
+                id: 'extension',
+                label: 'Extensão longitudinal',
+                type: 'text',
+                placeholder: 'Ex: 12 mm'
+              },
+              {
                 id: 'risk',
                 label: 'Estratificação de Risco',
                 type: 'select',
@@ -659,6 +748,12 @@ export const carotidOrgans: Organ[] = [
             hasLocation: true,
             hasSeverity: true,
             extraFields: [
+              {
+                id: 'stenosis_percent',
+                label: 'Estenose estimada (%)',
+                type: 'text',
+                placeholder: 'Ex: 45%'
+              },
               {
                 id: 'vps',
                 label: 'VPS (Velocidade Pico Sistólico)',
@@ -722,6 +817,12 @@ export const carotidOrgans: Organ[] = [
                 options: PLAQUE_SURFACE_TYPE
               },
               {
+                id: 'extension',
+                label: 'Extensão longitudinal',
+                type: 'text',
+                placeholder: 'Ex: 12 mm'
+              },
+              {
                 id: 'risk',
                 label: 'Estratificação de Risco',
                 type: 'select',
@@ -744,6 +845,12 @@ export const carotidOrgans: Organ[] = [
             hasLocation: true,
             hasSeverity: true,
             extraFields: [
+              {
+                id: 'stenosis_percent',
+                label: 'Estenose estimada (%)',
+                type: 'text',
+                placeholder: 'Ex: 45%'
+              },
               {
                 id: 'vps',
                 label: 'VPS (Velocidade Pico Sistólico)',
@@ -846,7 +953,15 @@ export const carotidOrgans: Organ[] = [
             name: 'Hipoplasia',
             description: 'Calibre reduzido da artéria vertebral (<2mm)',
             hasDetails: true,
-            hasMeasurement: true  // Diâmetro em mm
+            hasMeasurement: true,  // Diâmetro em mm
+            extraFields: [
+              {
+                id: 'diameter',
+                label: 'Diâmetro (mm)',
+                type: 'text',
+                placeholder: 'Ex: 1.5 mm'
+              }
+            ]
           },
           {
             id: 'aplasia-vd',
@@ -935,7 +1050,15 @@ export const carotidOrgans: Organ[] = [
             name: 'Hipoplasia',
             description: 'Calibre reduzido da artéria vertebral (<2mm)',
             hasDetails: true,
-            hasMeasurement: true
+            hasMeasurement: true,
+            extraFields: [
+              {
+                id: 'diameter',
+                label: 'Diâmetro (mm)',
+                type: 'text',
+                placeholder: 'Ex: 1.5 mm'
+              }
+            ]
           },
           {
             id: 'aplasia-ve',
