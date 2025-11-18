@@ -14,7 +14,8 @@ import {
   STENOSIS_GRADES,
   PLAQUE_RISK,
   PLAQUE_SURFACE,
-  FLOW_PATTERN
+  FLOW_PATTERN,
+  getGrayWealeType
 } from '@/data/carotidOrgans';
 
 interface CarotidFindingDetailsProps {
@@ -269,6 +270,9 @@ function CarotidFindingDetailsComponent({
   const handleAddInstance = () => {
     if (currentMeasurement.size ||
         currentMeasurement.location ||
+        currentMeasurement.extension ||
+        currentMeasurement.stenosis_percent ||
+        currentMeasurement.diameter ||
         currentMeasurement.vps ||
         currentMeasurement.vdf ||
         currentMeasurement.ratio ||
@@ -405,6 +409,15 @@ function CarotidFindingDetailsComponent({
                       {instance.measurements.size && (
                         <p><span className="text-muted-foreground">Tamanho:</span> {instance.measurements.size}</p>
                       )}
+                      {instance.measurements.extension && (
+                        <p><span className="text-muted-foreground">Extensão:</span> {instance.measurements.extension}</p>
+                      )}
+                      {instance.measurements.stenosis_percent && (
+                        <p><span className="text-muted-foreground">Estenose:</span> {instance.measurements.stenosis_percent}</p>
+                      )}
+                      {instance.measurements.diameter && (
+                        <p><span className="text-muted-foreground">Diâmetro:</span> {instance.measurements.diameter}</p>
+                      )}
                       {instance.measurements.vps && (
                         <p><span className="text-muted-foreground">VPS:</span> {instance.measurements.vps}</p>
                       )}
@@ -418,7 +431,15 @@ function CarotidFindingDetailsComponent({
                         <p><span className="text-muted-foreground">NASCET:</span> {nascetValue}</p>
                       )}
                       {instance.measurements.echogenicity && (
-                        <p><span className="text-muted-foreground">Ecogenicidade:</span> {instance.measurements.echogenicity}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Ecogenicidade:</span>
+                          <span>{instance.measurements.echogenicity}</span>
+                          {getGrayWealeType(instance.measurements.echogenicity) && (
+                            <Badge variant="outline" className="text-xs">
+                              Tipo {getGrayWealeType(instance.measurements.echogenicity)}
+                            </Badge>
+                          )}
+                        </div>
                       )}
                       {instance.measurements.composition && (
                         <p><span className="text-muted-foreground">Composição:</span> {instance.measurements.composition}</p>
@@ -535,6 +556,19 @@ function CarotidFindingDetailsComponent({
               {isStenosis && (
                 <>
                   <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
+                      Estenose (%):
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: 65%"
+                      value={currentMeasurement.stenosis_percent || ''}
+                      onChange={(e) => setCurrentMeasurement({...currentMeasurement, stenosis_percent: e.target.value})}
+                      className="h-7 text-xs flex-1"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
                     <label className="text-xs font-medium text-muted-foreground min-w-[80px] flex items-center gap-1">
                       <Activity size={12} />
                       VPS:
@@ -641,6 +675,19 @@ function CarotidFindingDetailsComponent({
                 <>
                   <div className="flex items-center gap-2">
                     <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
+                      Extensão:
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: 12 mm"
+                      value={currentMeasurement.extension || ''}
+                      onChange={(e) => setCurrentMeasurement({...currentMeasurement, extension: e.target.value})}
+                      className="h-7 text-xs flex-1"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
                       Ecogenicidade:
                     </label>
                     <Select
@@ -664,6 +711,11 @@ function CarotidFindingDetailsComponent({
                         ))}
                       </SelectContent>
                     </Select>
+                    {currentMeasurement.echogenicity && getGrayWealeType(currentMeasurement.echogenicity) && (
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        Tipo {getGrayWealeType(currentMeasurement.echogenicity)}
+                      </Badge>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -792,6 +844,22 @@ function CarotidFindingDetailsComponent({
               {/* Campos específicos para VERTEBRAIS */}
               {isVertebral && (
                 <>
+                  {(finding.id.includes('hipoplasia') || finding.id.includes('aplasia')) && (
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-medium text-muted-foreground min-w-[80px] flex items-center gap-1">
+                        <Ruler size={12} />
+                        Diâmetro:
+                      </label>
+                      <Input
+                        type="text"
+                        placeholder="Ex: 1.5 mm"
+                        value={currentMeasurement.diameter || ''}
+                        onChange={(e) => setCurrentMeasurement({...currentMeasurement, diameter: e.target.value})}
+                        className="h-7 text-xs flex-1"
+                      />
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-2">
                     <label className="text-xs font-medium text-muted-foreground min-w-[80px] flex items-center gap-1">
                       <Activity size={12} />
@@ -919,6 +987,9 @@ function CarotidFindingDetailsComponent({
                   disabled={
                     !currentMeasurement.location &&
                     !currentMeasurement.size &&
+                    !currentMeasurement.extension &&
+                    !currentMeasurement.stenosis_percent &&
+                    !currentMeasurement.diameter &&
                     !currentMeasurement.vps &&
                     !currentMeasurement.vdf &&
                     !currentMeasurement.ratio &&
