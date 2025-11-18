@@ -199,7 +199,7 @@ export default function ReportCanvas({
                     <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
                       <div className="flex items-center gap-2 text-sm text-blue-700">
                         <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-700 rounded-full animate-spin"></div>
-                        Preparando consulta à {currentAiModel === 'openai' ? 'GPT-5 Nano' : 'Gemini 2.5 Pro'}...
+                        Preparando consulta à {currentAiModel === 'openai' ? 'GPT-5.1 Chat Latest' : 'Gemini 2.5 Pro'}...
                       </div>
                     </div>
                   ) : aiStatus === 'streaming' ? (

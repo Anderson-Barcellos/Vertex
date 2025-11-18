@@ -14,7 +14,7 @@ const GEMINI_MODELS = [
 
 const OPENAI_MODELS = [
   { id: 'gpt-4o', name: 'GPT-4o', description: 'Modelo otimizado' },
-  { id: 'gpt-5-nano', name: 'GPT-5 Nano', description: 'Último modelo' }
+  { id: 'gpt-5.1-chat-latest', name: 'GPT-5.1 Chat Latest', description: 'Último modelo' }
 ];
 
 interface SelectedFindingsPanelProps {
