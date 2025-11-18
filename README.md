@@ -1,281 +1,427 @@
-# Vertex V2 - Documentação Unificada
+# Vertex V2 🏥
 
-**Versão:** 2.0.0
-**Data:** Novembro 2025
-**Porta:** 8201
-**Reverse Proxy:** vertex.ultrassom.ai
-**Status:** ✅ Em Produção
+**Sistema de Geração de Laudos Ultrassonográficos com IA**
+
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/Anderson-Barcellos/Vertex)
+[![React](https://img.shields.io/badge/React-19.0.0-61dafb.svg)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue.svg)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-7.1.5-646CFF.svg)](https://vitejs.dev/)
+[![Status](https://img.shields.io/badge/status-Em%20Produ%C3%A7%C3%A3o-success.svg)]()
+
+> Sistema moderno e inteligente para geração automatizada de laudos ultrassonográficos, utilizando IA generativa (Gemini e OpenAI) e seguindo diretrizes médicas brasileiras (CBR, SBACV, BI-RADS).
 
 ---
 
 ## 📋 Índice
 
-1. [Visão Geral](#visão-geral)
-2. [Stack Tecnológica](#stack-tecnológica)
-3. [Estrutura de Arquivos](#estrutura-de-arquivos)
-4. [Arquitetura](#arquitetura)
-5. [Guia de Desenvolvimento](#guia-de-desenvolvimento)
-6. [Componentes Principais](#componentes-principais)
-7. [Troubleshooting](#troubleshooting)
-8. [Execução e Deploy](#execução-e-deploy)
-9. [Changelog](#changelog)
-10. [Referências](#referências)
+- [Visão Geral](#-visão-geral)
+- [Funcionalidades](#-funcionalidades)
+- [Exames Disponíveis](#-exames-disponíveis)
+- [Stack Tecnológica](#-stack-tecnológica)
+- [Instalação](#-instalação)
+- [Configuração](#-configuração)
+- [Uso](#-uso)
+- [Arquitetura](#-arquitetura)
+- [Desenvolvimento](#-desenvolvimento)
+- [Integração com IA](#-integração-com-ia)
+- [Estrutura de Arquivos](#-estrutura-de-arquivos)
+- [Documentação Adicional](#-documentação-adicional)
+- [Troubleshooting](#-troubleshooting)
+- [Contribuindo](#-contribuindo)
+- [Licença](#-licença)
 
 ---
 
 ## 🎯 Visão Geral
 
-O **Vertex V2** é uma refatoração completa do sistema de laudos ultrassonográficos, focando em **design moderno**, **layout responsivo** e **experiência de usuário premium**.
+O **Vertex V2** é uma aplicação web moderna desenvolvida para médicos ultrassonografistas gerarem laudos padronizados e de alta qualidade com auxílio de inteligência artificial. O sistema oferece:
 
-### Objetivos Alcançados
+- **Interface Intuitiva**: Design moderno com glassmorphism e gradientes suaves
+- **IA Integrada**: Geração automática de impressões diagnósticas usando Gemini e OpenAI
+- **Padrões Médicos**: Seguimento rigoroso de diretrizes CBR, SBACV, SBACV e BI-RADS
+- **Streaming em Tempo Real**: Visualização progressiva da geração de laudos
+- **Múltiplos Exames**: Suporte a abdome, carótidas, tireóide, mama, doppler venoso e mais
+- **Responsivo**: Interface adaptável para desktop, tablet e dispositivos móveis
 
-- ✅ **Layout Moderno** com glassmorphism e gradientes suaves
-- ✅ **Floating Panels Inteligentes** com fundo branco e abertura automática
-- ✅ **Painéis Laterais Otimizados** sem bordas duplicadas
-- ✅ **Botões Verdes** para copiar laudos (sempre visíveis)
-- ✅ **Arquitetura Modular** com componentes compartilhados
-- ✅ **Hooks Utilitários** para gestão de dropdowns e click-outside
+### Principais Diferenciais
 
-### Rotas Ativas
+✅ **Geração Inteligente de Laudos**: IA analisa achados e gera impressões diagnósticas contextualizadas
+✅ **Sistema de Achados Estruturado**: Múltiplas instâncias, medidas e localizações anatômicas
+✅ **Léxicos Padronizados**: BI-RADS 5ª edição completo para mama
+✅ **Métricas de IA**: Rastreamento de tokens, custos e performance
+✅ **Arquitetura Modular**: Fácil adição de novos exames e funcionalidades
 
-| Rota | Componente | Descrição |
-|------|------------|-----------|
-| `/` | `LandingPageModern` | Página inicial moderna |
-| `/old-home` | `Home` | Página legada (manutenção) |
-| `/abdome-modern` | `AbdomeTotalExamModern` | Exame de abdome total |
-| `/carotid-modern` | `CarotidExamModern` | Exame de carótidas |
+---
+
+## ✨ Funcionalidades
+
+### Geração de Laudos
+
+- 📝 **Geração Básica**: Criação automática de laudos baseada em achados selecionados
+- 🤖 **Geração com IA**: Impressões diagnósticas contextualizadas via Gemini/OpenAI
+- 🔄 **Streaming Progressivo**: Visualização em tempo real da geração
+- 📋 **Copy/Paste**: Botões sempre visíveis para copiar laudos
+- 🎨 **Renderização Markdown**: Suporte a formatação rica de texto
+
+### Sistema de Achados
+
+- 🏥 **Achados Estruturados**: Categorização por órgão e sistema
+- 📏 **Medidas Precisas**: Campos específicos para dimensões, velocimetria, etc.
+- 📍 **Localização Anatômica**: Segmentos hepáticos, quadrantes mamários, etc.
+- 🔢 **Múltiplas Instâncias**: Registro de múltiplos achados do mesmo tipo
+- ⚠️ **Níveis de Severidade**: Classificação leve/moderado/acentuado
+- 🎯 **Campos Customizados**: Parâmetros específicos por tipo de achado
+
+### Exames Especializados
+
+- 🫀 **Doppler Vascular**: Velocimetria completa com cálculo de estenose (NASCET)
+- 🩺 **BI-RADS Mama**: Léxicos padronizados e cálculo automático de categoria
+- 🦴 **TI-RADS Tireóide**: Classificação de nódulos tireoidianos
+- 🧬 **Abdome Completo**: Fígado, baço, rins, pâncreas, vesícula
+- 🩸 **Doppler Venoso**: TVP, insuficiência venosa, classificação CEAP
+
+### IA e Automação
+
+- 🧠 **Dois Provedores**: Gemini 2.5 Pro e OpenAI GPT-4
+- 📊 **Métricas Detalhadas**: Tokens, custo estimado, tempo de execução
+- 🎛️ **Auto-geração**: Modo automático com debounce inteligente
+- 🚫 **Cancelamento**: Possibilidade de cancelar operações em andamento
+- 💾 **Persistência**: Seleção de modelo salva na sessão
+
+---
+
+## 🏥 Exames Disponíveis
+
+| Exame | Rota | Status | Características |
+|-------|------|--------|-----------------|
+| **Abdome Total** | `/abdome-modern` | ✅ Ativo | Fígado, baço, rins, pâncreas, vesícula, vias biliares |
+| **Doppler de Carótidas** | `/carotid-modern` | ✅ Ativo | Velocimetria, placas, classificação NASCET, EMI |
+| **Ecodoppler de Tireóide** | `/thyroid-modern` | ✅ Ativo | Nódulos, TI-RADS, vascularização |
+| **Ultrassom de Mama** | `/breast-exam` | ✅ Ativo | BI-RADS 5ª ed., léxicos completos, linfonodos |
+| **Mama Completo** | `/mammography-modern` | ✅ Ativo | Sistema completo com múltiplas lesões |
+| **Doppler Venoso MMII** | `/venous-modern` | ✅ Ativo | TVP, insuficiência venosa, CEAP, refluxo |
+
+### Planejamento Futuro
+
+- [ ] Artérias Renais
+- [ ] Obstétrico 1º Trimestre
+- [ ] Obstétrico Morfológico
+- [ ] Transvaginal
+- [ ] Próstata via Transretal
+- [ ] Musculoesquelético
 
 ---
 
 ## 🛠️ Stack Tecnológica
 
+### Frontend Core
+
 | Tecnologia | Versão | Propósito |
 |------------|--------|-----------|
-| React | 19 | Framework UI |
-| TypeScript | 5.x | Type Safety |
-| Vite | 7.1.5 | Build Tool (porta 8200) |
-| Tailwind CSS | v4 | Estilização utilitária |
-| React Router | v7 | Roteamento SPA |
-| Radix UI | Latest | Componentes base acessíveis |
-| Phosphor Icons | Latest | Ícones modernos |
-| Sonner | Latest | Notificações toast |
+| **React** | 19.0.0 | Framework UI |
+| **TypeScript** | 5.9.2 | Type Safety |
+| **Vite** | 7.1.5 | Build Tool & Dev Server |
+| **React Router** | 7.9.1 | Roteamento SPA |
 
-### Dependências Principais
+### UI & Estilização
 
-```json
-{
-  "react": "^19.0.0",
-  "react-dom": "^19.0.0",
-  "react-router-dom": "^7.9.1",
-  "@radix-ui/react-select": "^2.1.6",
-  "@radix-ui/react-dropdown-menu": "^2.1.6",
-  "@radix-ui/react-dialog": "^1.1.6",
-  "@tailwindcss/vite": "^4.1.11",
-  "react-markdown": "^10.1.0",
-  "sonner": "^2.0.1"
-}
+| Tecnologia | Versão | Propósito |
+|------------|--------|-----------|
+| **Tailwind CSS** | 4.1.11 | Estilização utilitária |
+| **Radix UI** | Latest | Componentes primitivos acessíveis |
+| **Lucide React** | 0.544.0 | Ícones modernos |
+| **Phosphor Icons** | 2.1.7 | Ícones alternativos |
+| **Sonner** | 2.0.1 | Toast notifications |
+| **CVA** | 0.7.1 | Class Variance Authority |
+
+### IA & API
+
+| Tecnologia | Versão | Propósito |
+|------------|--------|-----------|
+| **@google/generative-ai** | 0.24.1 | Google Gemini SDK |
+| **OpenAI API** | - | Via proxy backend |
+
+### Markdown & Renderização
+
+| Tecnologia | Versão | Propósito |
+|------------|--------|-----------|
+| **React Markdown** | 10.1.0 | Renderização de markdown |
+| **Remark GFM** | 4.0.1 | GitHub Flavored Markdown |
+
+### Dev Tools
+
+| Tecnologia | Versão | Propósito |
+|------------|--------|-----------|
+| **Vitest** | 2.1.8 | Testing framework |
+| **ESLint** | 9.36.0 | Linting |
+| **TypeScript ESLint** | 8.44.0 | TS Linting |
+
+---
+
+## 📦 Instalação
+
+### Pré-requisitos
+
+- **Node.js** >= 18.0.0
+- **npm** >= 9.0.0
+- **Git**
+
+### Passo a Passo
+
+1. **Clone o repositório**
+
+```bash
+git clone https://github.com/Anderson-Barcellos/Vertex.git
+cd Vertex
+```
+
+2. **Instale as dependências**
+
+```bash
+npm install
+```
+
+3. **Configure as variáveis de ambiente**
+
+```bash
+cp .env.example .env
+# Edite o arquivo .env com suas credenciais
+```
+
+4. **Inicie o servidor de desenvolvimento**
+
+```bash
+npm run dev
+```
+
+5. **Acesse a aplicação**
+
+```
+http://localhost:8200
 ```
 
 ---
 
-## 📁 Estrutura de Arquivos
+## ⚙️ Configuração
+
+### Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```bash
+# ==============================================================================
+# VERTEX V2 - CONFIGURAÇÃO DE AMBIENTE
+# ==============================================================================
+
+# -----------------------------------------------------------------------------
+# APIs de IA
+# -----------------------------------------------------------------------------
+
+# Google Gemini
+VITE_GEMINI_API_URL=https://ultrassom.ai:8177/geminiCall
+VITE_GEMINI_MODEL=gemini-2.5-pro
+VITE_GEMINI_API_KEY=your_gemini_key_here
+
+# OpenAI
+VITE_OPENAI_API_URL=https://ultrassom.ai:8177/openaiCall
+VITE_OPENAI_MODEL=gpt-4o
+VITE_OPENAI_API_KEY=your_openai_key_here
+
+# -----------------------------------------------------------------------------
+# Custos de IA (USD por 1k tokens) - Opcional
+# -----------------------------------------------------------------------------
+
+# OpenAI
+VITE_OPENAI_INPUT_COST_PER_1K=0.005
+VITE_OPENAI_OUTPUT_COST_PER_1K=0.015
+
+# Gemini
+VITE_GEMINI_INPUT_COST_PER_1K=0.007
+VITE_GEMINI_OUTPUT_COST_PER_1K=0.021
+
+# -----------------------------------------------------------------------------
+# Aplicação
+# -----------------------------------------------------------------------------
+
+VITE_APP_NAME=Vertex V2
+NODE_ENV=development
+```
+
+### Configuração do Vite
+
+O arquivo `vite.config.ts` já está configurado com:
+
+- **Proxy de API**: Redirecionamento de `/api/gemini` e `/api/openai` para o backend
+- **Host**: `0.0.0.0` (todas as interfaces)
+- **Porta**: `8200`
+- **Aliases**: `@` → `./src`
+
+### Configuração do Tailwind
+
+Tailwind CSS v4 está integrado via `@tailwindcss/vite`. Personalizações no `tailwind.config.js`.
+
+---
+
+## 🚀 Uso
+
+### Fluxo Básico de Uso
+
+1. **Acesse a Landing Page**: Navegue para `http://localhost:8200`
+2. **Selecione o Exame**: Clique no exame desejado
+3. **Escolha o Órgão**: Na sidebar, clique no órgão/sistema a avaliar
+4. **Selecione Achados**: No painel flutuante, marque os achados encontrados
+5. **Adicione Detalhes**: Preencha medidas, localizações e características
+6. **Marque Normais**: Órgãos sem alterações podem ser marcados como normais
+7. **Gere o Laudo**: Clique em "Gerar Laudo" no painel direito
+8. **Use a IA**: Opcionalmente, gere impressão diagnóstica com IA
+9. **Copie o Resultado**: Use os botões verdes para copiar o laudo
+
+### Exemplo: Exame de Abdome
 
 ```
-vertex-v2/
-├── src/
-│   ├── pages/
-│   │   ├── v2/
-│   │   │   └── LandingPageModern.tsx      # Landing moderna
-│   │   ├── modern/
-│   │   │   ├── AbdomeTotalExamModern.tsx  # Exame abdome
-│   │   │   ├── CarotidExamModern.tsx       # Exame carótidas
-│   │   │   └── ExamTemplateModern.example.tsx  # Template de referência
-│   │   └── Home.tsx                        # Página legada
-│   ├── components/
-│   │   ├── original/                       # Componentes herdados
-│   │   │   ├── ReportCanvas.tsx          # Canvas do laudo
-│   │   │   ├── Sidebar.tsx               # Navegação lateral
-│   │   │   ├── SelectedFindingsPanel.tsx # Achados selecionados
-│   │   │   ├── ExamStatisticsPanel.tsx    # Estatísticas do exame
-│   │   │   ├── OrganSection.tsx           # Seção de órgão
-│   │   │   ├── CarotidFindingDetails.tsx  # Detalhes carótidas
-│   │   │   └── FindingDetailsEnhanced.tsx # Detalhes achados
-│   │   ├── shared/                        # Componentes compartilhados
-│   │   │   └── FloatingOrganPanelModern.tsx # Painel flutuante moderno
-│   │   ├── MarkdownRenderer.tsx           # Renderizador markdown
-│   │   └── ResolutionGuard.tsx            # Guarda de resolução
-│   ├── layouts/
-│   │   └── ModernExamLayout.tsx          # Layout moderno compartilhado
-│   ├── hooks/
-│   │   ├── useDropdownGuard.ts            # Hook para detectar dropdowns
-│   │   └── useOutsidePointerDismiss.ts   # Hook para click-outside
-│   ├── services/
-│   │   ├── geminiStreamService.ts         # Serviço Gemini streaming
-│   │   ├── openaiStreamService.ts         # Serviço OpenAI streaming
-│   │   ├── unifiedAIService.ts           # Serviço unificado IA
-│   │   ├── reportGenerator.ts             # Gerador de laudos
-│   │   └── geminiClient.ts               # Cliente Gemini
-│   ├── data/
-│   │   ├── organs.ts                     # Definições de órgãos CBR
-│   │   ├── carotidOrgans.ts              # Órgãos carótidas
-│   │   └── reportTemplates.ts            # Templates de laudo
-│   ├── types/
-│   │   └── report.ts                     # TypeScript types
-│   ├── styles/
-│   │   ├── modern-design.css             # Design system moderno
-│   │   ├── theme.css                     # Tema base
-│   │   ├── layout.css                    # Layouts responsivos
-│   │   └── grid-layout.css               # CSS Grid e utilitários
-│   ├── App.tsx                           # Rotas principais
-│   └── main.tsx                           # Entry point
-├── public/
-│   ├── logo-vertex.svg                   # Logo principal
-│   └── favicon.svg                       # Favicon
-├── package.json
-├── vite.config.ts
-└── tailwind.config.js
+1. Acesse /abdome-modern
+2. Clique em "Fígado" na sidebar
+3. Selecione "Hepatomegalia" no painel flutuante
+4. Escolha severidade: "Leve"
+5. Adicione medida do lobo direito: 16 cm
+6. Marque "Baço", "Rins", "Pâncreas" como normais
+7. Clique "Gerar Laudo com IA" (Gemini)
+8. Aguarde a geração progressiva
+9. Copie o laudo completo
+```
+
+### Exemplo: Doppler de Carótidas
+
+```
+1. Acesse /carotid-modern
+2. Selecione "Carótida Interna Direita"
+3. Adicione velocimetria:
+   - VPS: 180 cm/s
+   - VDF: 90 cm/s
+4. Selecione "Placa Aterosclerótica"
+5. Defina características:
+   - Ecogenicidade: Heterogênea
+   - Composição: Mista
+   - Superfície: Irregular
+6. Sistema calcula estenose NASCET automaticamente
+7. Gere impressão diagnóstica com IA
+```
+
+### Exemplo: BI-RADS Mama
+
+```
+1. Acesse /breast-exam
+2. Preencha dados da mama direita:
+   - Tipo: Nódulo sólido
+   - Forma: Irregular
+   - Margens: Espiculadas
+   - Orientação: Não-paralela
+   - Tamanho: 1.8 cm
+3. Sistema calcula categoria BI-RADS: 4C
+4. Adicione linfonodos se presentes
+5. Gere laudo completo com léxicos padronizados
 ```
 
 ---
 
 ## 🏗️ Arquitetura
 
-### Layout Moderno Compartilhado
+### Visão Geral
 
-**Arquivo:** `src/layouts/ModernExamLayout.tsx`
+O Vertex V2 segue uma arquitetura modular baseada em componentes React, com separação clara entre:
 
-Shell com 5 slots: `header`, `sidebar`, `main`, `panels` e `floatingPanel`.
+- **Páginas de Exame**: Lógica específica de cada modalidade
+- **Layout Compartilhado**: Grid responsivo e estrutura comum
+- **Componentes Reutilizáveis**: UI primitivos e compostos
+- **Serviços**: Lógica de negócio e integrações externas
+- **Dados**: Catálogos de órgãos e achados médicos
 
-#### Estrutura do Grid
+### Layout Moderno (`ModernExamLayout`)
 
-- **Grid:** 12 colunas com 3 regiões (sidebar | conteúdo | painéis)
-- **Sidebar:** `col-span-12 lg:col-span-3` (3 colunas no desktop)
-- **Main:** `col-span-12 lg:col-span-6` (6 colunas no desktop)
-- **Panels:** `col-span-12 lg:col-span-3` (3 colunas no desktop)
-- **Responsividade:** Breakpoints via Tailwind (`lg:` = 1024px+)
-
-#### Características
-
-- Container centralizado com `max-w-[1800px]`
-- Header com glassmorphism (`glass-panel`)
-- Sidebar sticky com scroll condicional (`max-h-[calc(100vh-120px)]`)
-- Painéis laterais sticky no desktop
-- Painel flutuante renderizado via Portal (fora do grid)
-
-#### Exemplo de Uso
+Todas as páginas de exame usam o layout compartilhado:
 
 ```tsx
 <ModernExamLayout
-  header={<HeaderContent />}
-  sidebar={<Sidebar />}
-  main={<ReportCanvas />}
-  panels={
-    <>
-      <SelectedFindingsPanel />
-      <ExamStatisticsPanel />
-    </>
-  }
-  floatingPanel={
-    <FloatingOrganPanelModern {...props} />
-  }
+  header={<HeaderContent />}           // Navegação e título
+  sidebar={<Sidebar />}                // Lista de órgãos
+  main={<ReportCanvas />}              // Laudo A4 centralizado
+  panels={<>                           // Painéis auxiliares
+    <SelectedFindingsPanel />
+    <ExamStatisticsPanel />
+  </>}
+  floatingPanel={<FloatingOrganPanel />} // Painel de achados
 />
 ```
 
-### Painel Flutuante Unificado
+**Estrutura do Grid:**
 
-**Arquivo:** `src/components/shared/FloatingOrganPanelModern.tsx`
+```
+┌─────────────────────────────────────────────────────┐
+│                    HEADER (12 cols)                  │
+├──────────┬──────────────────────────┬───────────────┤
+│          │                          │               │
+│ SIDEBAR  │         MAIN             │    PANELS     │
+│ (3 cols) │        (6 cols)          │    (3 cols)   │
+│          │                          │               │
+│ Sticky   │   ReportCanvas A4        │   Sticky      │
+│          │   (Scroll)               │               │
+│          │                          │               │
+└──────────┴──────────────────────────┴───────────────┘
 
-#### Recursos
+         ┌────────────────┐
+         │ FLOATING PANEL │ (Portal, position: fixed)
+         │ (OrganSection) │
+         └────────────────┘
+```
 
-- Renderização via portal no `document.body`
-- Classe `organ-section-panel` (camada controlada por token `--z-floating`)
-- Cresce até `maxHeight` e só então exibe scrollbar roxa (classe `modern-scrollbar`)
-- Minimiza/expande com botão e texto vertical quando minimizado
-- Proteções de clique-fora que ignoram Radix Portals e triggers (via hooks)
+### Painel Flutuante (`FloatingOrganPanelModern`)
 
-#### API Configurável
+Componente inteligente que renderiza achados de órgãos:
+
+**Características:**
+- Renderizado via React Portal
+- Posicionamento `fixed` relativo à viewport
+- Estados minimizado/expandido
+- Proteção contra clique-fora (ignora dropdowns)
+- Scrollbar customizada (roxa)
+- Ancoragem dinâmica na sidebar
+
+**API:**
 
 ```typescript
-type FloatingOrganPanelModernProps = {
-  organ: Organ;
-  selectedFindings: SelectedFinding[];
-  isNormal: boolean;
-  isMinimized: boolean;
-  onToggleMinimized: (minimized: boolean) => void;
-  onFindingChange: (...);
-  onNormalChange: (...);
-  leftCss?: string;              // ex.: 'calc(25% + 1.5rem)'
-  widthExpanded?: string;         // default '24rem'
-  maxHeight?: string;            // default '80vh'
-  FindingDetailsComponent?: React.ComponentType<any>;
-  // Novo — ancoragem precisa na sidebar:
-  followSidebar?: boolean;       // default true; quando true, ignora leftCss e ancora no .glass-sidebar
-  followGapPx?: number;          // espaçamento a partir da borda direita da sidebar (default 8–24)
-  followNudgePx?: number;        // “empurra” para a esquerda para criar overlap (ex.: 24 para metade do tab)
-};
-```
-
-#### Posicionamento
-
-- **Fixed:** `position: fixed` relativo à viewport
-- **Top:** `top-24` (96px do topo)
-- **Left:**
-  - Por padrão via `leftCss` (padrão: `calc(25% + 1.5rem)`).
-  - Quando `followSidebar` está ativo (default): o `left` é calculado em tempo real com base no retângulo do
-    container `.glass-sidebar` (não a coluna do grid), usando:
-    - `left = right(.glass-sidebar) + followGapPx - followNudgePx`.
-    - `followNudgePx` só é aplicado quando o painel está minimizado (para sobrepor parcialmente a sidebar).
-  - Eventos observados: `resize`, `scroll` e `ResizeObserver` no `.glass-sidebar` e grid ancestral.
-
-#### Exemplos práticos
-
-```tsx
 <FloatingOrganPanelModern
-  organ={currentOrgan}
-  selectedFindings={...}
-  isNormal={...}
-  isMinimized={isPanelMinimized}
-  onToggleMinimized={setIsPanelMinimized}
-  onFindingChange={handleFindingChange}
-  onNormalChange={handleNormalChange}
-  // Ancorado na sidebar, com overlap de metade do tab quando minimizado
-  followSidebar
-  followGapPx={0}
-  followNudgePx={24}
-  widthExpanded={'24rem'}
-  maxHeight={'80vh'}
+  organ={currentOrgan}                    // Órgão atual
+  selectedFindings={findings}             // Achados selecionados
+  isNormal={isNormal}                     // Estado normal
+  isMinimized={minimized}                 // Estado minimizado
+  onToggleMinimized={setMinimized}        // Callback toggle
+  onFindingChange={handleChange}          // Callback mudança
+  onNormalChange={handleNormal}           // Callback normal
+  FindingDetailsComponent={CustomDetails} // Componente custom
+  leftCss="calc(25% + 1.5rem)"           // Posição left
+  widthExpanded="24rem"                   // Largura expandido
+  maxHeight="80vh"                        // Altura máxima
 />
 ```
-- **Z-index:** Controlado por token `--z-floating` via classe `organ-section-panel`
 
-### Hooks Compartilhados
+### Hooks Customizados
 
-#### useDropdownGuard
+#### `useDropdownGuard`
 
-**Arquivo:** `src/hooks/useDropdownGuard.ts`
-
-Observa o DOM por dropdowns abertos (Radix, aria-expanded) e expõe `isAnyDropdownOpen`.
+Detecta dropdowns abertos no DOM:
 
 ```typescript
 const { isAnyDropdownOpen, isDropdownRelated } = useDropdownGuard([ref]);
 ```
 
-**Detecção:**
-- Portais Radix UI (`[data-radix-portal]`)
-- Estados abertos (`[data-state="open"]`, `[aria-expanded="true"]`)
-- Roles específicos (`role="listbox"`, `role="combobox"`)
-- Dropdowns customizados (`[data-custom-dropdown="open"]`)
+- Usa `MutationObserver` para performance
+- Detecta portais Radix UI
+- Identifica estados `[data-state="open"]`
+- Verifica `[aria-expanded="true"]`
 
-**Implementação:**
-- Usa `MutationObserver` para detectar mudanças no DOM
-- Observa `document.body` e refs fornecidos
-- Atualiza estado quando dropdowns abrem/fecham
+#### `useOutsidePointerDismiss`
 
-#### useOutsidePointerDismiss
-
-**Arquivo:** `src/hooks/useOutsidePointerDismiss.ts`
-
-Captura `pointerdown` fora do container e dispara `onDismiss`, ignorando elementos de dropdown/portal e seletores extras.
+Fecha componente ao clicar fora:
 
 ```typescript
 useOutsidePointerDismiss({
@@ -286,150 +432,148 @@ useOutsidePointerDismiss({
 });
 ```
 
-**Características:**
-- Usa `pointerdown` com `capture: true` para evitar race conditions
-- Verifica `composedPath()` para detectar elementos de dropdown
-- Ignora cliques em portais Radix e seletores extras
-- Desabilitável via `isDisabled`
+- Usa `pointerdown` com `capture: true`
+- Ignora cliques em dropdowns/portais
+- Verifica `composedPath()` completo
+- Desabilitável condicionalmente
 
-### Camadas (Z-Index)
+### Camadas Z-Index
 
-Tokens definidos em `src/styles/layout.css`:
-
-```css
---z-base: 1;
---z-content: 10;
---z-floating: 100;
---z-dropdown: 200;
---z-modal: 300;
-```
-
-**Uso:**
-- Painel flutuante: `organ-section-panel` → `--z-floating`
-- Portais Radix: `--z-dropdown` (com `!important` em `animations.css`)
-- Modais: `--z-modal`
-
-### Scrollbar Moderna
-
-Definida em `src/styles/modern-design.css` como `.modern-scrollbar` com thumb roxa.
-
-**Regra:** O elemento que possui `max-height` deve receber `overflow-y-auto modern-scrollbar` para comportamento correto (crescer até o limite e só então exibir a barra).
+Tokens CSS para controle de empilhamento:
 
 ```css
-.modern-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-.modern-scrollbar::-webkit-scrollbar-thumb {
-  background: #6366f1; /* Indigo */
-  border-radius: 4px;
-}
+--z-base: 1;        /* Elementos base */
+--z-content: 10;    /* Conteúdo principal */
+--z-floating: 100;  /* Painéis flutuantes */
+--z-dropdown: 200;  /* Dropdowns e selects */
+--z-modal: 300;     /* Modais e dialogs */
 ```
 
-### Roteamento
+### Fluxo de Integração com IA
 
-**Arquivo:** `src/App.tsx`
-
-```typescript
-<Routes>
-  <Route path="/" element={<LandingPageModern />} />
-  <Route path="/old-home" element={<Home />} />
-  <Route path="/abdome-modern" element={<AbdomeTotalExamModern />} />
-  <Route path="/carotid-modern" element={<CarotidExamModern />} />
-</Routes>
 ```
-
-### Serviços de IA
-
-- `src/services/geminiStreamService.ts` - Streaming Gemini
-- `src/services/openaiStreamService.ts` - Streaming OpenAI
-- `src/services/unifiedAIService.ts` - Serviço unificado com fallback
-- `src/services/reportGenerator.ts` - Geração de laudos com templates
-
-**ReportCanvas** expõe controles de geração, auto‑geração e estado da IA. O painel “Estatísticas da IA” mostra
-modelo usado, tokens estimados (entrada/saída), custo estimado, duração, número de chunks e tamanho do output.
-
-#### Endpoints e Proxy
-
-- OpenAI frontend: `VITE_OPENAI_API_URL || '/api/openai'` → no dev, Vite proxy reescreve para `https://ultrassom.ai:8177/openaiCall`.
-- Gemini frontend: `VITE_GEMINI_API_URL || '/api/gemini'` → no dev, Vite proxy reescreve para `https://ultrassom.ai:8177/geminiCall`.
-
-#### Seleção de Modelo (persistência)
-
-- A seleção de modelo feita no painel direito é persistida em `sessionStorage` na chave `selectedAIModel`.
-- Os serviços usam esta chave como prioridade; se ausente, caem no default do `.env`.
-  - OpenAI default: `VITE_OPENAI_MODEL` (fallback para `'gpt-5'`).
-  - Gemini default: `VITE_GEMINI_MODEL` (fallback para `'gemini-2.5-pro'`).
-
-#### Streaming e onChunk (acumulado)
-
-- O `openaiStreamService` decodifica SSE/NDJSON e emite `onChunk(fullTextAcumulado)`, alinhado ao Gemini.
-- Consumidores devem simplesmente fazer `setState(conteudoAcumulado)` — evitar concatenar manualmente.
-- OpenAI: usa `max_completion_tokens` (não `max_tokens`).
-
-#### Métricas e custo
-
-- Estrutura `AIGenerationStats` em `src/types/report.ts` agrega:
-  - `provider`, `model`, `promptTokens`, `completionTokens`, `durationMs`, `chunkCount`, `inputChars`, `outputChars`, `estimatedCostUsd`.
-- Utilitários em `src/utils/aiMetrics.ts`:
-  - `estimateTokensFromText`, `estimateCostUsd`, `formatDuration`, `formatCost`.
-- Variáveis de ambiente para custo por 1k tokens (opcionais):
-  - `VITE_OPENAI_INPUT_COST_PER_1K`, `VITE_OPENAI_OUTPUT_COST_PER_1K` (defaults 0.005/0.015)
-  - `VITE_GEMINI_INPUT_COST_PER_1K`, `VITE_GEMINI_OUTPUT_COST_PER_1K` (defaults 0.007/0.021)
-
-#### Prompt Builder Unificado
-
-- `src/services/promptBuilder.ts` centraliza a montagem do prompt, reutilizado por Gemini e OpenAI.
+┌─────────────────────────────────────────────┐
+│ Frontend: ReportCanvas.tsx                  │
+│ ↓ onClick "Gerar Impressão com IA"         │
+├─────────────────────────────────────────────┤
+│ unifiedAIService.generateClinicalImpression │
+│ ↓ Escolhe provider (Gemini/OpenAI)         │
+├─────────────────────────────────────────────┤
+│ geminiStreamService ou openaiStreamService  │
+│ ↓ buildSpecializedPrompt()                 │
+├─────────────────────────────────────────────┤
+│ POST /api/gemini (ou /api/openai)          │
+│ ↓ Vite Proxy                               │
+├─────────────────────────────────────────────┤
+│ Backend: ultrassom.ai:8177/geminiCall      │
+│ ↓ Streaming Response (SSE/NDJSON)         │
+├─────────────────────────────────────────────┤
+│ Frontend: onChunk(accumulated)              │
+│ ↓ setAiImpression(accumulated)             │
+├─────────────────────────────────────────────┤
+│ ReportCanvas: Renderização progressiva      │
+│ ↓ Markdown + Estatísticas                  │
+└─────────────────────────────────────────────┘
+```
 
 ---
 
-## 📚 Guia de Desenvolvimento
+## 💻 Desenvolvimento
 
 ### Como Criar um Novo Exame
 
-#### 1. Criar a Página
+#### 1. Criar Dados do Exame
 
-Copiar `src/pages/modern/ExamTemplateModern.example.tsx` e adaptar.
+Crie um arquivo em `src/data/` seguindo o padrão:
 
-#### 2. Estrutura Básica
+```typescript
+// src/data/meuExameOrgans.ts
+import { Organ } from './organs';
 
-```tsx
+export const meuExameOrgans: Organ[] = [
+  {
+    id: 'orgao-1',
+    name: 'Nome do Órgão',
+    categories: [
+      {
+        id: 'categoria-1',
+        name: 'Categoria de Achados',
+        findings: [
+          {
+            id: 'achado-1',
+            name: 'Nome do Achado',
+            description: 'Descrição técnica',
+            requiresMeasurement: true,
+            measurements: [
+              { id: 'tamanho', label: 'Tamanho', unit: 'cm' }
+            ],
+            requiresLocation: true,
+            locations: ['Localização 1', 'Localização 2']
+          }
+        ]
+      }
+    ]
+  }
+];
+```
+
+#### 2. Criar Componente de Detalhes (Opcional)
+
+Se o exame requer campos específicos:
+
+```typescript
+// src/components/original/MeuExameFindingDetails.tsx
+import React from 'react';
+import { FindingDetailsComponentProps } from '@/types/report';
+
+export default function MeuExameFindingDetails({
+  finding,
+  organId,
+  severity,
+  instances,
+  onSeverityChange,
+  onInstancesChange
+}: FindingDetailsComponentProps) {
+  // Implementação específica
+  return (
+    <div>
+      {/* Campos customizados */}
+    </div>
+  );
+}
+```
+
+#### 3. Criar Página do Exame
+
+Use o template como base:
+
+```typescript
+// src/pages/modern/MeuExameModern.tsx
+import React, { useState } from 'react';
 import ModernExamLayout from '@/layouts/ModernExamLayout';
 import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelModern';
-import Sidebar from '@/components/original/Sidebar';
-import ReportCanvas from '@/components/original/ReportCanvas';
-import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
-import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
+import { meuExameOrgans } from '@/data/meuExameOrgans';
+import MeuExameFindingDetails from '@/components/original/MeuExameFindingDetails';
 
-export default function NovoExameModern() {
+export default function MeuExameModern() {
   // Estados
-  const [selectedOrgan, setSelectedOrgan] = useState<string | null>(null);
-  const [isPanelMinimized, setIsPanelMinimized] = useState(false);
-  const [selectedFindings, setSelectedFindings] = useState<SelectedFinding[]>([]);
-  const [normalOrgans, setNormalOrgans] = useState<string[]>([]);
+  const [selectedOrgan, setSelectedOrgan] = useState('');
+  const [selectedFindings, setSelectedFindings] = useState([]);
+  const [normalOrgans, setNormalOrgans] = useState([]);
   // ... outros estados
 
   // Handlers
   const handleOrganSelect = (organId: string) => {
     setSelectedOrgan(organId);
-    setIsPanelMinimized(false);
   };
 
-  const handleFindingChange = (...) => {
-    // Lógica de mudança de achados
-  };
-
-  // Renderizar
+  // Render
   return (
     <ModernExamLayout
-      header={<HeaderContent />}
-      sidebar={<Sidebar {...props} />}
-      main={<ReportCanvas {...props} />}
-      panels={
-        <>
-          <SelectedFindingsPanel {...props} />
-          <ExamStatisticsPanel {...props} />
-        </>
-      }
+      header={/* ... */}
+      sidebar={/* ... */}
+      main={/* ... */}
+      panels={/* ... */}
       floatingPanel={
         currentOrgan ? (
           <FloatingOrganPanelModern
@@ -440,7 +584,7 @@ export default function NovoExameModern() {
             onToggleMinimized={setIsPanelMinimized}
             onFindingChange={handleFindingChange}
             onNormalChange={handleNormalChange}
-            FindingDetailsComponent={CustomFindingDetails} // Opcional
+            FindingDetailsComponent={MeuExameFindingDetails}
           />
         ) : null
       }
@@ -449,445 +593,709 @@ export default function NovoExameModern() {
 }
 ```
 
-#### 3. Checklist de Criação
+#### 4. Adicionar Rota
 
-- [ ] Criar página a partir de `ExamTemplateModern.example.tsx`
-- [ ] Passar `organsList`, rótulos de exame e `FindingDetailsComponent` quando necessário
-- [ ] Garantir `FloatingOrganPanelModern` com `organ-section-panel` e `maxHeight` adequado
-- [ ] Verificar dropdowns Radix sobrepondo o painel
-- [ ] Validar minimizar/expandir do painel com dropdown aberto (não deve minimizar)
-- [ ] Conferir scrollbar roxa visível somente após atingir o limite de altura
-- [ ] Adicionar rota em `App.tsx`
+Registre a rota em `src/App.tsx`:
 
-#### 4. Componente Customizado de Detalhes (Opcional)
+```typescript
+import MeuExameModern from './pages/modern/MeuExameModern';
 
-Para exames específicos (ex.: Carótidas), criar componente customizado:
+// ...
 
-```tsx
-// src/components/original/CustomFindingDetails.tsx
-export default function CustomFindingDetails({
-  finding,
-  organId,
-  severity,
-  instances,
-  onSeverityChange,
-  onInstancesChange
-}: FindingDetailsComponentProps) {
-  // Implementação específica
-}
+<Route path="/meu-exame-modern" element={<MeuExameModern />} />
 ```
 
-Passar como prop `FindingDetailsComponent` para `FloatingOrganPanelModern`.
+#### 5. Checklist de Criação
 
-### Convenções de Estilo
+- [ ] Criar arquivo de dados (`src/data/`)
+- [ ] Criar componente de detalhes se necessário
+- [ ] Criar página do exame
+- [ ] Adicionar rota no `App.tsx`
+- [ ] Testar fluxo completo
+- [ ] Verificar responsividade
+- [ ] Testar geração com IA
+- [ ] Validar cálculos automáticos
 
-- Evitar `z-50`/`z-[NN]` no JSX. Preferir tokens via classes/arquivos CSS.
-- Usar `organ-section-panel` para painéis flutuantes.
-- Manter dropdowns Radix com seus Portals padrão; não "forçar" `position: absolute` local.
+### Estrutura de Desenvolvimento
 
-### Boas Práticas de Interação
+```bash
+# Desenvolvimento
+npm run dev              # Inicia dev server na porta 8200
 
-- Nunca minimizar painel se um dropdown/combobox/menu estiver aberto.
-- Usar `pointerdown` com `capture: true` no hook para evitar race com Radix.
-- Evitar observers redundantes na página; os hooks já cobrem os casos de dropdown.
+# Build
+npm run build            # Compila para produção (/dist)
+npm run preview          # Preview do build
+
+# Qualidade de Código
+npm run lint             # ESLint
+npm run test             # Vitest
+
+# Verificação
+npm run type-check       # TypeScript type checking
+```
+
+### Convenções de Código
+
+#### Nomenclatura
+
+- **Componentes**: PascalCase (`ReportCanvas.tsx`)
+- **Hooks**: camelCase com prefixo `use` (`useDropdownGuard.ts`)
+- **Utilitários**: camelCase (`aiMetrics.ts`)
+- **Tipos**: PascalCase (`Report`, `Finding`)
+- **Constantes**: UPPER_SNAKE_CASE (`NORMAL_DIAMETERS`)
+
+#### Organização de Imports
+
+```typescript
+// 1. React e bibliotecas externas
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+// 2. Componentes
+import Sidebar from '@/components/original/Sidebar';
+import FloatingPanel from '@/components/shared/FloatingPanel';
+
+// 3. Dados e tipos
+import { organs } from '@/data/organs';
+import type { Finding } from '@/types/report';
+
+// 4. Serviços e utilitários
+import { generateReport } from '@/services/reportGenerator';
+import { estimateCost } from '@/utils/aiMetrics';
+
+// 5. Estilos
+import '@/styles/modern-design.css';
+```
+
+#### Boas Práticas
+
+- **Componentes Funcionais**: Sempre usar function components
+- **TypeScript Strict**: Sempre tipar props e estados
+- **Hooks Customizados**: Extrair lógica reutilizável
+- **Comentários**: Documentar lógica complexa
+- **Acessibilidade**: ARIA labels e roles
+- **Performance**: Memo, useCallback, useMemo quando apropriado
 
 ---
 
-## 🧩 Componentes Principais
+## 🤖 Integração com IA
 
-### ModernExamLayout
+### Provedores Disponíveis
 
-**Localização:** `src/layouts/ModernExamLayout.tsx`
+#### Google Gemini
 
-Layout base compartilhado por todas as páginas de exame modernas.
+- **Modelo Padrão**: `gemini-2.5-pro`
+- **Configurado**: Sim, via proxy backend
+- **Custo Estimado**: ~$0.007 input / $0.021 output (por 1k tokens)
+- **Características**: Streaming, timeout 60s, fallback local
 
-**Props:**
+#### OpenAI
+
+- **Modelo Padrão**: `gpt-4o`
+- **Configurado**: Sim, via proxy backend
+- **Custo Estimado**: ~$0.005 input / $0.015 output (por 1k tokens)
+- **Características**: Streaming, `max_completion_tokens`, múltiplos modelos
+
+### Serviço Unificado
+
+O `unifiedAIService` abstrai os provedores:
+
 ```typescript
-{
-  header: React.ReactNode;
-  sidebar: React.ReactNode;
-  main: React.ReactNode;
-  panels: React.ReactNode;
-  floatingPanel?: React.ReactNode;
+// Configurar provider
+unifiedAIService.setProvider('gemini'); // ou 'openai'
+
+// Gerar impressão clínica
+await unifiedAIService.generateClinicalImpression(
+  {
+    examType: 'Ultrassonografia de Abdome Total',
+    selectedFindings: findings,
+    normalOrgans: normalOrgans,
+    organsCatalog: organs
+  },
+  {
+    onChunk: (accumulated) => {
+      console.log('Chunk recebido:', accumulated);
+      setImpression(accumulated);
+    },
+    onComplete: (finalText) => {
+      console.log('Completo:', finalText);
+      setStatus('completed');
+    },
+    onError: (error) => {
+      console.error('Erro:', error);
+      showToast('Erro ao gerar impressão');
+    }
+  }
+);
+
+// Cancelar operação
+unifiedAIService.cancelClinicalImpression();
+```
+
+### Construção de Prompts
+
+O `promptBuilder` gera prompts especializados:
+
+```typescript
+const prompt = buildSpecializedPrompt({
+  examType: 'Ecodoppler de Carótidas e Vertebrais',
+  selectedFindings: selectedFindings,
+  normalOrgans: normalOrgans,
+  organsCatalog: carotidOrgans
+});
+```
+
+**Estrutura do Prompt:**
+
+```
+Você é um radiologista experiente especializado em
+ultrassonografia no Brasil.
+
+Gere uma IMPRESSÃO DIAGNÓSTICA profissional e concisa
+para o seguinte exame de [TIPO DE EXAME]:
+
+ACHADOS PATOLÓGICOS:
+- [Achado 1]
+  [Detalhes, medidas, localizações]
+- [Achado 2]
+  ...
+
+ÓRGÃOS NORMAIS (sem alterações):
+- [Órgão 1]
+- [Órgão 2]
+
+INSTRUÇÕES:
+1. Gere APENAS a impressão diagnóstica
+2. Use terminologia médica apropriada em português brasileiro
+3. Seja conciso mas completo
+4. Priorize achados clinicamente relevantes
+5. Siga diretrizes médicas brasileiras (CBR, SBACV, etc.)
+```
+
+### Métricas e Custos
+
+Rastreamento automático de:
+
+- **Tokens**: Entrada e saída (estimados)
+- **Custo**: USD estimado por operação
+- **Tempo**: Duração em ms
+- **Chunks**: Número de fragmentos recebidos
+- **Taxa**: Caracteres/segundo
+
+**Interface de Estatísticas:**
+
+```typescript
+interface AIGenerationStats {
+  provider: 'gemini' | 'openai';
+  model: string;
+  status: 'idle' | 'loading' | 'streaming' | 'completed' | 'error';
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+  estimatedCostUsd?: number;
+  startedAt?: number;
+  finishedAt?: number;
+  durationMs?: number;
+  chunkCount?: number;
+  inputChars?: number;
+  outputChars?: number;
+  errorMessage?: string;
 }
 ```
 
-**Características:**
-- Grid responsivo de 12 colunas
-- Header com glassmorphism
-- Sidebar sticky com scroll condicional
-- Painéis laterais sticky no desktop
-- Suporte a painel flutuante via Portal
+### Persistência de Seleção
 
-### FloatingOrganPanelModern
+O modelo selecionado é salvo em `sessionStorage`:
 
-**Localização:** `src/components/shared/FloatingOrganPanelModern.tsx`
+```typescript
+// Salvar
+sessionStorage.setItem('selectedAIModel', 'gemini-2.5-pro');
 
-Painel flutuante que renderiza `OrganSection` via React Portal.
+// Recuperar
+const model = sessionStorage.getItem('selectedAIModel');
+```
 
-**Características:**
-- Portal React para renderização fora do grid
-- Posicionamento fixo configurável
-- Estados minimizado/expandido
-- Click-outside inteligente (ignora dropdowns)
-- Scrollbar condicional (só aparece quando necessário)
+---
 
-**Estados:**
+## 📁 Estrutura de Arquivos
 
-**Expandido:**
-- Largura: `24rem` (configurável)
-- Altura máxima: `80vh` (configurável)
-- Renderiza `OrganSection` completo
-- Botão minimizar no canto superior direito
+```
+vertex-v2/
+├── src/
+│   ├── components/          # Componentes React
+│   │   ├── breast/          # Específicos de mama (BI-RADS)
+│   │   │   ├── MamaPanel.tsx
+│   │   │   ├── BiRadsDisplay.tsx
+│   │   │   ├── LexicoDropdown.tsx
+│   │   │   └── LinfonodosSection.tsx
+│   │   ├── original/        # Componentes originais/legados
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── ReportCanvas.tsx
+│   │   │   ├── OrganSection.tsx
+│   │   │   ├── SelectedFindingsPanel.tsx
+│   │   │   ├── ExamStatisticsPanel.tsx
+│   │   │   ├── FindingDetailsEnhanced.tsx
+│   │   │   ├── CarotidFindingDetails.tsx
+│   │   │   ├── ThyroidFindingDetails.tsx
+│   │   │   ├── BreastUltrasoundFindingDetails.tsx
+│   │   │   └── VenousFindingDetails.tsx
+│   │   ├── shared/          # Componentes compartilhados
+│   │   │   ├── FloatingOrganPanelModern.tsx
+│   │   │   └── QuickTemplatesPanel.tsx
+│   │   ├── ui/              # Componentes Radix UI + Tailwind
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   ├── dropdown-menu.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── input.tsx
+│   │   │   └── ... (61 componentes)
+│   │   ├── MarkdownRenderer.tsx
+│   │   └── ResolutionGuard.tsx
+│   ├── pages/               # Páginas da aplicação
+│   │   ├── modern/          # Páginas modernas
+│   │   │   ├── AbdomeTotalExamModern.tsx
+│   │   │   ├── CarotidExamModern.tsx
+│   │   │   ├── ThyroidEchodopplerModern.tsx
+│   │   │   ├── BreastExamSimplified.tsx
+│   │   │   ├── BreastUltrasoundExamModern.tsx
+│   │   │   ├── VenousExamModern.tsx
+│   │   │   └── ExamTemplateModern.example.tsx
+│   │   ├── v2/
+│   │   │   └── LandingPageModern.tsx
+│   │   └── Home.tsx          # Legado
+│   ├── layouts/             # Layouts compartilhados
+│   │   └── ModernExamLayout.tsx
+│   ├── hooks/               # Custom hooks
+│   │   ├── useMamaState.ts
+│   │   ├── useDropdownGuard.ts
+│   │   └── useOutsidePointerDismiss.ts
+│   ├── services/            # Lógica de negócio
+│   │   ├── geminiClient.ts
+│   │   ├── geminiStreamService.ts
+│   │   ├── openaiStreamService.ts
+│   │   ├── unifiedAIService.ts
+│   │   ├── reportGenerator.ts
+│   │   ├── biradsReportGenerator.ts
+│   │   ├── breastReportBuilder.ts
+│   │   ├── promptBuilder.ts
+│   │   └── biradsCalculator.ts
+│   ├── data/                # Dados médicos estruturados
+│   │   ├── organs.ts        # Estrutura base
+│   │   ├── carotidOrgans.ts # Doppler carótidas
+│   │   ├── thyroidOrgans.ts # Tireóide
+│   │   ├── breastUltrasoundOrgans.ts # Mama
+│   │   ├── venousOrgans.ts  # Doppler venoso
+│   │   ├── biradsLexicons.ts # Léxicos BI-RADS
+│   │   └── reportTemplates.ts # Templates
+│   ├── types/               # TypeScript types
+│   │   ├── report.ts
+│   │   └── birads.ts
+│   ├── utils/               # Utilitários
+│   │   └── aiMetrics.ts     # Métricas de IA
+│   ├── styles/              # Estilos globais
+│   │   ├── index.css
+│   │   ├── theme.css
+│   │   ├── layout.css
+│   │   ├── modern-design.css
+│   │   └── grid-layout.css
+│   ├── App.tsx              # Rotas principais
+│   └── main.tsx             # Entry point
+├── public/                  # Assets estáticos
+│   ├── logo-vertex.svg
+│   └── favicon.svg
+├── docs/                    # Documentação adicional
+│   ├── ARCHITECTURE.md
+│   ├── EXAM_MODERN_GUIDE.md
+│   ├── TROUBLESHOOTING.md
+│   └── ...
+├── backups/                 # Backups automáticos
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+├── tailwind.config.js
+├── .env.example
+├── .gitignore
+└── README.md
+```
 
-**Minimizado:**
-- Largura: `48px` (`w-12`)
-- Exibe nome do órgão em texto vertical
-- Ícone `CaretRight` no topo
-- Clique em qualquer lugar expande
+**Estatísticas:**
 
-### Sidebar
+- **Total de Arquivos**: ~250
+- **Linhas de Código**: ~8.600 (src/)
+- **Componentes React**: ~80
+- **Páginas**: 7 modernas + 1 legada
+- **Hooks Customizados**: 3
+- **Serviços**: 9
+- **Tipos TypeScript**: 15+
 
-**Localização:** `src/components/original/Sidebar.tsx`
+---
 
-Navegação lateral com lista de órgãos e botões rápidos.
+## 📚 Documentação Adicional
 
-**Props principais:**
-- `selectedOrgan` - ID do órgão selecionado
-- `onOrganSelect` - Callback ao selecionar órgão
-- `selectedFindings` - Achados selecionados
-- `normalOrgans` - IDs de órgãos normais
-- `organsList` - Lista de órgãos do exame
-- `showSummary` - Mostrar seção de resumo (opcional)
+### Guias Específicos
 
-### ReportCanvas
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)**: Arquitetura detalhada do sistema
+- **[EXAM_MODERN_GUIDE.md](docs/EXAM_MODERN_GUIDE.md)**: Guia de criação de exames modernos
+- **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)**: Resolução de problemas comuns
+- **[CLAUDE.md](CLAUDE.md)**: Instruções para Claude Code
+- **[GRID_ARCHITECTURE.md](docs/GRID_ARCHITECTURE.md)**: Arquitetura do grid layout
 
-**Localização:** `src/components/original/ReportCanvas.tsx`
+### Componentes Específicos
 
-Canvas A4 centralizado que renderiza o laudo gerado.
+- **[FloatingOrganPanel-Technical.md](docs/FloatingOrganPanel-Technical.md)**: Documentação técnica
+- **[FloatingOrganPanel-Usage.md](docs/FloatingOrganPanel-Usage.md)**: Guia de uso
+- **[FloatingOrganPanel-Visual-Guide.md](docs/FloatingOrganPanel-Visual-Guide.md)**: Guia visual
 
-**Props principais:**
-- `selectedFindings` - Achados selecionados
-- `normalOrgans` - Órgãos normais
-- `generatedReport` - Laudo gerado (markdown)
-- `isGenerating` - Estado de geração
-- `aiImpression` - Impressão da IA
-- `aiStatus` - Status da IA
+### BI-RADS e Léxicos
 
-**Funcionalidades:**
-- Renderização de markdown
-- Botões de copiar (sempre verdes)
-- Streaming de IA progressivo
-- Auto-geração opcional
+- **[PLANEJAMENTO_MAMA_LEXICO.md](PLANEJAMENTO_MAMA_LEXICO.md)**: Planejamento BI-RADS
+- **[LEXICO_DROPDOWN_GUIDE.md](LEXICO_DROPDOWN_GUIDE.md)**: Guia de dropdowns de léxicos
 
-### SelectedFindingsPanel
+### Templates
 
-**Localização:** `src/components/original/SelectedFindingsPanel.tsx`
-
-Painel lateral que lista achados selecionados e permite gerar laudo.
-
-**Props principais:**
-- `selectedFindings` - Achados selecionados
-- `normalOrgans` - Órgãos normais
-- `organsList` - Lista de órgãos
-- `onGenerateReport` - Callback para gerar laudo
-- `isGenerating` - Estado de geração
-- `expandToContent` - Expandir conforme conteúdo
-
-**Funcionalidades:**
-- Lista de achados por órgão
-- Seleção de modelo de IA
-- Botão de gerar laudo
-- Estatísticas básicas
-
-### ExamStatisticsPanel
-
-**Localização:** `src/components/original/ExamStatisticsPanel.tsx`
-
-Painel lateral com estatísticas do exame.
-
-**Props principais:**
-- `selectedFindings` - Achados selecionados
-- `normalOrgans` - Órgãos normais
-- `organsList` - Lista de órgãos
-
-**Estatísticas exibidas:**
-- Total de achados
-- Órgãos com achados
-- Órgãos normais
-- Distribuição por categoria
+- **[ExamTemplateModern.example.tsx](src/pages/modern/ExamTemplateModern.example.tsx)**: Template base para novos exames
 
 ---
 
 ## 🔧 Troubleshooting
 
-### Erros Comuns
+### Problemas Comuns
 
-#### Identifier 'X' has already been declared
+#### 1. Erro: "Identifier 'X' has already been declared"
 
-**Causa:** Import duplicado do mesmo símbolo em um módulo.
+**Causa**: Import duplicado do mesmo símbolo.
 
-**Solução:** Remover a linha duplicada e fazer hard refresh (Ctrl/Cmd+Shift+R).
+**Solução**:
+```typescript
+// ❌ Errado
+import { Finding } from '@/data/organs';
+import { Finding } from '@/types/report'; // Duplicado
 
-#### Dropdown/Select atrás do painel flutuante
+// ✅ Correto
+import { Finding } from '@/data/organs';
+import type { Finding as FindingType } from '@/types/report';
+```
 
-**Causa:** Painel com z-index alto ou ausência de `organ-section-panel`.
+Depois, fazer hard refresh (Ctrl/Cmd + Shift + R).
 
-**Solução:**
-- Usar `organ-section-panel` no painel
-- Deixar portais Radix com z-index `--z-dropdown` (já padronizado em `animations.css`)
+#### 2. Dropdown/Select Atrás do Painel Flutuante
 
-#### Scrollbar não aparece quando o conteúdo cresce
+**Causa**: Z-index incorreto ou falta de classe `organ-section-panel`.
 
-**Causa:** `overflow` aplicado no elemento errado.
+**Solução**:
+- Adicionar `organ-section-panel` no painel flutuante
+- Verificar que portais Radix usam `--z-dropdown`
+- Não usar `z-50` inline
 
-**Solução:** Colocar `overflow-y-auto modern-scrollbar` no MESMO elemento que tem `max-height`.
+#### 3. Scrollbar Não Aparece
 
-#### Favicon 404
+**Causa**: `overflow` no elemento errado.
 
-**Causa:** Navegador solicitando `/favicon.ico` quando não há link explícito.
+**Solução**:
+```tsx
+// ✅ Correto: overflow no mesmo elemento com max-height
+<div className="max-h-[80vh] overflow-y-auto modern-scrollbar">
+  {content}
+</div>
 
-**Solução:** Garantir `<link rel="icon" href="/favicon.svg" />` no `index.html` (já aplicado).
+// ❌ Errado: overflow no pai
+<div className="overflow-y-auto modern-scrollbar">
+  <div className="max-h-[80vh]">
+    {content}
+  </div>
+</div>
+```
 
-#### HMR não reflete mudança
+#### 4. Vite Dev Server Não Inicia
 
-**Causa:** Grafo do Vite com estado sujo após erro de módulo.
+**Causa**: Porta 8200 em uso.
 
-**Solução:** Hard refresh; se persistir, parar e subir `npm run dev` novamente.
-
-#### Painel flutuante não abre ao clicar no órgão
-
-**Causa:** Click-outside handler capturando o mesmo clique que abre o painel.
-
-**Solução:** Verificar que `useOutsidePointerDismiss` está com `isDisabled` quando `isMinimized` está `true`.
-
-#### Painel fecha ao clicar em dropdown
-
-**Causa:** Dropdown não detectado como portal Radix UI.
-
-**Solução:** Verificar que `useDropdownGuard` está sendo usado e `isAnyDropdownOpen` está sendo passado para `useOutsidePointerDismiss`.
-
-### Portas/Serviço
-
-- **Dev server:** 8200. Verificar com `ss -ltnp | grep :8200`
-- **Logs** (quando rodando com nohup): `/tmp/vertex-v2.dev.log`
-
-### Backup
-
-Snapshots em `backups/`. Exemplo: `backups/vertex-v2-20251104-153836.tar.gz`
-
----
-
-## 🚀 Execução e Deploy
-
-### Desenvolvimento Local
-
+**Solução**:
 ```bash
-# Instalar dependências
-cd /root/PROJECT/vertex-v2
-npm install
+# Verificar processo
+ss -ltnp | grep :8200
 
-# Iniciar servidor de desenvolvimento
+# Matar processo se necessário
+kill -9 <PID>
+
+# Reiniciar
 npm run dev
-
-# Acessar aplicação
-# http://localhost:8200
 ```
 
-### Build de Produção
+#### 5. IA Não Responde / Timeout
 
+**Causa**: Problemas de rede, API key inválida ou backend offline.
+
+**Solução**:
+1. Verificar `.env` com API keys corretas
+2. Testar endpoint: `curl https://ultrassom.ai:8177/geminiCall`
+3. Verificar logs do browser (Console)
+4. Tentar provider alternativo (Gemini ↔ OpenAI)
+
+#### 6. Build Falha com Erro de TypeScript
+
+**Causa**: Tipos incompatíveis ou propriedades faltando.
+
+**Solução**:
 ```bash
-# Build
+# Verificar erros
+npm run type-check
+
+# Limpar cache e reinstalar
+rm -rf node_modules dist
+npm install
 npm run build
-
-# Preview do build
-npm run preview
 ```
 
-### Variáveis de Ambiente
+#### 7. HMR (Hot Module Replacement) Não Funciona
 
-Configurar no `.env` ou no servidor:
+**Causa**: Grafo do Vite com estado sujo.
+
+**Solução**:
+```bash
+# Hard refresh no browser
+Ctrl/Cmd + Shift + R
+
+# Se persistir, reiniciar Vite
+Ctrl + C
+npm run dev
+```
+
+#### 8. Painel Flutuante Fecha ao Clicar em Dropdown
+
+**Causa**: Dropdown não detectado como portal Radix.
+
+**Solução**:
+- Verificar que `useDropdownGuard` está sendo usado
+- Passar `isAnyDropdownOpen` para `useOutsidePointerDismiss`
+- Não desabilitar portais Radix
+
+### Logs e Debug
+
+#### Logs do Vite
 
 ```bash
-# Endpoints (opcionais; se não definidos, usam proxy do Vite)
-VITE_GEMINI_API_URL=/api/gemini
-VITE_OPENAI_API_URL=/api/openai
+# Dev server logs
+tail -f /tmp/vertex-v2.dev.log
 
-# Modelos default (sobrepostos pelo selection do usuário via sessionStorage)
-VITE_GEMINI_MODEL=gemini-2.5-pro
-VITE_OPENAI_MODEL=gpt-4o
-
-# Custos estimados por 1k tokens (opcional)
-VITE_OPENAI_INPUT_COST_PER_1K=0.005
-VITE_OPENAI_OUTPUT_COST_PER_1K=0.015
-VITE_GEMINI_INPUT_COST_PER_1K=0.007
-VITE_GEMINI_OUTPUT_COST_PER_1K=0.021
-
-# Chaves (se backend não fizer proxy de autenticação)
-VITE_GEMINI_API_KEY=your_api_key
-VITE_OPENAI_API_KEY=your_api_key
-
-# Ambiente
-NODE_ENV=development
+# Se rodando com systemd
+journalctl -u vertex-v2.service -n 50 -f
 ```
 
-### Proxy de API (Vite)
+#### Debug da IA
 
-`vite.config.ts` define `/api/gemini` e `/api/openai` com rewrite para `ultrassom.ai:8177`. Ajuste as chaves/endpoint conforme necessário.
+Habilitar logs detalhados:
 
-### Systemd Service (Opcional)
-
-**Arquivo:** `/etc/systemd/system/vertex-v2.service`
-
-**Status:** Criado mas requer ajuste no PATH do npm.
-
-**Configuração sugerida:**
-```ini
-[Unit]
-Description=Vertex V2 Vite Dev Server
-After=network.target
-
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/root/PROJECT/vertex-v2
-ExecStart=/usr/local/bin/npx vite --host 0.0.0.0 --port 8200
-Restart=always
-RestartSec=10
-StandardOutput=append:/var/log/vertex-v2/vertex.log
-StandardError=append:/var/log/vertex-v2/error.log
-Environment="NODE_ENV=development"
-Environment="PATH=/usr/bin:/bin:/usr/local/bin:/usr/local/lib/node_modules"
-
-[Install]
-WantedBy=multi-user.target
+```typescript
+// Em geminiStreamService.ts ou openaiStreamService.ts
+const DEBUG = true; // Ativar logs
 ```
 
-**Comandos:**
+Console mostrará:
+- Requisição enviada
+- Chunks recebidos
+- Erros de parsing
+- Tempo de resposta
+
+#### React DevTools
+
+Instale a extensão React DevTools:
+- Chrome: [React DevTools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi)
+- Firefox: [React DevTools](https://addons.mozilla.org/en-US/firefox/addon/react-devtools/)
+
+### Performance
+
+#### Build Lento
+
 ```bash
-# Recarregar daemon
-sudo systemctl daemon-reload
+# Usar cache do Vite
+npm run build -- --cache
 
-# Iniciar serviço
-sudo systemctl start vertex-v2
+# Aumentar memória do Node
+NODE_OPTIONS="--max-old-space-size=4096" npm run build
+```
 
-# Habilitar inicialização automática
-sudo systemctl enable vertex-v2
+#### Bundle Grande
 
-# Ver status
-sudo systemctl status vertex-v2
+```bash
+# Analisar bundle
+npm run build -- --analyze
 
-# Ver logs
-journalctl -u vertex-v2.service -n 50
+# Visualizar no browser
+npx vite-bundle-visualizer
 ```
 
 ---
 
-## 📝 Changelog
+## 🤝 Contribuindo
 
-### [10/11/2025] - IA e UX
+Contribuições são bem-vindas! Por favor, siga estas diretrizes:
 
-- OpenAI: corrigido payload para `max_completion_tokens`; streaming agora emite `onChunk` com texto acumulado.
-- Seleção de modelo: persistência via `sessionStorage.selectedAIModel` e uso nos serviços.
-- Painel “Estatísticas da IA”: tokens (estimados), custo, duração, chunks e tamanho de saída.
-- FloatingOrganPanelModern: ancoragem precisa no `.glass-sidebar` com props `followSidebar`, `followGapPx`, `followNudgePx` e overlap ao minimizar.
-- Sidebar: removidas micro‑descrições sob cada item para reduzir ruído visual.
-- Layout: `ReportCanvas` header `p-6 → p-5`; `.report-content` com padding superior reduzido.
+### Processo de Contribuição
 
-### [28/10/2025] - Correções de Dropdowns e Layout Responsivo
+1. **Fork** o repositório
+2. **Clone** seu fork localmente
+3. **Crie** uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
+4. **Commit** suas mudanças (`git commit -m 'feat: Adiciona MinhaFeature'`)
+5. **Push** para a branch (`git push origin feature/MinhaFeature`)
+6. **Abra** um Pull Request
 
-#### Problema de Dropdowns Fechando Painéis Flutuantes
-- **Problema identificado:** Dropdowns (nativos e Radix UI) estavam fechando incorretamente os painéis flutuantes ao serem clicados
-- **Causa raiz:** Handler de click-outside não detectava corretamente todos os elementos de dropdown
-- **Solução implementada:**
-  - Substituído polling (setInterval 100ms) por MutationObserver para detecção eficiente
-  - Adicionado debounce de 50ms no handler click-outside
-  - Lista completa de seletores Radix UI para detecção de portais
-  - Marcação de dropdowns customizados com `data-custom-dropdown="open"`
+### Padrões de Commit
 
-#### Melhorias de Layout
-- **Container com largura máxima:** Adicionado wrapper `max-width: 1800px` para telas grandes
-- **Grid proporcional:** Migrado de pixels fixos para unidades `fr` com `minmax()`
-- **Canvas A4 fluido:** Implementado `clamp(600px, 75vw, 850px)` para adaptação suave
-- **Aspect ratio preservado:** Mantido `1 / 1.414` (proporção A4 real)
+Seguimos [Conventional Commits](https://www.conventionalcommits.org/):
 
-#### Correção de Posicionamento dos Painéis Flutuantes
-- **Problema:** Painéis flutuantes não estavam adjacentes à sidebar (left-6 = 24px)
-- **Correção:** Posicionamento fixo em `left-[272px]` para adjacência perfeita
-- **Breakpoints responsivos:** `lg:left-[256px] md:left-[240px]`
+```
+feat: Adiciona nova funcionalidade
+fix: Corrige bug
+docs: Atualiza documentação
+style: Mudanças de estilo/formatação
+refactor: Refatoração de código
+perf: Melhoria de performance
+test: Adiciona ou corrige testes
+chore: Tarefas de manutenção
+```
 
-### [22/10/2025] - Layout Centralizado + Diretrizes de Exames
+### Code Review
 
-- Wrapper centralizado com `max-w-screen-2xl`
-- Sidebar fixa com `w-64 flex-shrink-0`
-- Painéis auxiliares com `expandToContent`
+Pull requests serão revisados para:
 
-### [22/10/2025] - Aperfeiçoamentos Doppler Carótidas
+- ✅ Funcionamento correto
+- ✅ Testes passando
+- ✅ Código limpo e bem documentado
+- ✅ Sem regressões
+- ✅ Seguimento dos padrões do projeto
 
-- Helper `normalizeMeasurements` para compatibilidade
-- Novos campos: `plaqueRisk`, `emi`, `emiClassification`
-- Input EMI como texto livre
+### Issues
 
-### [21/10/2025] - Refatoração Semântica HTML5
+Reporte bugs ou sugira features através de [GitHub Issues](https://github.com/Anderson-Barcellos/Vertex/issues).
 
-- Substituição de divs genéricas por tags HTML5
-- Atributos ARIA completos
-- Score de acessibilidade: 92/100 (Lighthouse)
+**Template de Bug Report:**
 
-### [05/11/2025] - Correções de Imports e Limpeza
+```markdown
+**Descrição do Bug**
+Descrição clara e concisa do problema.
 
-- Correção de 7 problemas de imports em diferentes arquivos
-- Remoção de arquivos não utilizados (15 arquivos)
-- Consolidação de imports duplicados
-- Template base `ModernExamLayout` verificado e funcional
+**Como Reproduzir**
+1. Vá para '...'
+2. Clique em '...'
+3. Veja o erro
 
----
+**Comportamento Esperado**
+O que deveria acontecer.
 
-## 📚 Referências
+**Screenshots**
+Se aplicável.
 
-### Documentação Externa
-
-- [React Portals](https://react.dev/reference/react-dom/createPortal)
-- [Radix UI Primitives](https://www.radix-ui.com/primitives)
-- [Tailwind CSS v4](https://tailwindcss.com/docs)
-- [Vite Documentation](https://vite.dev)
-- [React Router v7](https://reactrouter.com)
-
-### Documentação Interna
-
-- `docs/ARCHITECTURE.md` - Arquitetura detalhada (legado)
-- `docs/EXAM_MODERN_GUIDE.md` - Guia de criação de exames (legado)
-- `docs/TROUBLESHOOTING.md` - Troubleshooting detalhado (legado)
-- `src/pages/modern/ExamTemplateModern.example.tsx` - Template de referência
-
-### Arquivos de Configuração
-
-- `vite.config.ts` - Configuração do Vite
-- `tailwind.config.js` - Configuração do Tailwind
-- `tsconfig.json` - Configuração do TypeScript
-- `package.json` - Dependências e scripts
+**Ambiente**
+- OS: [ex: Windows 10]
+- Browser: [ex: Chrome 120]
+- Versão: [ex: 2.0.0]
+```
 
 ---
 
-## 🎯 Próximos Passos
+## 📄 Licença
 
-- [ ] Implementar novos exames com mesmo layout moderno
-- [ ] Adicionar animações de transição entre páginas
-- [ ] Criar sistema de temas (dark/light toggle)
-- [ ] Implementar modo de impressão otimizado
-- [ ] Adicionar testes E2E com Playwright
-- [ ] Documentar componentes com Storybook
-- [ ] Melhorar acessibilidade (A11y audit)
-- [ ] Otimizar bundle size (code splitting)
+Este projeto é propriedade privada de **Anderson Barcellos**.
 
----
+**Todos os direitos reservados.** © 2025
 
-## 👨‍💻 Desenvolvido por
+O código, documentação e recursos deste repositório não podem ser reproduzidos, distribuídos ou utilizados sem permissão explícita do autor.
 
-**Anders + Claude**
-Data: Outubro-Novembro 2025
-Versão: 2.0.0
+Para solicitações de licenciamento ou uso comercial, entre em contato.
 
 ---
 
-**🧉 Bah, ficou tri legal esse projeto tchê!**
+## 👨‍⚕️ Autor
+
+**Dr. Anderson Barcellos (Anders)**
+Médico Neuropsiquiatra e Ultrassonografista
+Santa Cruz do Sul, RS, Brasil
+
+---
+
+## 🙏 Agradecimentos
+
+- **Claude (Anthropic)**: Assistente de IA para desenvolvimento
+- **Google Gemini**: API de IA generativa
+- **OpenAI**: Modelos GPT
+- **Radix UI**: Componentes primitivos acessíveis
+- **Tailwind Labs**: Framework CSS utilitário
+- **Vite Team**: Build tool moderno e rápido
+- **React Team**: Biblioteca UI robusta
+
+---
+
+## 📞 Contato
+
+Para questões, sugestões ou suporte:
+
+- **GitHub Issues**: [Vertex Issues](https://github.com/Anderson-Barcellos/Vertex/issues)
+- **Email**: [contato em desenvolvimento]
+
+---
+
+## 🎯 Roadmap
+
+### Próximas Versões
+
+#### v2.1.0 (Q1 2025)
+- [ ] Sistema de templates customizáveis
+- [ ] Exportação para PDF
+- [ ] Modo offline com cache
+- [ ] Histórico de exames
+
+#### v2.2.0 (Q2 2025)
+- [ ] Artérias Renais
+- [ ] Obstétrico 1º Trimestre
+- [ ] Sistema de usuários e autenticação
+- [ ] Dashboard de estatísticas
+
+#### v3.0.0 (Q3 2025)
+- [ ] Mobile App (React Native)
+- [ ] Reconhecimento de voz
+- [ ] Integração com PACS
+- [ ] Sistema de templates compartilhados
+
+---
+
+## 📊 Estatísticas do Projeto
+
+- **Versão Atual**: 2.0.0
+- **Status**: Em Produção ✅
+- **Última Atualização**: Novembro 2025
+- **Linhas de Código**: ~8.600
+- **Componentes**: 80+
+- **Exames Implementados**: 6
+- **Testes**: Em desenvolvimento
+- **Cobertura**: TBD
+
+---
+
+## 🌟 Features em Destaque
+
+### 1. Geração de Laudos com IA
+Sistema inteligente que analisa achados clínicos e gera impressões diagnósticas contextualizadas, seguindo terminologia médica padronizada.
+
+### 2. BI-RADS Completo
+Implementação completa do BI-RADS 5ª edição com léxicos padronizados e cálculo automático de categorias.
+
+### 3. Velocimetria Doppler
+Sistema avançado para exames vasculares com cálculo automático de graus de estenose (NASCET) e classificação de placas.
+
+### 4. Interface Moderna
+Design premium com glassmorphism, animações suaves e painéis flutuantes inteligentes.
+
+### 5. Streaming Progressivo
+Visualização em tempo real da geração de laudos com IA, com feedback progressivo ao usuário.
+
+---
+
+<div align="center">
+
+**Feito com ❤️ por Anders + Claude**
+
+🧉 **Bah, ficou tri legal esse projeto tchê!** 🧉
+
+</div>
