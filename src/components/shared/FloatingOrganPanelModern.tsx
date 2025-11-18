@@ -32,6 +32,12 @@ type FloatingOrganPanelModernProps = {
     instances?: FindingInstance[]
   ) => void;
   onNormalChange: (organId: string, isNormal: boolean) => void;
+  tempDetails?: Record<string, { severity?: string; instances?: FindingInstance[] }>;
+  onTempDetailsChange?: (
+    organId: string,
+    findingId: string,
+    details: { severity?: string; instances?: FindingInstance[] }
+  ) => void;
   leftCss?: string; // ex.: 'calc(25% + 1.5rem)'
   widthExpanded?: string; // default '24rem'
   maxHeight?: string; // default 'calc(80vh)'
@@ -46,6 +52,8 @@ export default function FloatingOrganPanelModern({
   onToggleMinimized,
   onFindingChange,
   onNormalChange,
+  tempDetails,
+  onTempDetailsChange,
   leftCss = 'calc(25% + 1.5rem)',
   widthExpanded = '24rem',
   maxHeight = '80vh',
@@ -101,6 +109,8 @@ export default function FloatingOrganPanelModern({
               onFindingChange={onFindingChange}
               onNormalChange={onNormalChange}
               isNormal={isNormal}
+              tempDetails={tempDetails}
+              onTempDetailsChange={onTempDetailsChange}
               FindingDetailsComponent={FindingDetailsComponent}
             />
           </div>

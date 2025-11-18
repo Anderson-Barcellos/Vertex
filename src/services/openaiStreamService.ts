@@ -36,7 +36,7 @@ Analisar o texto fornecido pelo usuário:
 
 ## REFERÊNCIAS CLÍNICAS PARA DOPPLER DE CARÓTIDAS
 
-### CRITÉRIOS  DE ESTENOSE CAROTÍDEA
+### CRITÉRIOS NASCET DE ESTENOSE CAROTÍDEA
 - **Normal:** VPS < 125 cm/s | Razão ICA/CCA < 2.0
 - **<50%:** VPS < 125 cm/s | Razão ICA/CCA < 2.0
 - **50-69%:** VPS 125-230 cm/s | Razão ICA/CCA 2.0-4.0
@@ -51,6 +51,10 @@ Analisar o texto fornecido pelo usuário:
 - **Tipo 4 (Uniformemente ecogênica):** Homogeneamente hiperecóica, estável
 - **Tipo 5 (Calcificada):** Sombra acústica posterior, geralmente estável
 
+### VALORES DE REFERÊNCIA EMI
+- **Normal:** < 0.9 mm (adultos < 40 anos) | < 1.0 mm (adultos > 40 anos)
+- **Espessamento:** 1.0-1.2 mm
+- **Placa aterosclerótica:** > 1.2 mm
 
 ## METODOLOGIA
 

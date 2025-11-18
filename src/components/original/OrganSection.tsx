@@ -20,6 +20,12 @@ interface OrganSectionProps {
   ) => void;
   onNormalChange: (organId: string, isNormal: boolean) => void;
   isNormal: boolean;
+  tempDetails?: Record<string, { severity?: string; instances?: FindingInstance[] }>;
+  onTempDetailsChange?: (
+    organId: string,
+    findingId: string,
+    details: { severity?: string; instances?: FindingInstance[] }
+  ) => void;
   FindingDetailsComponent?: React.ComponentType<{
     finding: Finding;
     organId: string;
@@ -36,13 +42,18 @@ export default function OrganSection({
   onFindingChange,
   onNormalChange,
   isNormal,
+  tempDetails = {},
+  onTempDetailsChange,
   FindingDetailsComponent = FindingDetailsEnhanced
 }: OrganSectionProps) {
-  // Local state for finding details
-  const [findingDetails, setFindingDetails] = useState<Record<string, {
+  // Use tempDetails from props if available, fallback to local state
+  const [localFindingDetails, setLocalFindingDetails] = useState<Record<string, {
     severity?: string;
     instances?: FindingInstance[];
   }>>({});
+  
+  // Usar tempDetails das props se disponível, senão usar estado local
+  const findingDetails = onTempDetailsChange ? tempDetails : localFindingDetails;
 
   const isFindingSelected = (findingId: string) => {
     return selectedFindings.some(sf => sf.findingId === findingId);
@@ -66,23 +77,24 @@ export default function OrganSection({
       details.instances
     );
 
-    // Clear details if unchecked
-    if (!checked) {
-      const newDetails = { ...findingDetails };
-      delete newDetails[finding.id];
-      setFindingDetails(newDetails);
-    }
+    // NÃO limpar os detalhes quando desmarcado - mantém o estado temporário
+    // Isso permite que o usuário remarque o finding e mantenha os dados
   };
 
   const handleSeverityChange = (findingId: string, finding: Finding, categoryId: string, severity: string) => {
     const newDetails = {
-      ...findingDetails,
-      [findingId]: {
-        ...findingDetails[findingId],
-        severity
-      }
+      ...findingDetails[findingId],
+      severity
     };
-    setFindingDetails(newDetails);
+    
+    if (onTempDetailsChange) {
+      onTempDetailsChange(organ.id, findingId, newDetails);
+    } else {
+      setLocalFindingDetails(prev => ({
+        ...prev,
+        [findingId]: newDetails
+      }));
+    }
 
     // Update the finding if it's already selected
     if (isFindingSelected(findingId)) {
@@ -93,20 +105,25 @@ export default function OrganSection({
         true,
         finding,
         severity,
-        newDetails[findingId].instances
+        newDetails.instances
       );
     }
   };
 
   const handleInstancesChange = (findingId: string, finding: Finding, categoryId: string, instances: FindingInstance[]) => {
     const newDetails = {
-      ...findingDetails,
-      [findingId]: {
-        ...findingDetails[findingId],
-        instances
-      }
+      ...findingDetails[findingId],
+      instances
     };
-    setFindingDetails(newDetails);
+    
+    if (onTempDetailsChange) {
+      onTempDetailsChange(organ.id, findingId, newDetails);
+    } else {
+      setLocalFindingDetails(prev => ({
+        ...prev,
+        [findingId]: newDetails
+      }));
+    }
 
     // Update the finding if it's already selected
     if (isFindingSelected(findingId)) {
@@ -116,7 +133,7 @@ export default function OrganSection({
         findingId,
         true,
         finding,
-        newDetails[findingId].severity || finding.severity,
+        newDetails.severity || finding.severity,
         instances
       );
     }

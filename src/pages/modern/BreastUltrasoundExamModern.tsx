@@ -49,6 +49,11 @@ function BreastUltrasoundExamModern() {
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
   const [aiGenerationStats, setAiGenerationStats] = useState<AIGenerationStats | null>(null);
   const statusUnsubscribeRef = useRef<(() => void) | null>(null);
+  
+  // Estado temporário para detalhes dos findings (persiste ao minimizar/trocar órgão)
+  const [tempFindingDetails, setTempFindingDetails] = useState<
+    Record<string, Record<string, { severity?: string; instances?: FindingInstance[] }>>
+  >({});
 
   // Outside click e guardas de dropdown agora são tratados pelo FloatingOrganPanelModern.
 
@@ -72,6 +77,25 @@ function BreastUltrasoundExamModern() {
       setSelectedOrgan(organId);
       setIsPanelMinimized(false);
     }
+  };
+
+  // Funções para gerenciar o estado temporário dos findings
+  const handleTempDetailsChange = (
+    organId: string,
+    findingId: string,
+    details: { severity?: string; instances?: FindingInstance[] }
+  ) => {
+    setTempFindingDetails(prev => ({
+      ...prev,
+      [organId]: {
+        ...prev[organId],
+        [findingId]: details
+      }
+    }));
+  };
+
+  const getTempDetails = (organId: string) => {
+    return tempFindingDetails[organId] || {};
   };
 
   const handleFindingChange = (
@@ -591,6 +615,8 @@ function BreastUltrasoundExamModern() {
               onToggleMinimized={setIsPanelMinimized}
               onFindingChange={handleFindingChange}
               onNormalChange={handleNormalChange}
+              tempDetails={getTempDetails(currentOrgan.id)}
+              onTempDetailsChange={handleTempDetailsChange}
               leftCss={'calc(25% + 1.5rem)'}
               widthExpanded={'24rem'}
               maxHeight={'80vh'}
