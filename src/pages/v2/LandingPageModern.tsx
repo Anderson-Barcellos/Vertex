@@ -376,7 +376,7 @@ export function LandingPageModern() {
             </div>
           </div>
 
-          {/* Ultrassom de Parede Abdominal - EXPERIMENTAL */}
+          {/* Ultrassom de Parede Abdominal */}
           <div
             onClick={() => navigate('/abdominal-wall')}
             className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
@@ -393,16 +393,11 @@ export function LandingPageModern() {
               </div>
 
               {/* Content */}
-              <div className="mb-3">
-                <h3 className="text-3xl font-bold text-white">
-                  Ultrassom de Parede Abdominal
-                </h3>
-                <span className="inline-block mt-2 px-2 py-1 text-xs font-bold text-violet-300 bg-violet-900/30 rounded border border-violet-500/50">
-                  ✨ LAYOUT EXPERIMENTAL
-                </span>
-              </div>
+              <h3 className="text-3xl font-bold text-white mb-3">
+                Ultrassom de Parede Abdominal
+              </h3>
               <p className="text-gray-400 mb-6 leading-relaxed">
-                Nova interface revolucionária! Cards fluidos, entrada inline e preview em tempo real para avaliação de hérnias e parede
+                Avaliação completa de parede abdominal com protocolo para hérnias, diástase, endometriose e lesões de parede
               </p>
 
               {/* Stats */}
@@ -412,14 +407,14 @@ export function LandingPageModern() {
                   <div className="text-xs text-gray-400">Estruturas</div>
                 </div>
                 <div className="flex-1 glass-card">
-                  <div className="text-2xl font-bold text-purple-400">Novo</div>
-                  <div className="text-xs text-gray-400">Design</div>
+                  <div className="text-2xl font-bold text-purple-400">35+</div>
+                  <div className="text-xs text-gray-400">Achados</div>
                 </div>
               </div>
 
               {/* CTA */}
               <div className="flex items-center text-violet-400 font-semibold group-hover:translate-x-2 transition-transform duration-300">
-                <span>Experimentar agora</span>
+                <span>Acessar módulo</span>
                 <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
