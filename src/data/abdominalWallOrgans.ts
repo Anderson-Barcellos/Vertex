@@ -1,139 +1,197 @@
-export interface AbdominalWallStructure {
+export interface Finding {
   id: string;
   name: string;
-  category: string;
-  icon: string;
-  findings: {
+  description: string;
+  severity?: 'leve' | 'moderado' | 'acentuado';
+  hasDetails?: boolean;
+  hasSeverity?: boolean;
+  hasMeasurement?: boolean;
+  hasLocation?: boolean;
+  hasQuantity?: boolean;
+  isNormal?: boolean;
+  extraFields?: (string | {
     id: string;
     label: string;
-    details?: {
-      type: 'measurement' | 'text' | 'select' | 'multiselect';
-      label: string;
-      options?: string[];
-      unit?: string;
-    }[];
-  }[];
+    type: string;
+    placeholder?: string;
+    options?: string[];
+  })[];
 }
 
-export const abdominalWallStructures: AbdominalWallStructure[] = [
+export interface OrganCategory {
+  id: string;
+  name: string;
+  findings: Finding[];
+}
+
+export interface Organ {
+  id: string;
+  name: string;
+  icon: string;
+  categories: OrganCategory[];
+  normalDescription: string;
+}
+
+export const abdominalWallOrgans: Organ[] = [
   {
     id: 'subcutaneous',
     name: 'Tecido Subcutâneo',
-    category: 'Camadas',
-    icon: '🔬',
-    findings: [
+    icon: 'layers',
+    normalDescription: 'apresenta espessura preservada, ecotextura habitual, sem evidências de coleções, hematomas ou lesões focais.',
+    categories: [
       {
-        id: 'normal',
-        label: 'Normal',
-      },
-      {
-        id: 'thickening',
-        label: 'Espessamento',
-        details: [
+        id: 'thickness',
+        name: 'Espessura',
+        findings: [
           {
-            type: 'measurement',
-            label: 'Espessura (mm)',
-            unit: 'mm'
-          },
-          {
-            type: 'select',
-            label: 'Localização',
-            options: ['Difusa', 'Focal - Região umbilical', 'Focal - Hipogástrio', 'Focal - Flancos', 'Outra']
+            id: 'thickening',
+            name: 'Espessamento',
+            description: 'Aumento da espessura do tecido subcutâneo',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            hasSeverity: true
           }
         ]
       },
       {
-        id: 'lipoma',
-        label: 'Lipoma',
-        details: [
+        id: 'lesions',
+        name: 'Lesões',
+        findings: [
           {
-            type: 'measurement',
-            label: 'Maior diâmetro (cm)',
-            unit: 'cm'
+            id: 'lipoma',
+            name: 'Lipoma',
+            description: 'Lesão adiposa bem delimitada',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              {
+                id: 'characteristics',
+                label: 'Características',
+                type: 'textarea',
+                placeholder: 'Descreva aspecto ecográfico, vascularização, etc.'
+              }
+            ]
           },
           {
-            type: 'select',
-            label: 'Localização',
-            options: ['Umbilical', 'Epigástrica', 'Hipogástrica', 'Flanco direito', 'Flanco esquerdo', 'Outra']
-          },
-          {
-            type: 'text',
-            label: 'Características adicionais'
+            id: 'sebaceous-cyst',
+            name: 'Cisto Sebáceo',
+            description: 'Cisto de origem epidérmica',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true
           }
         ]
       },
       {
-        id: 'collection',
-        label: 'Coleção líquida/Hematoma',
-        details: [
+        id: 'collections',
+        name: 'Coleções',
+        findings: [
           {
-            type: 'measurement',
-            label: 'Maior diâmetro (cm)',
-            unit: 'cm'
+            id: 'hematoma',
+            name: 'Hematoma',
+            description: 'Coleção hemática',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              {
+                id: 'stage',
+                label: 'Estágio',
+                type: 'select',
+                options: ['Agudo', 'Subagudo', 'Crônico', 'Em organização']
+              }
+            ]
           },
           {
-            type: 'select',
-            label: 'Tipo',
-            options: ['Seroso simples', 'Hematoma agudo', 'Hematoma subagudo', 'Abscesso (suspeito)', 'Indeterminado']
+            id: 'seroma',
+            name: 'Seroma',
+            description: 'Coleção serosa',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true
           },
           {
-            type: 'select',
-            label: 'Localização',
-            options: ['Subcutânea', 'Pré-aponeurótica', 'Intramuscular', 'Pré-peritoneal']
+            id: 'abscess',
+            name: 'Abscesso',
+            description: 'Coleção purulenta',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true
           }
         ]
       }
     ]
   },
   {
-    id: 'rectus',
-    name: 'Músculos Retos Abdominais',
-    category: 'Camadas',
-    icon: '💪',
-    findings: [
+    id: 'muscles',
+    name: 'Musculatura Abdominal',
+    icon: 'activity',
+    normalDescription: 'apresenta espessura, ecotextura e simetria preservadas. Músculos retos abdominais com alinhamento normal. Não há evidências de diástase, hérnias ou lesões.',
+    categories: [
       {
-        id: 'normal',
-        label: 'Normal',
-      },
-      {
-        id: 'diastasis',
-        label: 'Diástase dos Retos',
-        details: [
+        id: 'rectus',
+        name: 'Músculos Retos',
+        findings: [
           {
-            type: 'measurement',
-            label: 'Distância entre músculos - supraumbilical (cm)',
-            unit: 'cm'
+            id: 'diastasis',
+            name: 'Diástase dos Retos',
+            description: 'Separação dos músculos retos abdominais',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasSeverity: true,
+            extraFields: [
+              {
+                id: 'supraumbilical',
+                label: 'Distância Supraumbilical (cm)',
+                type: 'text',
+                placeholder: 'Ex: 2.5'
+              },
+              {
+                id: 'umbilical',
+                label: 'Distância Umbilical (cm)',
+                type: 'text',
+                placeholder: 'Ex: 3.2'
+              },
+              {
+                id: 'infraumbilical',
+                label: 'Distância Infraumbilical (cm)',
+                type: 'text',
+                placeholder: 'Ex: 2.0'
+              }
+            ]
           },
           {
-            type: 'measurement',
-            label: 'Distância entre músculos - umbilical (cm)',
-            unit: 'cm'
-          },
-          {
-            type: 'measurement',
-            label: 'Distância entre músculos - infraumbilical (cm)',
-            unit: 'cm'
-          },
-          {
-            type: 'select',
-            label: 'Gravidade',
-            options: ['Leve (<2cm)', 'Moderada (2-3cm)', 'Acentuada (>3cm)']
+            id: 'muscle-hematoma',
+            name: 'Hematoma Intramuscular',
+            description: 'Coleção hemática no interior do músculo',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true
           }
         ]
       },
       {
-        id: 'hematoma',
-        label: 'Hematoma Intramuscular',
-        details: [
+        id: 'changes',
+        name: 'Alterações Musculares',
+        findings: [
           {
-            type: 'measurement',
-            label: 'Dimensões (cm)',
-            unit: 'cm'
+            id: 'atrophy',
+            name: 'Atrofia Muscular',
+            description: 'Redução da espessura muscular',
+            hasDetails: true,
+            hasLocation: true,
+            hasSeverity: true
           },
           {
-            type: 'select',
-            label: 'Músculo acometido',
-            options: ['Reto abdominal direito', 'Reto abdominal esquerdo', 'Oblíquo externo', 'Oblíquo interno', 'Transverso']
+            id: 'tear',
+            name: 'Lesão Muscular/Rotura',
+            description: 'Descontinuidade das fibras musculares',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            hasSeverity: true
           }
         ]
       }
@@ -142,93 +200,141 @@ export const abdominalWallStructures: AbdominalWallStructure[] = [
   {
     id: 'hernias',
     name: 'Hérnias',
-    category: 'Defeitos',
-    icon: '🔴',
-    findings: [
+    icon: 'alert-circle',
+    normalDescription: 'não evidenciadas. Paredes íntegras, sem defeitos herniários visíveis ao exame.',
+    categories: [
       {
-        id: 'no_hernia',
-        label: 'Sem hérnias',
-      },
-      {
-        id: 'umbilical',
-        label: 'Hérnia Umbilical',
-        details: [
+        id: 'ventral',
+        name: 'Hérnias Ventrais',
+        findings: [
           {
-            type: 'measurement',
-            label: 'Diâmetro do anel (cm)',
-            unit: 'cm'
+            id: 'umbilical',
+            name: 'Hérnia Umbilical',
+            description: 'Defeito da parede na região umbilical',
+            hasDetails: true,
+            hasMeasurement: true,
+            extraFields: [
+              {
+                id: 'ring-diameter',
+                label: 'Diâmetro do Anel (cm)',
+                type: 'text',
+                placeholder: 'Ex: 1.5'
+              },
+              {
+                id: 'sac-dimensions',
+                label: 'Dimensões do Saco (cm)',
+                type: 'text',
+                placeholder: 'Ex: 3.0 x 2.5'
+              },
+              {
+                id: 'content',
+                label: 'Conteúdo',
+                type: 'select',
+                options: ['Gordura omental', 'Alças intestinais', 'Líquido', 'Misto', 'Indeterminado']
+              },
+              {
+                id: 'reducibility',
+                label: 'Redutibilidade',
+                type: 'select',
+                options: ['Redutível', 'Irredutível', 'Parcialmente redutível']
+              }
+            ]
           },
           {
-            type: 'measurement',
-            label: 'Dimensão do saco herniário (cm)',
-            unit: 'cm'
+            id: 'epigastric',
+            name: 'Hérnia Epigástrica',
+            description: 'Defeito da linha alba na região epigástrica',
+            hasDetails: true,
+            hasMeasurement: true,
+            extraFields: [
+              {
+                id: 'ring-diameter',
+                label: 'Diâmetro do Anel (cm)',
+                type: 'text',
+                placeholder: 'Ex: 0.8'
+              },
+              {
+                id: 'content',
+                label: 'Conteúdo',
+                type: 'select',
+                options: ['Gordura pré-peritoneal', 'Gordura omental', 'Indeterminado']
+              }
+            ]
           },
           {
-            type: 'select',
-            label: 'Conteúdo',
-            options: ['Gordura omental', 'Alças intestinais', 'Líquido', 'Indeterminado']
-          },
-          {
-            type: 'select',
-            label: 'Redutibilidade',
-            options: ['Redutível', 'Irredutível', 'Parcialmente redutível']
+            id: 'incisional',
+            name: 'Hérnia Incisional',
+            description: 'Defeito em cicatriz cirúrgica prévia',
+            hasDetails: true,
+            hasMeasurement: true,
+            extraFields: [
+              {
+                id: 'scar-location',
+                label: 'Localização da Cicatriz',
+                type: 'text',
+                placeholder: 'Ex: Mediana infraumbilical'
+              },
+              {
+                id: 'defect-extension',
+                label: 'Extensão do Defeito (cm)',
+                type: 'text',
+                placeholder: 'Ex: 5.0'
+              },
+              {
+                id: 'defect-width',
+                label: 'Largura do Defeito (cm)',
+                type: 'text',
+                placeholder: 'Ex: 3.0'
+              },
+              {
+                id: 'content',
+                label: 'Conteúdo',
+                type: 'select',
+                options: ['Alças intestinais', 'Gordura omental', 'Ambos', 'Indeterminado']
+              },
+              {
+                id: 'reducibility',
+                label: 'Redutibilidade',
+                type: 'select',
+                options: ['Redutível', 'Irredutível', 'Parcialmente redutível']
+              }
+            ]
           }
         ]
       },
       {
-        id: 'epigastric',
-        label: 'Hérnia Epigástrica',
-        details: [
+        id: 'lateral',
+        name: 'Hérnias Laterais',
+        findings: [
           {
-            type: 'measurement',
-            label: 'Diâmetro do anel (cm)',
-            unit: 'cm'
+            id: 'spigelian',
+            name: 'Hérnia de Spiegel',
+            description: 'Defeito na linha semilunar',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              {
+                id: 'side',
+                label: 'Lado',
+                type: 'select',
+                options: ['Direito', 'Esquerdo', 'Bilateral']
+              },
+              {
+                id: 'defect-diameter',
+                label: 'Diâmetro do Defeito (cm)',
+                type: 'text',
+                placeholder: 'Ex: 2.0'
+              }
+            ]
           },
           {
-            type: 'select',
-            label: 'Conteúdo',
-            options: ['Gordura pré-peritoneal', 'Omental', 'Indeterminado']
-          }
-        ]
-      },
-      {
-        id: 'incisional',
-        label: 'Hérnia Incisional',
-        details: [
-          {
-            type: 'text',
-            label: 'Localização da cicatriz'
-          },
-          {
-            type: 'measurement',
-            label: 'Extensão do defeito (cm)',
-            unit: 'cm'
-          },
-          {
-            type: 'measurement',
-            label: 'Maior diâmetro (cm)',
-            unit: 'cm'
-          },
-          {
-            type: 'select',
-            label: 'Conteúdo',
-            options: ['Alças intestinais', 'Gordura omental', 'Ambos', 'Indeterminado']
-          }
-        ]
-      },
-      {
-        id: 'spigelian',
-        label: 'Hérnia de Spiegel',
-        details: [
-          {
-            type: 'select',
-            label: 'Lado',
-            options: ['Direito', 'Esquerdo', 'Bilateral']
-          },
-          {
-            type: 'measurement',
-            label: 'Diâmetro do defeito (cm)',
-            unit: 'cm'
+            id: 'lumbar',
+            name: 'Hérnia Lombar',
+            description: 'Defeito na região lombar',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true
           }
         ]
       }
@@ -236,138 +342,160 @@ export const abdominalWallStructures: AbdominalWallStructure[] = [
   },
   {
     id: 'scars',
-    name: 'Cicatrizes Cirúrgicas',
-    category: 'Defeitos',
-    icon: '✂️',
-    findings: [
+    name: 'Cicatrizes e Anastomoses',
+    icon: 'scissors',
+    normalDescription: 'não apresentam alterações significativas. Sem evidências de hérnias incisionais, endometriose ou granulomas.',
+    categories: [
       {
-        id: 'no_scars',
-        label: 'Sem cicatrizes',
-      },
-      {
-        id: 'scar_normal',
-        label: 'Cicatriz sem alterações',
-        details: [
+        id: 'surgical-scars',
+        name: 'Cicatrizes Cirúrgicas',
+        findings: [
           {
-            type: 'text',
-            label: 'Localização'
-          }
-        ]
-      },
-      {
-        id: 'endometriosis',
-        label: 'Endometriose de Parede',
-        details: [
-          {
-            type: 'select',
-            label: 'Cicatriz relacionada',
-            options: ['Cesariana (Pfannenstiel)', 'Laparoscopia', 'Mediana', 'Outra']
+            id: 'normal-scar',
+            name: 'Cicatriz sem Alterações',
+            description: 'Cicatriz cirúrgica sem complicações',
+            hasDetails: true,
+            hasLocation: true,
+            isNormal: true
           },
           {
-            type: 'measurement',
-            label: 'Dimensões da lesão (cm)',
-            unit: 'cm'
+            id: 'endometriosis',
+            name: 'Endometriose de Parede',
+            description: 'Implante endometrial em cicatriz cirúrgica',
+            hasDetails: true,
+            hasMeasurement: true,
+            extraFields: [
+              {
+                id: 'related-scar',
+                label: 'Cicatriz Relacionada',
+                type: 'select',
+                options: ['Cesariana (Pfannenstiel)', 'Laparoscopia', 'Mediana', 'Paramediana', 'Outra']
+              },
+              {
+                id: 'layer',
+                label: 'Camada Acometida',
+                type: 'select',
+                options: ['Subcutânea', 'Muscular', 'Ambas', 'Pré-peritoneal']
+              },
+              {
+                id: 'characteristics',
+                label: 'Características',
+                type: 'textarea',
+                placeholder: 'Descreva aspecto, vascularização, relação com ciclo menstrual, etc.'
+              }
+            ]
           },
           {
-            type: 'select',
-            label: 'Camada acometida',
-            options: ['Subcutânea', 'Muscular', 'Ambas']
-          },
-          {
-            type: 'text',
-            label: 'Características ultrassonográficas'
-          }
-        ]
-      },
-      {
-        id: 'granuloma',
-        label: 'Granuloma de Sutura',
-        details: [
-          {
-            type: 'measurement',
-            label: 'Tamanho (cm)',
-            unit: 'cm'
-          },
-          {
-            type: 'text',
-            label: 'Localização'
+            id: 'suture-granuloma',
+            name: 'Granuloma de Sutura',
+            description: 'Reação de corpo estranho ao material de sutura',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true
           }
         ]
       }
     ]
   },
   {
-    id: 'other_findings',
+    id: 'other',
     name: 'Outros Achados',
-    category: 'Diversos',
-    icon: '🔍',
-    findings: [
+    icon: 'search',
+    normalDescription: 'não evidenciados. Exame sem outras particularidades.',
+    categories: [
       {
-        id: 'no_other',
-        label: 'Sem outros achados',
-      },
-      {
-        id: 'solid_mass',
-        label: 'Lesão Sólida',
-        details: [
+        id: 'masses',
+        name: 'Massas e Nódulos',
+        findings: [
           {
-            type: 'measurement',
-            label: 'Dimensões (cm)',
-            unit: 'cm'
+            id: 'solid-mass',
+            name: 'Lesão Sólida',
+            description: 'Massa sólida de natureza indeterminada',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              {
+                id: 'echogenicity',
+                label: 'Ecogenicidade',
+                type: 'select',
+                options: ['Hipoecogênica', 'Isoecogênica', 'Hiperecogênica', 'Mista']
+              },
+              {
+                id: 'margins',
+                label: 'Margens',
+                type: 'select',
+                options: ['Bem definidas', 'Irregulares', 'Microlobuladas', 'Espiculadas']
+              },
+              {
+                id: 'vascularization',
+                label: 'Vascularização',
+                type: 'select',
+                options: ['Ausente', 'Periférica', 'Central', 'Mista']
+              }
+            ]
           },
           {
-            type: 'select',
-            label: 'Localização',
-            options: ['Subcutânea', 'Intramuscular', 'Pré-peritoneal']
-          },
-          {
-            type: 'text',
-            label: 'Características ecográficas'
+            id: 'cystic-lesion',
+            name: 'Lesão Cística',
+            description: 'Lesão com conteúdo líquido',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              {
+                id: 'type',
+                label: 'Tipo',
+                type: 'select',
+                options: ['Simples', 'Complexo', 'Septado', 'Com debris']
+              }
+            ]
           }
         ]
       },
       {
-        id: 'cyst',
-        label: 'Cisto',
-        details: [
+        id: 'lymph-nodes',
+        name: 'Linfonodos',
+        findings: [
           {
-            type: 'measurement',
-            label: 'Diâmetro (cm)',
-            unit: 'cm'
-          },
-          {
-            type: 'select',
-            label: 'Tipo',
-            options: ['Simples', 'Complexo', 'Septado']
-          },
-          {
-            type: 'text',
-            label: 'Localização'
+            id: 'lymphadenopathy',
+            name: 'Linfonodomegalia',
+            description: 'Linfonodo aumentado',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              {
+                id: 'morphology',
+                label: 'Morfologia',
+                type: 'select',
+                options: ['Preservada', 'Arredondado', 'Cortical espessada', 'Hilo não visível']
+              }
+            ]
           }
         ]
       },
       {
-        id: 'lymphadenopathy',
-        label: 'Linfonodo',
-        details: [
+        id: 'vascular',
+        name: 'Alterações Vasculares',
+        findings: [
           {
-            type: 'measurement',
-            label: 'Maior eixo (cm)',
-            unit: 'cm'
+            id: 'varicosity',
+            name: 'Varicosidade',
+            description: 'Dilatação de veias da parede',
+            hasDetails: true,
+            hasLocation: true
           },
           {
-            type: 'select',
-            label: 'Aspecto',
-            options: ['Morfologia preservada', 'Aumentado', 'Aspecto reacional']
+            id: 'vascular-malformation',
+            name: 'Malformação Vascular',
+            description: 'Alteração vascular congênita ou adquirida',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true
           }
         ]
       }
     ]
   }
-];
-
-export const abdominalWallCategories = [
-  { id: 'layers', name: 'Camadas', color: '#3b82f6' },
-  { id: 'defects', name: 'Defeitos', color: '#ef4444' },
-  { id: 'misc', name: 'Diversos', color: '#8b5cf6' }
 ];
