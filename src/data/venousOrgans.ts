@@ -467,5 +467,335 @@ export const venousOrgans: Organ[] = [
         ]
       }
     ]
+  },
+  // ============================================================================
+  // SISTEMA VENOSO PROFUNDO PROXIMAL
+  // ============================================================================
+  {
+    id: 'iliaca-externa',
+    name: 'Veia Ilíaca Externa',
+    categories: [
+      {
+        id: 'trombose-vie',
+        name: 'Trombose Venosa',
+        findings: [
+          {
+            id: 'tvp-aguda-vie',
+            name: 'TVP Aguda',
+            description: 'Trombo intraluminal em veia ilíaca externa',
+            requiresMeasurement: false,
+            requiresLocation: false,
+            customFields: [
+              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },
+              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },
+              { id: 'extensao', label: 'Extensão', type: 'select', options: ['Segmentar', 'Extensa', 'Para veia cava'] }
+            ]
+          },
+          {
+            id: 'compressao-vie',
+            name: 'Compressão Extrínseca',
+            description: 'Síndrome de May-Thurner ou compressão tumoral',
+            requiresMeasurement: false,
+            customFields: [
+              { id: 'causa', label: 'Causa', type: 'select', 
+                options: ['May-Thurner', 'Massa pélvica', 'Linfonodomegalia', 'Gravidez', 'Outra'] },
+              { id: 'grau', label: 'Grau de Estenose', type: 'select', 
+                options: ['<50%', '50-70%', '70-90%', '>90%'] }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'fluxo-vie',
+        name: 'Alterações de Fluxo',
+        findings: [
+          {
+            id: 'fluxo-nao-fasico-vie',
+            name: 'Fluxo Não-Fásico',
+            description: 'Perda da variação respiratória',
+            requiresMeasurement: false,
+            customFields: [
+              { id: 'padrao', label: 'Padrão', type: 'select', options: FLOW_PATTERN }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'iliaca-comum',
+    name: 'Veia Ilíaca Comum',
+    categories: [
+      {
+        id: 'trombose-vic',
+        name: 'Trombose Venosa',
+        findings: [
+          {
+            id: 'tvp-aguda-vic',
+            name: 'TVP Aguda',
+            description: 'Trombo intraluminal em veia ilíaca comum',
+            requiresMeasurement: false,
+            requiresLocation: false,
+            customFields: [
+              { id: 'lado', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral'] },
+              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },
+              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY }
+            ]
+          },
+          {
+            id: 'may-thurner',
+            name: 'Síndrome de May-Thurner',
+            description: 'Compressão da veia ilíaca comum esquerda',
+            requiresMeasurement: false,
+            customFields: [
+              { id: 'grau', label: 'Grau de Estenose', type: 'select', 
+                options: ['<50%', '50-70%', '70-90%', '>90%'] },
+              { id: 'colaterais', label: 'Colaterais', type: 'select', 
+                options: ['Ausentes', 'Escassas', 'Moderadas', 'Exuberantes'] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'vci',
+    name: 'Veia Cava Inferior',
+    categories: [
+      {
+        id: 'trombose-vci',
+        name: 'Trombose',
+        findings: [
+          {
+            id: 'trombose-vci',
+            name: 'Trombose da VCI',
+            description: 'Trombo em veia cava inferior',
+            requiresMeasurement: true,
+            measurements: [
+              { id: 'extensao', label: 'Extensão', unit: 'cm' }
+            ],
+            customFields: [
+              { id: 'nivel', label: 'Nível', type: 'select', 
+                options: ['Infrarrenal', 'Justarrenal', 'Suprarrenal', 'Retro-hepático'] },
+              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE }
+            ]
+          },
+          {
+            id: 'filtro-vci',
+            name: 'Filtro de VCI',
+            description: 'Presença de filtro de veia cava',
+            requiresMeasurement: false,
+            customFields: [
+              { id: 'posicao', label: 'Posição', type: 'select', 
+                options: ['Infrarrenal adequada', 'Migração caudal', 'Migração cranial', 'Inclinado'] },
+              { id: 'perviedade', label: 'Perviedade', type: 'select', 
+                options: ['Pérvio', 'Trombose parcial', 'Trombose total'] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'femoral-profunda',
+    name: 'Veia Femoral Profunda',
+    categories: [
+      {
+        id: 'trombose-vfp',
+        name: 'Trombose Venosa',
+        findings: [
+          {
+            id: 'tvp-aguda-vfp',
+            name: 'TVP Aguda',
+            description: 'TVP isolada de veia femoral profunda',
+            requiresMeasurement: false,
+            requiresLocation: false,
+            customFields: [
+              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },
+              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },
+              { id: 'extensao', label: 'Extensão', type: 'select', 
+                options: ['Proximal', 'Distal', 'Toda extensão'] }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'anatomia-vfp',
+        name: 'Variações Anatômicas',
+        findings: [
+          {
+            id: 'duplicacao-vfp',
+            name: 'Duplicação',
+            description: 'Duplicação da veia femoral profunda',
+            requiresMeasurement: false
+          }
+        ]
+      }
+    ]
+  },
+  // ============================================================================
+  // SISTEMA VENOSO MUSCULAR (VEIAS DA PANTURRILHA)
+  // ============================================================================
+  {
+    id: 'gastrocnemias',
+    name: 'Veias Gastrocnêmias',
+    categories: [
+      {
+        id: 'trombose-gastroc',
+        name: 'TVP de Panturrilha',
+        findings: [
+          {
+            id: 'tvp-gastroc-medial',
+            name: 'TVP Gastrocnêmia Medial',
+            description: 'Trombose da veia gastrocnêmia medial',
+            requiresMeasurement: true,
+            measurements: [
+              { id: 'extensao', label: 'Extensão', unit: 'cm' }
+            ],
+            customFields: [
+              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY }
+            ]
+          },
+          {
+            id: 'tvp-gastroc-lateral',
+            name: 'TVP Gastrocnêmia Lateral',
+            description: 'Trombose da veia gastrocnêmia lateral',
+            requiresMeasurement: true,
+            measurements: [
+              { id: 'extensao', label: 'Extensão', unit: 'cm' }
+            ],
+            customFields: [
+              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'dilatacao-gastroc',
+        name: 'Dilatação Varicosa',
+        findings: [
+          {
+            id: 'varizes-gastroc',
+            name: 'Dilatação Varicosa',
+            description: 'Dilatação das veias gastrocnêmias',
+            requiresMeasurement: true,
+            measurements: [
+              { id: 'diametro', label: 'Diâmetro máximo', unit: 'mm', normalRange: '<8' }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'soleares',
+    name: 'Veias Soleares',
+    categories: [
+      {
+        id: 'trombose-solear',
+        name: 'TVP de Panturrilha',
+        findings: [
+          {
+            id: 'tvp-solear',
+            name: 'TVP Solear',
+            description: 'Trombose das veias soleares',
+            requiresMeasurement: true,
+            measurements: [
+              { id: 'extensao', label: 'Extensão', unit: 'cm' },
+              { id: 'numero', label: 'Número de veias', unit: '' }
+            ],
+            customFields: [
+              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },
+              { id: 'localizacao', label: 'Localização', type: 'select', 
+                options: ['Proximal', 'Média', 'Distal', 'Múltiplas'] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'fibulares',
+    name: 'Veias Fibulares',
+    categories: [
+      {
+        id: 'trombose-fibular',
+        name: 'Trombose Venosa',
+        findings: [
+          {
+            id: 'tvp-fibular',
+            name: 'TVP Fibular',
+            description: 'Trombose das veias fibulares',
+            requiresMeasurement: false,
+            customFields: [
+              { id: 'numero', label: 'Número de veias acometidas', type: 'select', options: ['1', '2', 'Todas'] },
+              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  // ============================================================================
+  // VEIAS ACESSÓRIAS E COMUNICANTES
+  // ============================================================================
+  {
+    id: 'giacomini',
+    name: 'Veia de Giacomini',
+    categories: [
+      {
+        id: 'insuficiencia-giacomini',
+        name: 'Insuficiência',
+        findings: [
+          {
+            id: 'refluxo-giacomini',
+            name: 'Refluxo',
+            description: 'Refluxo pela veia de Giacomini',
+            requiresMeasurement: true,
+            measurements: [
+              { id: 'duracao', label: 'Duração do refluxo', unit: 's', normalRange: '<0.5' },
+              { id: 'diametro', label: 'Diâmetro', unit: 'mm' }
+            ],
+            customFields: [
+              { id: 'extensao', label: 'Extensão', type: 'select', 
+                options: ['Completa', 'Proximal', 'Distal'] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'safena-acessoria-anterior',
+    name: 'Veia Safena Acessória Anterior',
+    categories: [
+      {
+        id: 'insuficiencia-saa',
+        name: 'Insuficiência',
+        findings: [
+          {
+            id: 'refluxo-saa',
+            name: 'Refluxo',
+            description: 'Refluxo pela safena acessória anterior',
+            requiresMeasurement: true,
+            measurements: [
+              { id: 'duracao', label: 'Duração', unit: 's', normalRange: '<0.5' },
+              { id: 'diametro', label: 'Diâmetro', unit: 'mm', normalRange: '<4' }
+            ],
+            requiresLocation: true,
+            locations: ['Terço proximal da coxa', 'Terço médio da coxa', 'Terço distal da coxa']
+          },
+          {
+            id: 'varizes-saa',
+            name: 'Varizes',
+            description: 'Dilatação varicosa da safena acessória anterior',
+            requiresMeasurement: true,
+            measurements: [
+              { id: 'diametro', label: 'Diâmetro máximo', unit: 'mm' }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ];

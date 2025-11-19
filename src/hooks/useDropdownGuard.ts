@@ -11,7 +11,8 @@ const isDropdownRelated = (el: Element | null): boolean => {
     el.closest('[data-radix-portal]') ||
     el.closest('[data-radix-popper-content-wrapper]') ||
     el.closest('[data-radix-select-content]') ||
-    el.closest('[data-radix-dropdown-menu-content]')
+    el.closest('[data-radix-dropdown-menu-content]') ||
+    el.closest('[data-custom-dropdown="open"]')
   ) return true;
 
   if (
@@ -70,4 +71,3 @@ export function useDropdownGuard<T extends HTMLElement = HTMLElement>(refs: RefO
 }
 
 export { isDropdownRelated };
-

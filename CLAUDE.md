@@ -6,6 +6,35 @@
 
 ---
 
+## 🧠 Sistema de Memória (Recuperação de Contexto)
+
+### ⚙️ Configuração Automática
+A variável `CLAUDE_PROJECT_PATH` é configurada dinamicamente:
+```bash
+# No ~/.bashrc (já configurado):
+export CLAUDE_PROJECT_PATH="/root/.claude/projects/$(basename $PWD)"
+
+# Se estiver em /root/PROJECT/vertex-v2:
+# → CLAUDE_PROJECT_PATH="/root/.claude/projects/vertex-v2"
+```
+
+### 📝 Comandos Disponíveis
+```bash
+/memorypack                      # Indexa conversas do projeto atual
+/memsearch "termo específico"    # Buscar soluções antigas
+/memlist vertex --limit 5        # Ver conversas recentes
+/memview arquivo.jsonl           # Recuperar conversa completa
+/memstats                        # Estatísticas do banco
+```
+
+**Usar quando:**
+- Usuário menciona "como fizemos antes"
+- Preciso recuperar implementação específica
+- Verificar padrões já estabelecidos
+- Buscar erros já resolvidos
+
+---
+
 ## Contexto do Projeto
 
 Sistema web para geração automatizada de laudos ultrassonográficos com IA (Gemini/OpenAI), seguindo diretrizes médicas brasileiras (CBR, SBACV, BI-RADS).

@@ -160,13 +160,19 @@ function buildClinicalFindings(data: ReportPromptPayload): string {
           if (measurements.vdf) segments.push(`VDF: ${measurements.vdf} cm/s`);
           if (measurements.ratioICA_CCA) segments.push(`Razão ICA/CCA: ${measurements.ratioICA_CCA}`);
           if (measurements.ratioICA_ICA) segments.push(`Razão ICA/ICA contralateral: ${measurements.ratioICA_ICA}`);
+          if (measurements.nascetGrade) segments.push(`Grau NASCET: ${measurements.nascetGrade}`);
+          if (measurements.stenosis_percent) segments.push(`Estenose visual: ${measurements.stenosis_percent}`);
+          if (measurements.extension) segments.push(`Extensão longitudinal: ${measurements.extension}`);
+          if (measurements.diameter) segments.push(`Diâmetro: ${measurements.diameter}`);
           if (measurements.emi) segments.push(`EMI: ${measurements.emi} mm`);
+          if (measurements.emiClassification) segments.push(`Classificação EMI: ${measurements.emiClassification}`);
           if (measurements.plaqueEchogenicity) segments.push(`Ecogenicidade da placa: ${measurements.plaqueEchogenicity}`);
           if (measurements.plaqueComposition) segments.push(`Composição da placa: ${measurements.plaqueComposition}`);
           if (measurements.plaqueSurface) segments.push(`Superfície da placa: ${measurements.plaqueSurface}`);
           if (measurements.plaqueRisk) segments.push(`Risco plaquetário: ${measurements.plaqueRisk}`);
           if (measurements.vertebralFlowPattern) segments.push(`Fluxo vertebral: ${measurements.vertebralFlowPattern}`);
           if (measurements.subclavianSteal) segments.push(`Roubo da subclávia: ${measurements.subclavianSteal}`);
+          if (measurements.description) segments.push(`Observações: ${measurements.description}`);
 
           // BI-RADS specific fields (Breast Ultrasound)
           if (measurements.quadrant) segments.push(`Quadrante: ${measurements.quadrant}`);

@@ -32,6 +32,17 @@ export function useOutsidePointerDismiss<T extends HTMLElement = HTMLElement>({
         return;
       }
 
+      // Ignorar cliques em triggers de dropdown (abrindo ou fechando)
+      if (target && (
+        target.closest('[data-radix-select-trigger]') ||
+        target.closest('[data-radix-dropdown-menu-trigger]') ||
+        target.closest('[aria-haspopup]') ||
+        target.closest('select') ||
+        target.closest('[role="combobox"]')
+      )) {
+        return;
+      }
+
       // composedPath para checar a cadeia
       const path: EventTarget[] = typeof (event as any).composedPath === 'function'
         ? (event as any).composedPath()
