@@ -31,7 +31,7 @@ const pruneRegistry = () => {
 const validateDropdownRoot = (el: HTMLElement) => {
   const portalRoot = el.closest('[data-radix-dropdown-menu-content], [data-radix-select-content]');
   if (portalRoot && portalRoot !== el) {
-    console.warn('[useDropdownGuard] Registre o nó raiz do dropdown/portal, não um filho.', {
+    console.warn('[useDropdownGuard] Register the dropdown/portal root node, not a child.', {
       registeredNode: el,
       portalRoot,
     });
