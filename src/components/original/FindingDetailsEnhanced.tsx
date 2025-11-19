@@ -14,6 +14,8 @@ interface FindingDetailsEnhancedProps {
   instances?: FindingInstance[];
   onSeverityChange: (severity: string) => void;
   onInstancesChange: (instances: FindingInstance[]) => void;
+  draftMeasurement?: FindingMeasurement; // rascunho persistente
+  onDraftMeasurementChange?: (draft: FindingMeasurement) => void; // callback para atualizar rascunho
 }
 
 const LIVER_SEGMENTS = [
@@ -69,11 +71,21 @@ export default function FindingDetailsEnhanced({
   severity,
   instances = [],
   onSeverityChange,
-  onInstancesChange
+  onInstancesChange,
+  draftMeasurement,
+  onDraftMeasurementChange
 }: FindingDetailsEnhancedProps) {
-  // Local state for the current form
-  const [currentMeasurement, setCurrentMeasurement] = useState<FindingMeasurement>({});
+  // Local state for the current form (inicializa com rascunho se existir)
+  const [currentMeasurement, setCurrentMeasurement] = useState<FindingMeasurement>(draftMeasurement || {});
   const [isEditing, setIsEditing] = useState(false);
+
+  // Auto reabrir formulário se houver rascunho existente ao remontar
+  React.useEffect(() => {
+    if (!isEditing && draftMeasurement && Object.keys(draftMeasurement).length > 0) {
+      setIsEditing(true);
+      setCurrentMeasurement(draftMeasurement);
+    }
+  }, [draftMeasurement, isEditing]);
 
   const handleAddInstance = () => {
     if (currentMeasurement.size || currentMeasurement.segment || currentMeasurement.location) {
@@ -84,6 +96,7 @@ export default function FindingDetailsEnhanced({
       onInstancesChange([...instances, newInstance]);
       setCurrentMeasurement({});
       setIsEditing(false);
+      onDraftMeasurementChange?.({});
     }
   };
 
@@ -198,7 +211,11 @@ export default function FindingDetailsEnhanced({
                     type="text"
                     placeholder="Ex: 2.5 x 1.8 cm"
                     value={currentMeasurement.size || ''}
-                    onChange={(e) => setCurrentMeasurement({...currentMeasurement, size: e.target.value})}
+                    onChange={(e) => {
+                      const next = { ...currentMeasurement, size: e.target.value };
+                      setCurrentMeasurement(next);
+                      onDraftMeasurementChange?.(next);
+                    }}
                     className="h-7 text-xs flex-1"
                   />
                 </div>
@@ -214,11 +231,14 @@ export default function FindingDetailsEnhanced({
                   <Select
                     value={currentMeasurement.segment || currentMeasurement.location || ''}
                     onValueChange={(value) => {
+                      let next: FindingMeasurement;
                       if (organId === 'figado') {
-                        setCurrentMeasurement({...currentMeasurement, segment: value});
+                        next = { ...currentMeasurement, segment: value };
                       } else {
-                        setCurrentMeasurement({...currentMeasurement, location: value});
+                        next = { ...currentMeasurement, location: value };
                       }
+                      setCurrentMeasurement(next);
+                      onDraftMeasurementChange?.(next);
                     }}
                   >
                     <SelectTrigger className="h-7 text-xs flex-1">
@@ -246,7 +266,11 @@ export default function FindingDetailsEnhanced({
                     type="text"
                     placeholder="Ex: Região central"
                     value={currentMeasurement.location || ''}
-                    onChange={(e) => setCurrentMeasurement({...currentMeasurement, location: e.target.value})}
+                    onChange={(e) => {
+                      const next = { ...currentMeasurement, location: e.target.value };
+                      setCurrentMeasurement(next);
+                      onDraftMeasurementChange?.(next);
+                    }}
                     className="h-7 text-xs flex-1"
                   />
                 </div>
@@ -260,7 +284,11 @@ export default function FindingDetailsEnhanced({
                 <textarea
                   placeholder="Observações adicionais (opcional)"
                   value={currentMeasurement.description || ''}
-                  onChange={(e) => setCurrentMeasurement({...currentMeasurement, description: e.target.value})}
+                  onChange={(e) => {
+                    const next = { ...currentMeasurement, description: e.target.value };
+                    setCurrentMeasurement(next);
+                    onDraftMeasurementChange?.(next);
+                  }}
                   className="flex-1 min-h-[40px] p-1.5 text-xs bg-background border rounded-md resize-none"
                 />
               </div>

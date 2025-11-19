@@ -25,6 +25,8 @@ interface CarotidFindingDetailsProps {
   instances?: FindingInstance[];
   onSeverityChange: (severity: string) => void;
   onInstancesChange: (instances: FindingInstance[]) => void;
+  draftMeasurement?: FindingMeasurement;
+  onDraftMeasurementChange?: (draft: FindingMeasurement) => void;
 }
 
 // ============================================================================
@@ -255,10 +257,12 @@ function CarotidFindingDetailsComponent({
   severity,
   instances = [],
   onSeverityChange,
-  onInstancesChange
+  onInstancesChange,
+  draftMeasurement,
+  onDraftMeasurementChange
 }: CarotidFindingDetailsProps) {
-  // Local state for the current form
-  const [currentMeasurement, setCurrentMeasurement] = useState<FindingMeasurement>({});
+  // Local state for the current form (inicializa com rascunho se existir)
+  const [currentMeasurement, setCurrentMeasurement] = useState<FindingMeasurement>(draftMeasurement || {});
   const [isEditing, setIsEditing] = useState(false);
 
   // Detectar tipo de achado

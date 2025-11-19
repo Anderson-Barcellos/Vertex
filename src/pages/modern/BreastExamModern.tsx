@@ -28,9 +28,9 @@ import ModernExamLayout from '@/layouts/ModernExamLayout';
 import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelModern';
 
 // Tipos e dados
-import type { SelectedFinding, ReportData, FindingInstance, AIProvider, AIGenerationStats } from '@/types/report';
-import type { Finding } from '@/data/organs';
-import breastUltrasoundOrgans from '@/data/breastUltrasoundOrgans';
+import { breastUltrasoundOrgans } from '@/data/breastUltrasoundOrgans';
+import { SelectedFinding, ReportData, FindingInstance, FindingMeasurement, type AIProvider, type AIGenerationStats } from '@/types/report';
+import { Finding } from '@/data/organs';
 
 // Serviços de IA
 import { generateReport } from '@/services/reportGenerator';
@@ -66,7 +66,7 @@ export default function BreastExamModern() {
 
   // Estado temporário para detalhes dos findings (persiste ao minimizar/trocar órgão)
   const [tempFindingDetails, setTempFindingDetails] = useState<
-    Record<string, Record<string, { severity?: string; instances?: FindingInstance[] }>>
+    Record<string, Record<string, { severity?: string; instances?: FindingInstance[]; draftMeasurement?: FindingMeasurement }>>
   >({});
 
   const EXAM_TYPE = 'Ultrassonografia de Mamas';
@@ -84,7 +84,7 @@ export default function BreastExamModern() {
   const handleTempDetailsChange = (
     organId: string,
     findingId: string,
-    details: { severity?: string; instances?: FindingInstance[] }
+    details: { severity?: string; instances?: FindingInstance[]; draftMeasurement?: FindingMeasurement }
   ) => {
     setTempFindingDetails(prev => ({
       ...prev,

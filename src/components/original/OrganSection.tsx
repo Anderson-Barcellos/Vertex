@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Organ, Finding } from '@/data/organs';
-import { SelectedFinding, FindingInstance } from '@/types/report';
+import { SelectedFinding, FindingInstance, FindingMeasurement } from '@/types/report';
 import FindingDetailsEnhanced from './FindingDetailsEnhanced';
 
 interface OrganSectionProps {
@@ -20,11 +20,11 @@ interface OrganSectionProps {
   ) => void;
   onNormalChange: (organId: string, isNormal: boolean) => void;
   isNormal: boolean;
-  tempDetails?: Record<string, { severity?: string; instances?: FindingInstance[] }>;
+  tempDetails?: Record<string, { severity?: string; instances?: FindingInstance[]; draftMeasurement?: FindingMeasurement }>;
   onTempDetailsChange?: (
     organId: string,
     findingId: string,
-    details: { severity?: string; instances?: FindingInstance[] }
+    details: { severity?: string; instances?: FindingInstance[]; draftMeasurement?: FindingMeasurement }
   ) => void;
   FindingDetailsComponent?: React.ComponentType<{
     finding: Finding;
@@ -33,6 +33,8 @@ interface OrganSectionProps {
     instances?: FindingInstance[];
     onSeverityChange: (severity: string) => void;
     onInstancesChange: (instances: FindingInstance[]) => void;
+    draftMeasurement?: FindingMeasurement;
+    onDraftMeasurementChange?: (draft: FindingMeasurement) => void;
   }>;
 }
 
@@ -50,6 +52,7 @@ export default function OrganSection({
   const [localFindingDetails, setLocalFindingDetails] = useState<Record<string, {
     severity?: string;
     instances?: FindingInstance[];
+    draftMeasurement?: FindingMeasurement;
   }>>({});
   
   // Usar tempDetails das props se disponível, senão usar estado local
@@ -136,6 +139,22 @@ export default function OrganSection({
         newDetails.severity || finding.severity,
         instances
       );
+    }
+  };
+
+  const handleDraftMeasurementChange = (findingId: string, finding: Finding, categoryId: string, draft: FindingMeasurement) => {
+    const newDetails = {
+      ...findingDetails[findingId],
+      draftMeasurement: draft
+    };
+
+    if (onTempDetailsChange) {
+      onTempDetailsChange(organ.id, findingId, newDetails);
+    } else {
+      setLocalFindingDetails(prev => ({
+        ...prev,
+        [findingId]: newDetails
+      }));
     }
   };
 
@@ -227,6 +246,8 @@ export default function OrganSection({
                             instances={details.instances || []}
                             onSeverityChange={(severity) => handleSeverityChange(finding.id, finding, category.id, severity)}
                             onInstancesChange={(instances) => handleInstancesChange(finding.id, finding, category.id, instances)}
+                            draftMeasurement={details.draftMeasurement}
+                            onDraftMeasurementChange={(draft) => handleDraftMeasurementChange(finding.id, finding, category.id, draft)}
                           />
                         )}
                       </div>
