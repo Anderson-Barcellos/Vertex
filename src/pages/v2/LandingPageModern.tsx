@@ -328,6 +328,72 @@ export function LandingPageModern() {
           </div>
         </div>
 
+        {/* Quarta Linha - Ecodoppler de Vasos Abdominais */}
+        <div className="grid md:grid-cols-2 gap-8 mb-16">
+          {/* Ecodoppler de Vasos Abdominais */}
+          <div
+            onClick={() => navigate('/abdominal-vessels-modern')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+          >
+            {/* Gradient Overlay on Hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+            <div className="relative z-10">
+              {/* Icon */}
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                </svg>
+              </div>
+
+              {/* Content */}
+              <h3 className="text-3xl font-bold text-white mb-3">
+                Ecodoppler de Vasos Abdominais
+              </h3>
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                Estudo vascular completo da aorta, artérias renais e mesentéricas com critérios ESC 2024 e ACR 2024
+              </p>
+
+              {/* Stats */}
+              <div className="flex gap-4 mb-6">
+                <div className="flex-1 glass-card">
+                  <div className="text-2xl font-bold text-amber-400">8+</div>
+                  <div className="text-xs text-gray-400">Vasos</div>
+                </div>
+                <div className="flex-1 glass-card">
+                  <div className="text-2xl font-bold text-yellow-400">Doppler</div>
+                  <div className="text-xs text-gray-400">Completo</div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="flex items-center text-amber-400 font-semibold group-hover:translate-x-2 transition-transform duration-300">
+                <span>Acessar módulo</span>
+                <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Espaço para futuro exame */}
+          <div className="glass-panel p-8 relative overflow-hidden opacity-50">
+            <div className="relative z-10">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center mb-6 shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <h3 className="text-3xl font-bold text-gray-400 mb-3">
+                Em Breve
+              </h3>
+              <p className="text-gray-500 mb-6 leading-relaxed">
+                Novos módulos de exames ultrassonográficos em desenvolvimento
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Features Grid */}
         <div className="glass-panel p-8 mb-12 animate-fade-up" style={{ animationDelay: '0.2s' }}>
           <h2 className="text-2xl font-bold text-white mb-8 text-center">

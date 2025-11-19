@@ -8,6 +8,7 @@ import BreastExamModern from './pages/modern/BreastExamModern';
 import ThyroidEchodopplerModern from './pages/modern/ThyroidEchodopplerModern';
 import VenousExamModern from './pages/modern/VenousExamModern';
 import ArterialExamModern from './pages/modern/ArterialExamModern';
+import AbdominalVesselsExamModern from './pages/modern/AbdominalVesselsExamModern';
 import ResolutionGuard from './components/ResolutionGuard';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/breast-exam" element={<BreastExamModern />} />
           <Route path="/venous-modern" element={<VenousExamModern />} />
           <Route path="/arterial-modern" element={<ArterialExamModern />} />
+          <Route path="/abdominal-vessels-modern" element={<AbdominalVesselsExamModern />} />
         </Routes>
       </Router>
     </ResolutionGuard>
