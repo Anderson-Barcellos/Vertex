@@ -234,11 +234,11 @@ const DropdownMenuSubTrigger = forwardRef<
   ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
   ComponentProps<typeof DropdownMenuPrimitive.SubTrigger> & { inset?: boolean }
 >(function DropdownMenuSubTrigger({ className, inset, children, ...props }, forwardedRef) {
-  const localRef = useRef<ElementRef<typeof DropdownMenuPrimitive.SubTrigger> | null>(null)
+
 
   return (
     <DropdownMenuPrimitive.SubTrigger
-      ref={composeRefs(forwardedRef, localRef)}
+      ref={forwardedRef}
       data-slot="dropdown-menu-sub-trigger"
       data-inset={inset}
       className={cn(
