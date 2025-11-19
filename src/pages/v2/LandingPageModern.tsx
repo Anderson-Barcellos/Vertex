@@ -376,20 +376,54 @@ export function LandingPageModern() {
             </div>
           </div>
 
-          {/* Espaço para futuro exame */}
-          <div className="glass-panel p-8 relative overflow-hidden opacity-50">
+          {/* Ultrassom de Parede Abdominal - EXPERIMENTAL */}
+          <div
+            onClick={() => navigate('/abdominal-wall')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+          >
+            {/* Gradient Overlay on Hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
             <div className="relative z-10">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center mb-6 shadow-lg">
+              {/* Icon */}
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                 <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-3xl font-bold text-gray-400 mb-3">
-                Em Breve
-              </h3>
-              <p className="text-gray-500 mb-6 leading-relaxed">
-                Novos módulos de exames ultrassonográficos em desenvolvimento
+
+              {/* Content */}
+              <div className="mb-3">
+                <h3 className="text-3xl font-bold text-white">
+                  Ultrassom de Parede Abdominal
+                </h3>
+                <span className="inline-block mt-2 px-2 py-1 text-xs font-bold text-violet-300 bg-violet-900/30 rounded border border-violet-500/50">
+                  ✨ LAYOUT EXPERIMENTAL
+                </span>
+              </div>
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                Nova interface revolucionária! Cards fluidos, entrada inline e preview em tempo real para avaliação de hérnias e parede
               </p>
+
+              {/* Stats */}
+              <div className="flex gap-4 mb-6">
+                <div className="flex-1 glass-card">
+                  <div className="text-2xl font-bold text-violet-400">5+</div>
+                  <div className="text-xs text-gray-400">Estruturas</div>
+                </div>
+                <div className="flex-1 glass-card">
+                  <div className="text-2xl font-bold text-purple-400">Novo</div>
+                  <div className="text-xs text-gray-400">Design</div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="flex items-center text-violet-400 font-semibold group-hover:translate-x-2 transition-transform duration-300">
+                <span>Experimentar agora</span>
+                <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>
