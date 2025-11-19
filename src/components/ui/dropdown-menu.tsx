@@ -259,7 +259,10 @@ const DropdownMenuSubContent = forwardRef<
 >(function DropdownMenuSubContent({ className, ...props }, forwardedRef) {
   const localRef = useRef<ElementRef<typeof DropdownMenuPrimitive.SubContent> | null>(null)
 
-  useEffect(() => registerDropdownElement(localRef.current), [])
+  useEffect(() => {
+    if (!localRef.current) return;
+    return registerDropdownElement(localRef.current);
+  }, [localRef.current])
 
   return (
     <DropdownMenuPrimitive.SubContent
