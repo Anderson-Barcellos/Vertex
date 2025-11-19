@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { SelectedFinding, ReportData, type AIProvider } from '@/types/report';
 import { organs as defaultOrgans, type Organ } from '@/data/organs';
@@ -39,8 +39,25 @@ export default function SelectedFindingsPanel({
   const [selectedModel, setSelectedModel] = useState<AIProvider>('gemini');
   const [selectedGeminiModel, setSelectedGeminiModel] = useState(GEMINI_MODELS[0].id);
   const [selectedOpenAIModel, setSelectedOpenAIModel] = useState(OPENAI_MODELS[0].id);
-  const [showGeminiDropdown, setShowGeminiDropdown] = useState(false);
-  const [showOpenAIDropdown, setShowOpenAIDropdown] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<'gemini' | 'openai' | null>(null);
+
+  const geminiMenuRef = useRef<HTMLDivElement>(null);
+  const openaiMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      const isInsideGemini = geminiMenuRef.current?.contains(target as Node) ?? false;
+      const isInsideOpenAI = openaiMenuRef.current?.contains(target as Node) ?? false;
+
+      if (!isInsideGemini && !isInsideOpenAI) {
+        setActiveMenu(null);
+      }
+    };
+
+    document.addEventListener('click', handleOutsideClick, true);
+    return () => document.removeEventListener('click', handleOutsideClick, true);
+  }, []);
 
   const groupedFindings = useMemo(() => {
     return selectedFindings.reduce((acc, finding) => {
@@ -289,13 +306,13 @@ export default function SelectedFindingsPanel({
           </h3>
           <div className="flex gap-2">
             {/* Gemini Button with Dropdown */}
-            <div className="flex-1 relative z-[55]">
+            <div className="flex-1 relative z-[55]" ref={geminiMenuRef}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  e.preventDefault();
                   setSelectedModel('gemini');
-                  setShowGeminiDropdown(!showGeminiDropdown);
-                  setShowOpenAIDropdown(false);
+                  setActiveMenu('gemini');
                 }}
                 className={cn(
                   "w-full px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center justify-between gap-1",
@@ -307,11 +324,11 @@ export default function SelectedFindingsPanel({
                 <span className="truncate">
                   {GEMINI_MODELS.find(m => m.id === selectedGeminiModel)?.name || 'Gemini'}
                 </span>
-                <CaretDown size={12} className={cn("transition-transform", showGeminiDropdown && "rotate-180")} />
+                <CaretDown size={12} className={cn("transition-transform", activeMenu === 'gemini' && "rotate-180")} />
               </button>
 
               {/* Gemini Dropdown */}
-              {showGeminiDropdown && (
+              {activeMenu === 'gemini' && (
                 <div
                   onClick={(e) => e.stopPropagation()}
                   className="absolute bottom-full left-0 right-0 mb-1 bg-sidebar-background border border-border/20 rounded-md shadow-lg overflow-hidden z-[60]"
@@ -322,7 +339,7 @@ export default function SelectedFindingsPanel({
                       onClick={() => {
                         setSelectedGeminiModel(model.id);
                         setSelectedModel('gemini');
-                        setShowGeminiDropdown(false);
+                        setActiveMenu(null);
                       }}
                       className={cn(
                         "w-full px-3 py-2 text-left text-xs hover:bg-sidebar-muted transition-colors",
@@ -338,13 +355,13 @@ export default function SelectedFindingsPanel({
             </div>
 
             {/* OpenAI Button with Dropdown */}
-            <div className="flex-1 relative z-[55]">
+            <div className="flex-1 relative z-[55]" ref={openaiMenuRef}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  e.preventDefault();
                   setSelectedModel('openai');
-                  setShowOpenAIDropdown(!showOpenAIDropdown);
-                  setShowGeminiDropdown(false);
+                  setActiveMenu('openai');
                 }}
                 className={cn(
                   "w-full px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center justify-between gap-1",
@@ -356,11 +373,11 @@ export default function SelectedFindingsPanel({
                 <span className="truncate">
                   {OPENAI_MODELS.find(m => m.id === selectedOpenAIModel)?.name || 'OpenAI'}
                 </span>
-                <CaretDown size={12} className={cn("transition-transform", showOpenAIDropdown && "rotate-180")} />
+                <CaretDown size={12} className={cn("transition-transform", activeMenu === 'openai' && "rotate-180")} />
               </button>
 
               {/* OpenAI Dropdown */}
-              {showOpenAIDropdown && (
+              {activeMenu === 'openai' && (
                 <div
                   onClick={(e) => e.stopPropagation()}
                   className="absolute bottom-full left-0 right-0 mb-1 bg-sidebar-background border border-border/20 rounded-md shadow-lg overflow-hidden z-[60]"
@@ -371,7 +388,7 @@ export default function SelectedFindingsPanel({
                       onClick={() => {
                         setSelectedOpenAIModel(model.id);
                         setSelectedModel('openai');
-                        setShowOpenAIDropdown(false);
+                        setActiveMenu(null);
                       }}
                       className={cn(
                         "w-full px-3 py-2 text-left text-xs hover:bg-sidebar-muted transition-colors",
