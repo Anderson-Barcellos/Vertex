@@ -28,6 +28,8 @@ interface VenousFindingDetailsProps {
   instances?: FindingInstance[];
   onSeverityChange: (severity: string) => void;
   onInstancesChange: (instances: FindingInstance[]) => void;
+  draftMeasurement?: FindingMeasurement;
+  onDraftMeasurementChange?: (draft: FindingMeasurement) => void;
 }
 
 const VenousFindingDetails: React.FC<VenousFindingDetailsProps> = ({
@@ -36,7 +38,9 @@ const VenousFindingDetails: React.FC<VenousFindingDetailsProps> = ({
   severity,
   instances = [],
   onSeverityChange,
-  onInstancesChange
+  onInstancesChange,
+  draftMeasurement,
+  onDraftMeasurementChange
 }) => {
   const [editingInstance, setEditingInstance] = useState<FindingInstance | null>(null);
   const [showInstanceForm, setShowInstanceForm] = useState(false);

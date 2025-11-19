@@ -30,6 +30,9 @@ interface BreastUltrasoundFindingDetailsProps {
   instances?: FindingInstance[];
   onSeverityChange: (severity: string) => void;
   onInstancesChange: (instances: FindingInstance[]) => void;
+  // Novo: rascunho de medida não salva (preserva se o painel minimizar / checkbox desmarcar)
+  draftMeasurement?: FindingMeasurement;
+  onDraftMeasurementChange?: (draft: FindingMeasurement) => void;
 }
 
 /**
@@ -42,10 +45,20 @@ export default function BreastUltrasoundFindingDetails({
   severity,
   instances = [],
   onSeverityChange,
-  onInstancesChange
+  onInstancesChange,
+  draftMeasurement,
+  onDraftMeasurementChange
 }: BreastUltrasoundFindingDetailsProps) {
-  const [currentMeasurement, setCurrentMeasurement] = useState<FindingMeasurement>({});
+  const [currentMeasurement, setCurrentMeasurement] = useState<FindingMeasurement>(draftMeasurement || {});
   const [isEditing, setIsEditing] = useState(false);
+
+  // Reabrir automaticamente se houver rascunho não salvo
+  useEffect(() => {
+    if (!isEditing && draftMeasurement && Object.keys(draftMeasurement).length > 0) {
+      setIsEditing(true);
+      setCurrentMeasurement(draftMeasurement);
+    }
+  }, [draftMeasurement, isEditing]);
 
   // Detecta tipo de órgão
   const isMamaOrgan = organId.startsWith('mama-');
@@ -77,6 +90,7 @@ export default function BreastUltrasoundFindingDetails({
       onInstancesChange([...instances, newInstance]);
       setCurrentMeasurement({});
       setIsEditing(false);
+      onDraftMeasurementChange?.({});
     }
   };
 
@@ -228,11 +242,15 @@ export default function BreastUltrasoundFindingDetails({
               <Ruler size={12} />
               Tamanho:
             </label>
-            <Input
+              <Input
               type="text"
               placeholder="Ex: 1.2 x 0.8 cm"
-              value={currentMeasurement.size || ''}
-              onChange={(e) => setCurrentMeasurement({...currentMeasurement, size: e.target.value})}
+                value={currentMeasurement.size || ''}
+                onChange={(e) => {
+                  const next = { ...currentMeasurement, size: e.target.value };
+                  setCurrentMeasurement(next);
+                  onDraftMeasurementChange?.(next);
+                }}
               className="h-7 text-xs flex-1"
             />
           </div>
@@ -246,9 +264,13 @@ export default function BreastUltrasoundFindingDetails({
                 <MapPin size={12} />
                 Quadrante:
               </label>
-              <Select
+                <Select
                 value={currentMeasurement.location || ''}
-                onValueChange={(value) => setCurrentMeasurement({...currentMeasurement, location: value})}
+                  onValueChange={(value) => {
+                    const next = { ...currentMeasurement, location: value };
+                    setCurrentMeasurement(next);
+                    onDraftMeasurementChange?.(next);
+                  }}
               >
                 <SelectTrigger className="h-7 text-xs flex-1">
                   <SelectValue placeholder="Selecione..." />
@@ -270,7 +292,11 @@ export default function BreastUltrasoundFindingDetails({
               </label>
               <Select
                 value={currentMeasurement.depth || ''}
-                onValueChange={(value) => setCurrentMeasurement({...currentMeasurement, depth: value})}
+                onValueChange={(value) => {
+                  const next = { ...currentMeasurement, depth: value };
+                  setCurrentMeasurement(next);
+                  onDraftMeasurementChange?.(next);
+                }}
               >
                 <SelectTrigger className="h-7 text-xs flex-1">
                   <SelectValue placeholder="Selecione..." />
@@ -297,7 +323,11 @@ export default function BreastUltrasoundFindingDetails({
               type="text"
               placeholder="Ex: Nível I axilar"
               value={currentMeasurement.location || ''}
-              onChange={(e) => setCurrentMeasurement({...currentMeasurement, location: e.target.value})}
+              onChange={(e) => {
+                const next = { ...currentMeasurement, location: e.target.value };
+                setCurrentMeasurement(next);
+                onDraftMeasurementChange?.(next);
+              }}
               className="h-7 text-xs flex-1"
             />
           </div>
@@ -315,7 +345,11 @@ export default function BreastUltrasoundFindingDetails({
               {field.type === 'select' ? (
                 <Select
                   value={(currentMeasurement as any)[field.id] || ''}
-                  onValueChange={(value) => setCurrentMeasurement({...currentMeasurement, [field.id]: value})}
+                  onValueChange={(value) => {
+                    const next = { ...currentMeasurement, [field.id]: value } as FindingMeasurement;
+                    setCurrentMeasurement(next);
+                    onDraftMeasurementChange?.(next);
+                  }}
                 >
                   <SelectTrigger className="h-7 text-xs flex-1">
                     <SelectValue placeholder={field.placeholder || "Selecione..."} />
@@ -333,7 +367,11 @@ export default function BreastUltrasoundFindingDetails({
                   type={field.type === 'number' ? 'number' : 'text'}
                   placeholder={field.placeholder}
                   value={(currentMeasurement as any)[field.id] || ''}
-                  onChange={(e) => setCurrentMeasurement({...currentMeasurement, [field.id]: e.target.value})}
+                  onChange={(e) => {
+                    const next = { ...currentMeasurement, [field.id]: e.target.value } as FindingMeasurement;
+                    setCurrentMeasurement(next);
+                    onDraftMeasurementChange?.(next);
+                  }}
                   className="h-7 text-xs flex-1"
                 />
               )}
@@ -350,7 +388,11 @@ export default function BreastUltrasoundFindingDetails({
             <textarea
               placeholder="Observações adicionais (opcional)"
               value={currentMeasurement.description || ''}
-              onChange={(e) => setCurrentMeasurement({...currentMeasurement, description: e.target.value})}
+              onChange={(e) => {
+                const next = { ...currentMeasurement, description: e.target.value };
+                setCurrentMeasurement(next);
+                onDraftMeasurementChange?.(next);
+              }}
               className="flex-1 min-h-[40px] p-1.5 text-xs bg-background border rounded-md resize-none"
             />
           </div>

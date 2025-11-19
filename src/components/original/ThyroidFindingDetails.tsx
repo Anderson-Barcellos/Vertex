@@ -28,6 +28,8 @@ interface ThyroidFindingDetailsProps {
   instances?: FindingInstance[];
   onSeverityChange: (severity: string) => void;
   onInstancesChange: (instances: FindingInstance[]) => void;
+  draftMeasurement?: FindingMeasurement;
+  onDraftMeasurementChange?: (draft: FindingMeasurement) => void;
 }
 
 // Função para calcular pontuação TI-RADS baseada nas características
@@ -94,9 +96,11 @@ function ThyroidFindingDetailsComponent({
   severity,
   instances = [],
   onSeverityChange,
-  onInstancesChange
+  onInstancesChange,
+  draftMeasurement,
+  onDraftMeasurementChange
 }: ThyroidFindingDetailsProps) {
-  const [currentMeasurement, setCurrentMeasurement] = useState<FindingMeasurement>({});
+  const [currentMeasurement, setCurrentMeasurement] = useState<FindingMeasurement>(draftMeasurement || {});
   const [isEditing, setIsEditing] = useState(false);
 
   // Detectar tipo de achado

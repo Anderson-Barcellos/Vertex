@@ -17,7 +17,7 @@ import CarotidFindingDetails from '@/components/original/CarotidFindingDetails';
 
 // Dados & Tipos
 import { carotidOrgans } from '@/data/carotidOrgans';
-import { SelectedFinding, ReportData, FindingInstance, type AIProvider, type AIGenerationStats } from '@/types/report';
+import { SelectedFinding, ReportData, FindingInstance, FindingMeasurement, type AIProvider, type AIGenerationStats } from '@/types/report';
 import type { AIStatus } from '@/components/original/ReportCanvas';
 import type { Finding } from '@/data/organs';
 
@@ -60,7 +60,7 @@ function CarotidExamModern() {
   
   // Estado temporário para detalhes dos findings (persiste ao minimizar/trocar órgão)
   const [tempFindingDetails, setTempFindingDetails] = useState<
-    Record<string, Record<string, { severity?: string; instances?: FindingInstance[] }>>
+    Record<string, Record<string, { severity?: string; instances?: FindingInstance[]; draftMeasurement?: FindingMeasurement }>>
   >({});
 
   const handleOrganSelect = (organId: string) => {
@@ -76,7 +76,7 @@ function CarotidExamModern() {
   const handleTempDetailsChange = (
     organId: string,
     findingId: string,
-    details: { severity?: string; instances?: FindingInstance[] }
+    details: { severity?: string; instances?: FindingInstance[]; draftMeasurement?: FindingMeasurement }
   ) => {
     setTempFindingDetails(prev => ({
       ...prev,

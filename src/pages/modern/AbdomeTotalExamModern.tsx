@@ -15,7 +15,7 @@ import type { AIStatus } from '@/components/original/ReportCanvas';
 import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
 import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
 import { organs } from '@/data/organs';
-import { SelectedFinding, ReportData, FindingInstance, type AIProvider, type AIGenerationStats } from '@/types/report';
+import { SelectedFinding, ReportData, FindingInstance, FindingMeasurement, type AIProvider, type AIGenerationStats } from '@/types/report';
 import { Finding } from '@/data/organs';
 import { generateReport } from '@/services/reportGenerator';
 import { geminiStreamService, GEMINI_MODEL } from '@/services/geminiStreamService';
@@ -47,7 +47,7 @@ function AbdomeTotalExamModern() {
   
   // Estado temporário para detalhes dos findings (persiste ao minimizar/trocar órgão)
   const [tempFindingDetails, setTempFindingDetails] = useState<
-    Record<string, Record<string, { severity?: string; instances?: FindingInstance[] }>>
+    Record<string, Record<string, { severity?: string; instances?: FindingInstance[]; draftMeasurement?: FindingMeasurement }>>
   >({});
 
   // Outside click e guardas de dropdown agora são tratados pelo FloatingOrganPanelModern.
@@ -78,7 +78,7 @@ function AbdomeTotalExamModern() {
   const handleTempDetailsChange = (
     organId: string,
     findingId: string,
-    details: { severity?: string; instances?: FindingInstance[] }
+    details: { severity?: string; instances?: FindingInstance[]; draftMeasurement?: FindingMeasurement }
   ) => {
     setTempFindingDetails(prev => ({
       ...prev,

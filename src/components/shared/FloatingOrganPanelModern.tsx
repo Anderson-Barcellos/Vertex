@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import OrganSection from '@/components/original/OrganSection';
 import type { Organ, Finding } from '@/data/organs';
-import type { SelectedFinding, FindingInstance } from '@/types/report';
+import type { SelectedFinding, FindingInstance, FindingMeasurement } from '@/types/report';
 import { useDropdownGuard } from '@/hooks/useDropdownGuard';
 import { useOutsidePointerDismiss } from '@/hooks/useOutsidePointerDismiss';
 
@@ -14,6 +14,9 @@ type FindingDetailsComponentProps = {
   instances?: FindingInstance[];
   onSeverityChange: (severity: string) => void;
   onInstancesChange: (instances: FindingInstance[]) => void;
+  // Novo: rascunho de medida não salva (preserva ao minimizar / desmarcar)
+  draftMeasurement?: FindingMeasurement;
+  onDraftMeasurementChange?: (draft: FindingMeasurement) => void;
 };
 
 type FloatingOrganPanelModernProps = {
@@ -32,11 +35,12 @@ type FloatingOrganPanelModernProps = {
     instances?: FindingInstance[]
   ) => void;
   onNormalChange: (organId: string, isNormal: boolean) => void;
-  tempDetails?: Record<string, { severity?: string; instances?: FindingInstance[] }>;
+  // tempDetails agora também preserva draftMeasurement (rascunho da próxima instância)
+  tempDetails?: Record<string, { severity?: string; instances?: FindingInstance[]; draftMeasurement?: FindingMeasurement }>; 
   onTempDetailsChange?: (
     organId: string,
     findingId: string,
-    details: { severity?: string; instances?: FindingInstance[] }
+    details: { severity?: string; instances?: FindingInstance[]; draftMeasurement?: FindingMeasurement }
   ) => void;
   leftCss?: string; // ex.: 'calc(25% + 1.5rem)'
   widthExpanded?: string; // default '24rem'
@@ -73,49 +77,55 @@ export default function FloatingOrganPanelModern({
     <div
       ref={ref}
       className={`fixed top-24 organ-section-panel bg-white shadow-2xl border border-gray-200 rounded-2xl transition-all duration-300 ${
-        isMinimized ? 'w-12' : 'overflow-y-auto modern-scrollbar'
+        isMinimized ? 'w-12' : ''
       }`}
       style={{ left: leftCss, width: isMinimized ? undefined : widthExpanded, maxHeight }}
     >
-      {isMinimized ? (
-        <div
-          onClick={() => onToggleMinimized(false)}
-          className="p-3 flex flex-col items-center cursor-pointer hover:bg-gray-100 transition-colors h-full rounded-2xl"
-          title="Expandir painel"
-        >
-          <div className="mb-2 p-2">
-            <CaretRight size={16} className="text-gray-700" />
-          </div>
-          <div className="writing-mode-vertical text-xs font-medium text-gray-900">
-            {organ.name}
-          </div>
+      <div
+        onClick={() => onToggleMinimized(false)}
+        className={`p-3 flex flex-col items-center cursor-pointer hover:bg-gray-100 transition-colors h-full rounded-2xl ${
+          isMinimized ? '' : 'hidden'
+        }`}
+        title="Expandir painel"
+        aria-hidden={!isMinimized}
+      >
+        <div className="mb-2 p-2">
+          <CaretRight size={16} className="text-gray-700" />
         </div>
-      ) : (
-        <div className="h-full flex flex-col text-gray-900">
-          <div className="absolute top-3 right-3 z-20">
-            <button
-              onClick={() => onToggleMinimized(true)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-700"
-              title="Minimizar painel"
-              aria-label="Minimizar painel"
-            >
-              <CaretLeft size={16} className="text-gray-700" />
-            </button>
-          </div>
-          <div className="flex-1">
-            <OrganSection
-              organ={organ}
-              selectedFindings={selectedFindings}
-              onFindingChange={onFindingChange}
-              onNormalChange={onNormalChange}
-              isNormal={isNormal}
-              tempDetails={tempDetails}
-              onTempDetailsChange={onTempDetailsChange}
-              FindingDetailsComponent={FindingDetailsComponent}
-            />
-          </div>
+        <div className="writing-mode-vertical text-xs font-medium text-gray-900">
+          {organ.name}
         </div>
-      )}
+      </div>
+
+      <div
+        className={`h-full flex flex-col text-gray-900 ${
+          isMinimized ? 'hidden' : ''
+        } overflow-y-auto modern-scrollbar`}
+        aria-hidden={isMinimized}
+      >
+        <div className="absolute top-3 right-3 z-20">
+          <button
+            onClick={() => onToggleMinimized(true)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-700"
+            title="Minimizar painel"
+            aria-label="Minimizar painel"
+          >
+            <CaretLeft size={16} className="text-gray-700" />
+          </button>
+        </div>
+        <div className="flex-1">
+          <OrganSection
+            organ={organ}
+            selectedFindings={selectedFindings}
+            onFindingChange={onFindingChange}
+            onNormalChange={onNormalChange}
+            isNormal={isNormal}
+            tempDetails={tempDetails}
+            onTempDetailsChange={onTempDetailsChange}
+            FindingDetailsComponent={FindingDetailsComponent}
+          />
+        </div>
+      </div>
     </div>
   );
 

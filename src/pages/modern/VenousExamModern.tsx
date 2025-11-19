@@ -17,7 +17,7 @@ import VenousFindingDetails from '@/components/original/VenousFindingDetails';
 
 // Dados & Tipos
 import { venousOrgans } from '@/data/venousOrgans';
-import { SelectedFinding, ReportData, FindingInstance, type AIProvider, type AIGenerationStats } from '@/types/report';
+import { SelectedFinding, ReportData, FindingInstance, FindingMeasurement, type AIProvider, type AIGenerationStats } from '@/types/report';
 import type { AIStatus } from '@/components/original/ReportCanvas';
 import type { Finding } from '@/data/organs';
 
@@ -57,6 +57,30 @@ function VenousExamModern() {
   // Painel flutuante
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
   const statusUnsubscribeRef = useRef<(() => void) | null>(null);
+  
+  // Estado temporário para detalhes dos findings (persiste ao minimizar/trocar órgão)
+  const [tempFindingDetails, setTempFindingDetails] = useState<
+    Record<string, Record<string, { severity?: string; instances?: FindingInstance[]; draftMeasurement?: FindingMeasurement }>>
+  >({});
+
+  // Funções para gerenciar o estado temporário dos findings
+  const handleTempDetailsChange = (
+    organId: string,
+    findingId: string,
+    details: { severity?: string; instances?: FindingInstance[]; draftMeasurement?: FindingMeasurement }
+  ) => {
+    setTempFindingDetails(prev => ({
+      ...prev,
+      [organId]: {
+        ...prev[organId],
+        [findingId]: details
+      }
+    }));
+  };
+
+  const getTempDetails = (organId: string) => {
+    return tempFindingDetails[organId] || {};
+  };
 
   const handleOrganSelect = (organId: string) => {
     if (selectedOrgan === organId) {
@@ -486,6 +510,8 @@ function VenousExamModern() {
               onToggleMinimized={setIsPanelMinimized}
               onFindingChange={handleFindingChange}
               onNormalChange={handleNormalChange}
+              tempDetails={getTempDetails(currentOrgan.id)}
+              onTempDetailsChange={handleTempDetailsChange}
               leftCss={'calc(25% + 1.5rem)'}
               widthExpanded={'24rem'}
               maxHeight={'80vh'}
