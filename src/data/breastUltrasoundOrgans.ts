@@ -21,7 +21,7 @@ export const BREAST_QUADRANTS = [
   { value: 'qie', label: 'Quadrante Inferior Externo (QIE)' },
   { value: 'qii', label: 'Quadrante Inferior Interno (QII)' },
   { value: 'retroareolar', label: 'Região Retroareolar/Central' },
-  { value: 'prolongamento-axilar', label: 'Prolongamento Axilar' },
+  { value: 'prolongamento-axilar', label: 'Prolongamento Axilar' }
 ];
 
 /**
@@ -30,7 +30,7 @@ export const BREAST_QUADRANTS = [
 export const BREAST_DEPTH = [
   { value: 'anterior', label: 'Terço Anterior (superficial)' },
   { value: 'medio', label: 'Terço Médio' },
-  { value: 'posterior', label: 'Terço Posterior (profundo)' },
+  { value: 'posterior', label: 'Terço Posterior (profundo)' }
 ];
 
 /**
@@ -510,34 +510,10 @@ const mamaDireitaCategories: OrganCategory[] = [
             options: NODULE_MARGINS
           },
           {
-            id: 'orientation',
-            label: 'Orientação',
-            type: 'select',
-            options: NODULE_ORIENTATION
-          },
-          {
             id: 'echogenicity',
             label: 'Ecogenicidade',
             type: 'select',
             options: NODULE_ECHOGENICITY
-          },
-          {
-            id: 'posteriorFeatures',
-            label: 'Características Posteriores',
-            type: 'select',
-            options: POSTERIOR_FEATURES
-          },
-          {
-            id: 'vascularization',
-            label: 'Vascularização Doppler',
-            type: 'select',
-            options: VASCULARIZATION
-          },
-          {
-            id: 'resistivityIndex',
-            label: 'Índice de Resistência (IR)',
-            type: 'select',
-            options: RESISTIVITY_INDEX_BREAST.map(r => r.label)
           },
           {
             id: 'distanceFromNipple',
@@ -629,12 +605,6 @@ const mamaDireitaCategories: OrganCategory[] = [
             placeholder: 'Descrição do componente cístico'
           },
           {
-            id: 'vascularization',
-            label: 'Vascularização Doppler',
-            type: 'select',
-            options: VASCULARIZATION
-          },
-          {
             id: 'biradsCategory',
             label: 'Categoria BI-RADS',
             type: 'select',
@@ -693,12 +663,6 @@ const mamaDireitaCategories: OrganCategory[] = [
             options: ['Anecoico (limpo)', 'Ecos internos finos']
           },
           {
-            id: 'posteriorFeatures',
-            label: 'Características Posteriores',
-            type: 'select',
-            options: ['Reforço acústico posterior', 'Sem alterações']
-          },
-          {
             id: 'biradsCategory',
             label: 'Categoria BI-RADS',
             type: 'select',
@@ -754,12 +718,6 @@ const mamaDireitaCategories: OrganCategory[] = [
             label: 'Septações Espessas',
             type: 'select',
             options: ['Ausentes', 'Presentes']
-          },
-          {
-            id: 'vascularization',
-            label: 'Vascularização (componente sólido)',
-            type: 'select',
-            options: VASCULARIZATION
           },
           {
             id: 'biradsCategory',
@@ -862,12 +820,6 @@ const mamaDireitaCategories: OrganCategory[] = [
             label: 'Ectasia Associada',
             type: 'select',
             options: ['Sim', 'Não']
-          },
-          {
-            id: 'vascularization',
-            label: 'Vascularização Doppler',
-            type: 'select',
-            options: VASCULARIZATION
           },
           {
             id: 'biradsCategory',
@@ -1096,12 +1048,6 @@ const mamaDireitaCategories: OrganCategory[] = [
             label: 'Edema Circundante',
             type: 'select',
             options: ['Presente', 'Ausente', 'Leve', 'Moderado', 'Acentuado']
-          },
-          {
-            id: 'vascularization',
-            label: 'Vascularização Parietal',
-            type: 'select',
-            options: ['Presente', 'Ausente', 'Hipervascularizada']
           },
           {
             id: 'biradsCategory',
@@ -1343,12 +1289,6 @@ const linfonodosCategories: OrganCategory[] = [
             label: 'Morfologia',
             type: 'select',
             options: LYMPH_NODE_MORPHOLOGY
-          },
-          {
-            id: 'vascularization',
-            label: 'Padrão de Vascularização',
-            type: 'select',
-            options: LYMPH_NODE_VASCULARIZATION
           },
           {
             id: 'axillaryLevel',

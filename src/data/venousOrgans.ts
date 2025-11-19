@@ -166,9 +166,8 @@ export const venousOrgans: Organ[] = [
             requiresLocation: true,
             locations: COMMON_FEMORAL_LOCATIONS,
             customFields: [
-              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },
-              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },
-              { id: 'compressibilidade', label: 'Compressibilidade', type: 'select', options: COMPRESSIBILITY }
+              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },              { id: 'compressibilidade', label: 'Compressibilidade', type: 'select', options: COMPRESSIBILITY },
+              { id: 'extensao', label: 'Extensão', type: 'select', options: THROMBUS_EXTENT }
             ]
           },
           {
@@ -201,7 +200,9 @@ export const venousOrgans: Organ[] = [
             requiresLocation: true,
             locations: COMMON_FEMORAL_LOCATIONS,
             customFields: [
-              { id: 'duracao-cat', label: 'Classificação', type: 'select', options: REFLUX_DURATION }
+              { id: 'duracao-cat', label: 'Classificação', type: 'select', options: REFLUX_DURATION },
+              { id: 'padrao', label: 'Padrão de Fluxo', type: 'select', options: FLOW_PATTERN },
+              { id: 'ceap', label: 'Classificação CEAP', type: 'select', options: CEAP_CLINICAL }
             ]
           }
         ]
@@ -224,9 +225,8 @@ export const venousOrgans: Organ[] = [
             requiresLocation: true,
             locations: FEMORAL_VEIN_LOCATIONS,
             customFields: [
-              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },
-              { id: 'extensao', label: 'Extensão', type: 'select', options: THROMBUS_EXTENT },
-              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY }
+              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },              { id: 'extensao', label: 'Extensão', type: 'select', options: THROMBUS_EXTENT },              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },
+              { id: 'compressibilidade', label: 'Compressibilidade', type: 'select', options: COMPRESSIBILITY }
             ]
           },
           {
@@ -277,8 +277,9 @@ export const venousOrgans: Organ[] = [
             requiresLocation: true,
             locations: POPLITEAL_LOCATIONS,
             customFields: [
-              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },
-              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY }
+              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },              { id: 'extensao', label: 'Extensão', type: 'select', options: THROMBUS_EXTENT },              { id: 'compressibilidade', label: 'Compressibilidade', type: 'select', options: COMPRESSIBILITY },
+              { id: 'padrao', label: 'Padrão de Fluxo', type: 'select', options: FLOW_PATTERN },
+              { id: 'ceap', label: 'Classificação CEAP', type: 'select', options: CEAP_CLINICAL }
             ]
           },
           {
@@ -330,7 +331,9 @@ export const venousOrgans: Organ[] = [
               { id: 'diametro-crossa', label: 'Diâmetro na Crossa', unit: 'mm', normalRange: '<6' }
             ],
             customFields: [
-              { id: 'duracao-cat', label: 'Classificação', type: 'select', options: REFLUX_DURATION }
+              { id: 'duracao-cat', label: 'Classificação', type: 'select', options: REFLUX_DURATION },
+              { id: 'padrao', label: 'Padrão de Fluxo', type: 'select', options: FLOW_PATTERN },
+              { id: 'ceap', label: 'Classificação CEAP', type: 'select', options: CEAP_CLINICAL }
             ]
           },
           {
@@ -345,7 +348,10 @@ export const venousOrgans: Organ[] = [
             requiresLocation: true,
             locations: SAPHENOUS_LOCATIONS,
             customFields: [
-              { id: 'extensao', label: 'Extensão', type: 'select', options: ['Coxa', 'Coxa e perna', 'Perna'] }
+              { id: 'extensao', label: 'Extensão', type: 'select', options: ['Coxa', 'Coxa e perna', 'Perna',
+              { id: 'padrao', label: 'Padrão de Fluxo', type: 'select', options: FLOW_PATTERN },
+              { id: 'ceap', label: 'Classificação CEAP', type: 'select', options: CEAP_CLINICAL }
+            ] }
             ]
           },
           {
@@ -359,7 +365,10 @@ export const venousOrgans: Organ[] = [
             requiresLocation: true,
             locations: SAPHENOUS_LOCATIONS,
             customFields: [
-              { id: 'tortuosidade', label: 'Tortuosidade', type: 'select', options: ['Ausente', 'Leve', 'Moderada', 'Acentuada'] }
+              { id: 'tortuosidade', label: 'Tortuosidade', type: 'select', options: ['Ausente', 'Leve', 'Moderada', 'Acentuada',
+              { id: 'padrao', label: 'Padrão de Fluxo', type: 'select', options: FLOW_PATTERN },
+              { id: 'ceap', label: 'Classificação CEAP', type: 'select', options: CEAP_CLINICAL }
+            ] }
             ]
           }
         ]
@@ -437,7 +446,10 @@ export const venousOrgans: Organ[] = [
             requiresLocation: true,
             locations: PERFORATOR_LOCATIONS,
             customFields: [
-              { id: 'fluxo', label: 'Direção do Fluxo', type: 'select', options: ['Centrífugo (normal)', 'Centrípeto (refluxo)'] }
+              { id: 'fluxo', label: 'Direção do Fluxo', type: 'select', options: ['Centrífugo (normal)', 'Centrípeto (refluxo)',
+              { id: 'padrao', label: 'Padrão de Fluxo', type: 'select', options: FLOW_PATTERN },
+              { id: 'ceap', label: 'Classificação CEAP', type: 'select', options: CEAP_CLINICAL }
+            ] }
             ]
           }
         ]
@@ -486,9 +498,9 @@ export const venousOrgans: Organ[] = [
             requiresMeasurement: false,
             requiresLocation: false,
             customFields: [
-              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },
-              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },
-              { id: 'extensao', label: 'Extensão', type: 'select', options: ['Segmentar', 'Extensa', 'Para veia cava'] }
+              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },              { id: 'extensao', label: 'Extensão', type: 'select', options: ['Segmentar', 'Extensa', 'Para veia cava',
+              { id: 'compressibilidade', label: 'Compressibilidade', type: 'select', options: COMPRESSIBILITY }
+            ] }
             ]
           },
           {
@@ -537,7 +549,12 @@ export const venousOrgans: Organ[] = [
             requiresMeasurement: false,
             requiresLocation: false,
             customFields: [
-              { id: 'lado', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral'] },
+              { id: 'lado', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral',
+              { id: 'tipo', label: 'Tipo de Oclusão', type: 'select', options: THROMBUS_TYPE },
+              { id: 'extensao', label: 'Extensão', type: 'select', options: THROMBUS_EXTENT },
+              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },
+              { id: 'compressibilidade', label: 'Compressibilidade', type: 'select', options: COMPRESSIBILITY }
+            ] },
               { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },
               { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY }
             ]
@@ -611,10 +628,9 @@ export const venousOrgans: Organ[] = [
             requiresMeasurement: false,
             requiresLocation: false,
             customFields: [
-              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },
-              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },
-              { id: 'extensao', label: 'Extensão', type: 'select', 
-                options: ['Proximal', 'Distal', 'Toda extensão'] }
+              { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },              { id: 'extensao', label: 'Extensão', type: 'select',                 options: ['Proximal', 'Distal', 'Toda extensão',
+              { id: 'compressibilidade', label: 'Compressibilidade', type: 'select', options: COMPRESSIBILITY }
+            ] }
             ]
           }
         ]
@@ -705,9 +721,10 @@ export const venousOrgans: Organ[] = [
               { id: 'numero', label: 'Número de veias', unit: '' }
             ],
             customFields: [
-              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },
-              { id: 'localizacao', label: 'Localização', type: 'select', 
-                options: ['Proximal', 'Média', 'Distal', 'Múltiplas'] }
+              { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY },              { id: 'localizacao', label: 'Localização', type: 'select',                 options: ['Proximal', 'Média', 'Distal', 'Múltiplas',
+              { id: 'padrao', label: 'Padrão de Fluxo', type: 'select', options: FLOW_PATTERN },
+              { id: 'ceap', label: 'Classificação CEAP', type: 'select', options: CEAP_CLINICAL }
+            ] }
             ]
           }
         ]
@@ -757,8 +774,10 @@ export const venousOrgans: Organ[] = [
               { id: 'diametro', label: 'Diâmetro', unit: 'mm' }
             ],
             customFields: [
-              { id: 'extensao', label: 'Extensão', type: 'select', 
-                options: ['Completa', 'Proximal', 'Distal'] }
+              { id: 'extensao', label: 'Extensão', type: 'select',                 options: ['Completa', 'Proximal', 'Distal',
+              { id: 'padrao', label: 'Padrão de Fluxo', type: 'select', options: FLOW_PATTERN },
+              { id: 'ceap', label: 'Classificação CEAP', type: 'select', options: CEAP_CLINICAL }
+            ] }
             ]
           }
         ]

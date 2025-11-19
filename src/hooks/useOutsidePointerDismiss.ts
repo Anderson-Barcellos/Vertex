@@ -1,4 +1,4 @@
-import { RefObject, useEffect } from 'react';
+import { RefObject, useEffect, useRef } from 'react';
 import { isDropdownRelated } from './useDropdownGuard';
 
 type UseOutsidePointerDismissParams<T extends HTMLElement = HTMLElement> = {
@@ -13,6 +13,8 @@ type UseOutsidePointerDismissParams<T extends HTMLElement = HTMLElement> = {
  * useOutsidePointerDismiss
  * Dispara `onDismiss` ao clicar fora de `containerRef`, ignorando cliques
  * que partem de elementos de dropdown/portal (Radix) e seletores extras.
+ * 
+ * Fix: Previne minimização ao clicar em trigger de dropdown já aberto.
  */
 export function useOutsidePointerDismiss<T extends HTMLElement = HTMLElement>({
   containerRef,
@@ -21,25 +23,37 @@ export function useOutsidePointerDismiss<T extends HTMLElement = HTMLElement>({
   extraSafeSelectors = [],
   onDismiss
 }: UseOutsidePointerDismissParams<T>) {
+  const pointerDownOnTriggerRef = useRef(false);
+  const dismissTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (isDisabled) return;
 
+    const isTriggerElement = (target: HTMLElement | null): boolean => {
+      if (!target) return false;
+      return !!(
+        target.closest('[data-radix-select-trigger]') ||
+        target.closest('[data-radix-dropdown-menu-trigger]') ||
+        target.closest('[aria-haspopup]') ||
+        target.closest('select') ||
+        target.closest('[role="combobox"]') ||
+        target.closest('[data-slot="select-trigger"]')
+      );
+    };
+
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as HTMLElement | null;
+
+      // Marca se o pointerdown foi em um trigger
+      pointerDownOnTriggerRef.current = isTriggerElement(target);
 
       // Clique partiu de dentro do container
       if (containerRef.current && target && containerRef.current.contains(target)) {
         return;
       }
 
-      // Ignorar cliques em triggers de dropdown (abrindo ou fechando)
-      if (target && (
-        target.closest('[data-radix-select-trigger]') ||
-        target.closest('[data-radix-dropdown-menu-trigger]') ||
-        target.closest('[aria-haspopup]') ||
-        target.closest('select') ||
-        target.closest('[role="combobox"]')
-      )) {
+      // Se clicou em um trigger, não fazer nada agora (aguardar pointerup)
+      if (pointerDownOnTriggerRef.current) {
         return;
       }
 
@@ -50,20 +64,53 @@ export function useOutsidePointerDismiss<T extends HTMLElement = HTMLElement>({
 
       // Path tem elemento relacionado a dropdown?
       const pathHasDropdown = path.some((node) => node instanceof Element && isDropdownRelated(node));
+      
       // Se houver dropdown aberto, só ignoramos se o clique foi no próprio dropdown
       if (isDropdownOpen && pathHasDropdown) return;
-      // Se não houver dropdown aberto, seguimos normalmente; se houver e o clique não foi no dropdown, 
-      // permitimos o dismiss para não bloquear interação fora.
 
       // Seletores extras seguros (ex.: triggers customizados)
       if (target && extraSafeSelectors.some(sel => target.closest(sel))) return;
 
-      onDismiss();
+      // Limpa timeout anterior se existir
+      if (dismissTimeoutRef.current) {
+        clearTimeout(dismissTimeoutRef.current);
+      }
+
+      // Pequeno delay para permitir que Radix processe eventos
+      dismissTimeoutRef.current = setTimeout(() => {
+        onDismiss();
+      }, 10);
+    };
+
+    const handlePointerUp = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+
+      // Se o pointerdown foi em um trigger e o pointerup também
+      // significa que foi um clique completo no trigger
+      if (pointerDownOnTriggerRef.current && isTriggerElement(target)) {
+        // Cancela qualquer dismiss pendente
+        if (dismissTimeoutRef.current) {
+          clearTimeout(dismissTimeoutRef.current);
+          dismissTimeoutRef.current = null;
+        }
+        // Não dismissar - deixar o Radix gerenciar o dropdown
+        pointerDownOnTriggerRef.current = false;
+        return;
+      }
+
+      // Reset do flag
+      pointerDownOnTriggerRef.current = false;
     };
 
     document.addEventListener('pointerdown', handlePointerDown, { capture: true });
+    document.addEventListener('pointerup', handlePointerUp, { capture: true });
+    
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown, { capture: true } as any);
+      document.removeEventListener('pointerup', handlePointerUp, { capture: true } as any);
+      if (dismissTimeoutRef.current) {
+        clearTimeout(dismissTimeoutRef.current);
+      }
     };
   }, [containerRef, isDisabled, isDropdownOpen, extraSafeSelectors, onDismiss]);
 }

@@ -183,6 +183,19 @@ export const organs: Organ[] = [
             hasQuantity: true
           }
         ]
+      },
+      {
+        id: 'cirurgia-previa',
+        name: 'Cirurgia Prévia',
+        findings: [
+          {
+            id: 'colecistectomia',
+            name: 'Colecistectomia',
+            description: 'Ausência da vesícula biliar (cirurgia prévia)',
+            hasDetails: true,
+            isNormal: false
+          }
+        ]
       }
     ]
   },
