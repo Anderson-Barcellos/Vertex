@@ -65,7 +65,10 @@ const DropdownMenuContent = forwardRef<
 >(function DropdownMenuContent({ className, sideOffset = 4, ...props }, forwardedRef) {
   const localRef = useRef<ElementRef<typeof DropdownMenuPrimitive.Content> | null>(null)
 
-  useEffect(() => registerDropdownElement(localRef.current), [])
+  useEffect(() => {
+    if (!localRef.current) return;
+    return registerDropdownElement(localRef.current);
+  }, [localRef.current])
 
   return (
     <DropdownMenuPrimitive.Portal>
