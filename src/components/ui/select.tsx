@@ -1,10 +1,32 @@
-import { ComponentProps } from "react"
+import {
+  ComponentProps,
+  ElementRef,
+  forwardRef,
+  useEffect,
+  useRef,
+  type MutableRefObject,
+  type Ref,
+} from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import CheckIcon from "lucide-react/dist/esm/icons/check"
 import ChevronDownIcon from "lucide-react/dist/esm/icons/chevron-down"
 import ChevronUpIcon from "lucide-react/dist/esm/icons/chevron-up"
 
 import { cn } from "@/lib/utils"
+import { registerDropdownElement } from "@/hooks/useDropdownGuard"
+
+function composeRefs<T>(...refs: Array<Ref<T> | undefined>) {
+  return (node: T) => {
+    refs.forEach((ref) => {
+      if (!ref) return
+      if (typeof ref === "function") {
+        ref(node)
+      } else {
+        ;(ref as MutableRefObject<T>).current = node
+      }
+    })
+  }
+}
 
 function Select({
   ...props
@@ -50,15 +72,18 @@ function SelectTrigger({
   )
 }
 
-function SelectContent({
-  className,
-  children,
-  position = "popper",
-  ...props
-}: ComponentProps<typeof SelectPrimitive.Content>) {
+const SelectContent = forwardRef<
+  ElementRef<typeof SelectPrimitive.Content>,
+  ComponentProps<typeof SelectPrimitive.Content>
+>(function SelectContent({ className, children, position = "popper", ...props }, forwardedRef) {
+  const localRef = useRef<ElementRef<typeof SelectPrimitive.Content> | null>(null)
+
+  useEffect(() => registerDropdownElement(localRef.current), [])
+
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
+        ref={composeRefs(forwardedRef, localRef)}
         data-slot="select-content"
         className={cn(
           "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-[60] max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border shadow-md",
@@ -83,7 +108,7 @@ function SelectContent({
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
   )
-}
+})
 
 function SelectLabel({
   className,
