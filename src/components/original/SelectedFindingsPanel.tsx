@@ -310,7 +310,6 @@ export default function SelectedFindingsPanel({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  e.preventDefault();
                   setSelectedModel('gemini');
                   setActiveMenu('gemini');
                 }}
