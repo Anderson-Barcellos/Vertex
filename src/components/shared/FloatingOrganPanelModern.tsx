@@ -60,7 +60,7 @@ export default function FloatingOrganPanelModern({
   FindingDetailsComponent
 }: FloatingOrganPanelModernProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const { isAnyDropdownOpen } = useDropdownGuard([ref]);
+  const { isAnyDropdownOpen } = useDropdownGuard();
 
   useOutsidePointerDismiss({
     containerRef: ref,

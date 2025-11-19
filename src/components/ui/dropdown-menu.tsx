@@ -1,12 +1,34 @@
 "use client"
 
-import { ComponentProps } from "react"
+import {
+  ComponentProps,
+  ElementRef,
+  forwardRef,
+  useEffect,
+  useRef,
+  type MutableRefObject,
+  type Ref,
+} from "react"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import CheckIcon from "lucide-react/dist/esm/icons/check"
 import ChevronRightIcon from "lucide-react/dist/esm/icons/chevron-right"
 import CircleIcon from "lucide-react/dist/esm/icons/circle"
 
 import { cn } from "@/lib/utils"
+import { registerDropdownElement } from "@/hooks/useDropdownGuard"
+
+function composeRefs<T>(...refs: Array<Ref<T> | undefined>) {
+  return (node: T) => {
+    refs.forEach((ref) => {
+      if (!ref) return
+      if (typeof ref === "function") {
+        ref(node)
+      } else {
+        ;(ref as MutableRefObject<T>).current = node
+      }
+    })
+  }
+}
 
 function DropdownMenu({
   ...props
@@ -22,25 +44,33 @@ function DropdownMenuPortal({
   )
 }
 
-function DropdownMenuTrigger({
-  ...props
-}: ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
+const DropdownMenuTrigger = forwardRef<
+  ElementRef<typeof DropdownMenuPrimitive.Trigger>,
+  ComponentProps<typeof DropdownMenuPrimitive.Trigger>
+>(function DropdownMenuTrigger({ ...props }, forwardedRef) {
+  const localRef = useRef<ElementRef<typeof DropdownMenuPrimitive.Trigger> | null>(null)
+
   return (
     <DropdownMenuPrimitive.Trigger
+      ref={composeRefs(forwardedRef, localRef)}
       data-slot="dropdown-menu-trigger"
       {...props}
     />
   )
-}
+})
 
-function DropdownMenuContent({
-  className,
-  sideOffset = 4,
-  ...props
-}: ComponentProps<typeof DropdownMenuPrimitive.Content>) {
+const DropdownMenuContent = forwardRef<
+  ElementRef<typeof DropdownMenuPrimitive.Content>,
+  ComponentProps<typeof DropdownMenuPrimitive.Content>
+>(function DropdownMenuContent({ className, sideOffset = 4, ...props }, forwardedRef) {
+  const localRef = useRef<ElementRef<typeof DropdownMenuPrimitive.Content> | null>(null)
+
+  useEffect(() => registerDropdownElement(localRef.current), [])
+
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
+        ref={composeRefs(forwardedRef, localRef)}
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         className={cn(
@@ -51,7 +81,7 @@ function DropdownMenuContent({
       />
     </DropdownMenuPrimitive.Portal>
   )
-}
+})
 
 function DropdownMenuGroup({
   ...props
@@ -200,16 +230,15 @@ function DropdownMenuSub({
   return <DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />
 }
 
-function DropdownMenuSubTrigger({
-  className,
-  inset,
-  children,
-  ...props
-}: ComponentProps<typeof DropdownMenuPrimitive.SubTrigger> & {
-  inset?: boolean
-}) {
+const DropdownMenuSubTrigger = forwardRef<
+  ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
+  ComponentProps<typeof DropdownMenuPrimitive.SubTrigger> & { inset?: boolean }
+>(function DropdownMenuSubTrigger({ className, inset, children, ...props }, forwardedRef) {
+  const localRef = useRef<ElementRef<typeof DropdownMenuPrimitive.SubTrigger> | null>(null)
+
   return (
     <DropdownMenuPrimitive.SubTrigger
+      ref={composeRefs(forwardedRef, localRef)}
       data-slot="dropdown-menu-sub-trigger"
       data-inset={inset}
       className={cn(
@@ -222,14 +251,19 @@ function DropdownMenuSubTrigger({
       <ChevronRightIcon className="ml-auto size-4" />
     </DropdownMenuPrimitive.SubTrigger>
   )
-}
+})
 
-function DropdownMenuSubContent({
-  className,
-  ...props
-}: ComponentProps<typeof DropdownMenuPrimitive.SubContent>) {
+const DropdownMenuSubContent = forwardRef<
+  ElementRef<typeof DropdownMenuPrimitive.SubContent>,
+  ComponentProps<typeof DropdownMenuPrimitive.SubContent>
+>(function DropdownMenuSubContent({ className, ...props }, forwardedRef) {
+  const localRef = useRef<ElementRef<typeof DropdownMenuPrimitive.SubContent> | null>(null)
+
+  useEffect(() => registerDropdownElement(localRef.current), [])
+
   return (
     <DropdownMenuPrimitive.SubContent
+      ref={composeRefs(forwardedRef, localRef)}
       data-slot="dropdown-menu-sub-content"
       className={cn(
         "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-hidden rounded-md border p-1 shadow-lg",
@@ -238,7 +272,7 @@ function DropdownMenuSubContent({
       {...props}
     />
   )
-}
+})
 
 export {
   DropdownMenu,

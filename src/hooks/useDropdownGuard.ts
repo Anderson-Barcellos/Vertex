@@ -1,73 +1,106 @@
 import { useEffect, useState, RefObject } from 'react';
 
+type DropdownRegistration<T extends HTMLElement = HTMLElement> = {
+  triggerRef?: RefObject<T | null>;
+  contentRef?: RefObject<T | null>;
+};
+
+type UseDropdownGuardOptions<T extends HTMLElement = HTMLElement> = {
+  registrations?: DropdownRegistration<T>[];
+  isContextDropdownOpen?: boolean;
+};
+
+const registeredDropdowns = new Set<HTMLElement>();
+const registrySubscribers = new Set<() => void>();
+
+const notifyRegistrySubscribers = () => {
+  registrySubscribers.forEach((fn) => fn());
+};
+
+const pruneRegistry = () => {
+  let hasPruned = false;
+  registeredDropdowns.forEach((node) => {
+    if (!node.isConnected) {
+      registeredDropdowns.delete(node);
+      hasPruned = true;
+    }
+  });
+  if (hasPruned) notifyRegistrySubscribers();
+};
+
+const validateDropdownRoot = (el: HTMLElement) => {
+  const portalRoot = el.closest('[data-radix-dropdown-menu-content], [data-radix-select-content]');
+  if (portalRoot && portalRoot !== el) {
+    console.warn('[useDropdownGuard] Registre o nó raiz do dropdown/portal, não um filho.', {
+      registeredNode: el,
+      portalRoot,
+    });
+  }
+};
+
+const registerDropdownElement = (el: HTMLElement | null) => {
+  if (!el) return () => {};
+  registeredDropdowns.add(el);
+  validateDropdownRoot(el);
+  notifyRegistrySubscribers();
+
+  return () => {
+    if (registeredDropdowns.delete(el)) {
+      notifyRegistrySubscribers();
+    }
+  };
+};
+
 const isDropdownRelated = (el: Element | null): boolean => {
   if (!el) return false;
-  const role = el.getAttribute('role');
-  const slot = el.getAttribute('data-slot');
-  const dataState = el.getAttribute('data-state');
-  const ariaExpanded = el.getAttribute('aria-expanded');
-
-  if (
-    el.closest('[data-radix-portal]') ||
-    el.closest('[data-radix-popper-content-wrapper]') ||
-    el.closest('[data-radix-select-content]') ||
-    el.closest('[data-radix-dropdown-menu-content]')
-  ) return true;
-
-  if (
-    role === 'listbox' || role === 'option' || role === 'combobox' ||
-    role === 'menu' || role === 'menuitem'
-  ) return true;
-
-  if (dataState === 'open' || ariaExpanded === 'true') return true;
-  if (slot === 'select-content' || slot === 'select-trigger' || slot === 'select-item') return true;
-
+  pruneRegistry();
+  for (const dropdown of registeredDropdowns) {
+    if (dropdown === el || dropdown.contains(el)) return true;
+  }
   return false;
 };
 
 /**
  * useDropdownGuard
- * Observa o DOM por sinais de dropdowns/portais abertos (Radix) e retorna booleano.
+ * Observa refs explícitas de dropdowns e uma flag opcional de contexto para inferir se há dropdown aberto.
  */
-export function useDropdownGuard<T extends HTMLElement = HTMLElement>(refs: RefObject<T | null>[] = []) {
-  const [isAnyDropdownOpen, setIsAnyDropdownOpen] = useState(false);
+export function useDropdownGuard<T extends HTMLElement = HTMLElement>({
+  registrations = [],
+  isContextDropdownOpen = false,
+}: UseDropdownGuardOptions<T> = {}) {
+  const [isAnyDropdownOpen, setIsAnyDropdownOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    const update = () => {
-      const open =
-        document.querySelector('[data-state="open"]') !== null ||
-        document.querySelector('[aria-expanded="true"]') !== null ||
-        document.querySelector('[data-custom-dropdown="open"]') !== null ||
-        document.querySelector('[data-radix-dropdown-menu-content]') !== null ||
-        document.querySelector('[data-radix-select-content]') !== null;
-      setIsAnyDropdownOpen(!!open);
-    };
+    const cleanups: Array<() => void> = [];
 
-    const observer = new MutationObserver(update);
-    observer.observe(document.body, {
-      attributes: true,
-      attributeFilter: ['data-state', 'aria-expanded', 'data-custom-dropdown'],
-      subtree: true,
-      childList: true
-    });
-    refs.forEach(r => {
-      if (r.current) {
-        observer.observe(r.current, {
-          attributes: true,
-          attributeFilter: ['data-state', 'aria-expanded', 'data-custom-dropdown'],
-          subtree: true
-        });
+    registrations.forEach(({ triggerRef, contentRef }) => {
+      if (triggerRef?.current) {
+        cleanups.push(registerDropdownElement(triggerRef.current));
+      }
+      if (contentRef?.current) {
+        cleanups.push(registerDropdownElement(contentRef.current));
       }
     });
 
-    // Atualiza no mount também
-    update();
+    const refreshState = () => {
+      pruneRegistry();
+      const hasRegisteredDropdown = registeredDropdowns.size > 0;
+      setIsAnyDropdownOpen(isContextDropdownOpen || hasRegisteredDropdown);
+    };
 
-    return () => observer.disconnect();
-  }, [refs]);
+    refreshState();
 
-  return { isAnyDropdownOpen, isDropdownRelated };
+    const unsubscribe = () => registrySubscribers.delete(refreshState);
+    registrySubscribers.add(refreshState);
+
+    return () => {
+      cleanups.forEach((fn) => fn());
+      unsubscribe();
+    };
+  }, [registrations, isContextDropdownOpen]);
+
+  return { isAnyDropdownOpen, isDropdownRelated, registerDropdownElement } as const;
 }
 
-export { isDropdownRelated };
+export { isDropdownRelated, registerDropdownElement };
 
