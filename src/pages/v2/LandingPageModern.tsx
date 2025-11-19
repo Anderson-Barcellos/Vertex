@@ -185,6 +185,52 @@ export function LandingPageModern() {
               </div>
             </div>
           </div>
+
+          {/* Doppler Arterial MMII */}
+          <div
+            onClick={() => navigate('/arterial-modern')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+          >
+            {/* Gradient Overlay on Hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+            <div className="relative z-10">
+              {/* Icon */}
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+
+              {/* Content */}
+              <h3 className="text-3xl font-bold text-white mb-3">
+                Doppler Arterial MMII
+              </h3>
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                Ecodoppler arterial bilateral com critérios SBACV 2024, análise de PSV, Vr e classificação de estenoses
+              </p>
+
+              {/* Stats */}
+              <div className="flex gap-4 mb-6">
+                <div className="flex-1 glass-card">
+                  <div className="text-2xl font-bold text-red-400">10+</div>
+                  <div className="text-xs text-gray-400">Segmentos</div>
+                </div>
+                <div className="flex-1 glass-card">
+                  <div className="text-2xl font-bold text-orange-400">Bilateral</div>
+                  <div className="text-xs text-gray-400">D/E</div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="flex items-center text-red-400 font-semibold group-hover:translate-x-2 transition-transform duration-300">
+                <span>Acessar módulo</span>
+                <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Terceira Linha */}
