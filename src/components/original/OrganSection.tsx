@@ -219,7 +219,7 @@ export default function OrganSection({
                         </div>
 
                         {/* Show enhanced details form when selected and has special fields */}
-                        {isSelected && (finding.hasSeverity || finding.hasMeasurement || finding.hasLocation || finding.hasQuantity) && (
+                        {isSelected && (finding.hasSeverity || finding.hasMeasurement || finding.hasLocation || finding.hasQuantity || (finding.extraFields && finding.extraFields.length > 0)) && (
                           <FindingDetailsComponent
                             finding={finding}
                             organId={organ.id}

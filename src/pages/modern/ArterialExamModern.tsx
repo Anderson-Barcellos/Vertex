@@ -13,7 +13,7 @@ import Sidebar from '@/components/original/Sidebar';
 import ReportCanvas from '@/components/original/ReportCanvas';
 import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
 import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
-import ArterialFindingDetails from '@/components/original/ArterialFindingDetails';
+import FindingDetailsGeneric from '@/components/original/FindingDetailsGeneric';
 
 // Dados & Tipos
 import { arterialOrgans } from '@/data/arterialOrgans';
@@ -515,7 +515,7 @@ function ArterialExamModern() {
               leftCss={'calc(25% + 1.5rem)'}
               widthExpanded={'24rem'}
               maxHeight={'80vh'}
-              FindingDetailsComponent={ArterialFindingDetails}
+              FindingDetailsComponent={FindingDetailsGeneric}
             />
           ) : null
         )}

@@ -52,6 +52,18 @@ export function useOutsidePointerDismiss<T extends HTMLElement = HTMLElement>({
         return;
       }
 
+      // Se há um input/textarea focado dentro do container, não fechar
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        containerRef.current?.contains(activeElement) &&
+        (activeElement.tagName === 'INPUT' || 
+         activeElement.tagName === 'TEXTAREA' ||
+         activeElement.getAttribute('contenteditable') === 'true')
+      ) {
+        return;
+      }
+
       // Se clicou em um trigger, não fazer nada agora (aguardar pointerup)
       if (pointerDownOnTriggerRef.current) {
         return;

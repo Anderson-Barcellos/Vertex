@@ -376,20 +376,49 @@ export function LandingPageModern() {
             </div>
           </div>
 
-          {/* Espaço para futuro exame */}
-          <div className="glass-panel p-8 relative overflow-hidden opacity-50">
+          {/* Ultrassom de Parede Abdominal */}
+          <div
+            onClick={() => navigate('/abdominal-wall-modern')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+          >
+            {/* Gradient Overlay on Hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
             <div className="relative z-10">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center mb-6 shadow-lg">
+              {/* Icon */}
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                 <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                 </svg>
               </div>
-              <h3 className="text-3xl font-bold text-gray-400 mb-3">
-                Em Breve
+
+              {/* Content */}
+              <h3 className="text-3xl font-bold text-white mb-3">
+                US Parede Abdominal
               </h3>
-              <p className="text-gray-500 mb-6 leading-relaxed">
-                Novos módulos de exames ultrassonográficos em desenvolvimento
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                Hérnias inguinais, umbilicais, incisionais e de parede com medidas de óstio e saco herniário
               </p>
+
+              {/* Stats */}
+              <div className="flex gap-4 mb-6">
+                <div className="flex-1 glass-card">
+                  <div className="text-2xl font-bold text-cyan-400">5</div>
+                  <div className="text-xs text-gray-400">Regiões</div>
+                </div>
+                <div className="flex-1 glass-card">
+                  <div className="text-2xl font-bold text-teal-400">12</div>
+                  <div className="text-xs text-gray-400">Hérnias</div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="flex items-center text-cyan-400 font-semibold group-hover:translate-x-2 transition-transform duration-300">
+                <span>Acessar módulo</span>
+                <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>

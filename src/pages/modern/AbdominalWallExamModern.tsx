@@ -1,27 +1,22 @@
-/**
- * Vertex V2 - Venous Exam (MODERN DESIGN)
- * Ecodoppler Venoso de Membros Inferiores
- */
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toaster, toast } from 'sonner';
 import { ArrowLeft } from '@phosphor-icons/react';
 
-// Componentes base
 import Sidebar from '@/components/original/Sidebar';
 import ReportCanvas from '@/components/original/ReportCanvas';
+import type { AIStatus } from '@/components/original/ReportCanvas';
 import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
 import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
-import FindingDetailsGeneric from '@/components/original/FindingDetailsGeneric';
 
-// Dados & Tipos
-import { venousOrgans } from '@/data/venousOrgans';
-import { SelectedFinding, ReportData, FindingInstance, type AIProvider, type AIGenerationStats } from '@/types/report';
-import type { AIStatus } from '@/components/original/ReportCanvas';
+import ModernExamLayout from '@/layouts/ModernExamLayout';
+import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelModern';
+
+import type { SelectedFinding, ReportData, FindingInstance, AIProvider, AIGenerationStats } from '@/types/report';
 import type { Finding } from '@/data/organs';
 
-// Serviços de IA
+import { abdominalWallOrgans } from '@/data/abdominalWallOrgans';
+
 import { generateReport } from '@/services/reportGenerator';
 import { geminiStreamService, GEMINI_MODEL } from '@/services/geminiStreamService';
 import { openaiStreamService, OPENAI_MODEL } from '@/services/openaiStreamService';
@@ -29,21 +24,14 @@ import { unifiedAIService } from '@/services/unifiedAIService';
 import { buildSpecializedPrompt } from '@/services/promptBuilder';
 import { estimateCostUsd, estimateTokensFromText } from '@/utils/aiMetrics';
 
-// Layout moderno compartilhado
-import '@/styles/modern-design.css';
-import ModernExamLayout from '@/layouts/ModernExamLayout';
-import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelModern';
-
-function VenousExamModern() {
+export default function AbdominalWallExamModern() {
   const navigate = useNavigate();
 
-  // Estado principal
   const [selectedOrgan, setSelectedOrgan] = useState('');
   const [selectedFindings, setSelectedFindings] = useState<SelectedFinding[]>([]);
   const [normalOrgans, setNormalOrgans] = useState<string[]>([]);
   const [generatedReport, setGeneratedReport] = useState('');
 
-  // Estado IA
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiImpression, setAiImpression] = useState('');
@@ -54,9 +42,10 @@ function VenousExamModern() {
   const [aiStatus, setAiStatus] = useState<AIStatus>('idle');
   const [aiGenerationStats, setAiGenerationStats] = useState<AIGenerationStats | null>(null);
 
-  // Painel flutuante
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
   const statusUnsubscribeRef = useRef<(() => void) | null>(null);
+
+  const EXAM_TYPE = 'Ultrassonografia de Parede Abdominal';
 
   const handleOrganSelect = (organId: string) => {
     if (selectedOrgan === organId) {
@@ -78,23 +67,28 @@ function VenousExamModern() {
   ) => {
     setSelectedFindings(currentFindings => {
       if (checked) {
-        const idx = currentFindings.findIndex(f => f.findingId === findingId);
-        if (idx >= 0) {
+        const existingIndex = currentFindings.findIndex(f => f.findingId === findingId);
+        if (existingIndex >= 0) {
           const updated = [...currentFindings];
-          updated[idx] = { ...updated[idx], severity, instances };
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            severity,
+            instances
+          };
           return updated;
+        } else {
+          return [...currentFindings, {
+            organId,
+            categoryId,
+            findingId,
+            finding,
+            severity,
+            instances
+          }];
         }
-        const newFinding: SelectedFinding = {
-          organId,
-          categoryId,
-          findingId,
-          finding,
-          severity,
-          instances
-        };
-        return [...currentFindings, newFinding];
+      } else {
+        return currentFindings.filter(f => f.findingId !== findingId);
       }
-      return currentFindings.filter(f => f.findingId !== findingId);
     });
 
     if (checked) {
@@ -104,8 +98,13 @@ function VenousExamModern() {
 
   const handleNormalChange = (organId: string, isNormal: boolean) => {
     if (isNormal) {
-      setNormalOrgans(current => (current.includes(organId) ? current : [...current, organId]));
-      setSelectedFindings(currentFindings => currentFindings.filter(f => f.organId !== organId));
+      setNormalOrgans(current => {
+        if (!current.includes(organId)) {
+          return [...current, organId];
+        }
+        return current;
+      });
+      setSelectedFindings(current => current.filter(f => f.organId !== organId));
     } else {
       setNormalOrgans(current => current.filter(id => id !== organId));
     }
@@ -121,7 +120,6 @@ function VenousExamModern() {
       setCurrentAiModel(provider as 'gemini' | 'openai');
       setGeneratedReport('');
 
-      // Persistir o modelo específico selecionado
       if (options?.specificModel) {
         try { sessionStorage.setItem('selectedAIModel', options.specificModel); } catch {}
         setCurrentModelId(options.specificModel);
@@ -129,13 +127,12 @@ function VenousExamModern() {
         setCurrentModelId(provider === 'openai' ? OPENAI_MODEL : GEMINI_MODEL);
       }
 
-      // Métricas
       const startedAt = Date.now();
       const promptText = buildSpecializedPrompt({
-        examType: 'Ecodoppler Venoso de Membros Inferiores',
+        examType: EXAM_TYPE,
         selectedFindings: data.selectedFindings,
         normalOrgans: data.normalOrgans,
-        organsCatalog: venousOrgans
+        organsCatalog: abdominalWallOrgans
       });
       const promptTokenEstimate = estimateTokensFromText(promptText);
       let chunkCount = 0;
@@ -150,10 +147,10 @@ function VenousExamModern() {
 
         await openaiStreamService.generateFullReportStream(
           {
-            examType: 'Ecodoppler Venoso de Membros Inferiores',
+            examType: EXAM_TYPE,
             selectedFindings: data.selectedFindings,
             normalOrgans: data.normalOrgans,
-            organsCatalog: venousOrgans
+            organsCatalog: abdominalWallOrgans
           },
           {
             onChunk: (accumulated) => {
@@ -205,7 +202,7 @@ function VenousExamModern() {
       } else {
         if (!geminiStreamService.isConfigured()) {
           const report = await generateReport(data, {
-            organsList: venousOrgans,
+            organsList: abdominalWallOrgans,
             provider
           });
           setGeneratedReport(report);
@@ -230,10 +227,10 @@ function VenousExamModern() {
         } else {
           await geminiStreamService.generateFullReportStream(
             {
-              examType: 'Ecodoppler Venoso de Membros Inferiores',
+              examType: EXAM_TYPE,
               selectedFindings: data.selectedFindings,
               normalOrgans: data.normalOrgans,
-              organsCatalog: venousOrgans
+              organsCatalog: abdominalWallOrgans
             },
             {
               onChunk: (accumulatedText) => {
@@ -271,7 +268,7 @@ function VenousExamModern() {
                       normalOrgans: data.normalOrgans,
                       additionalNotes: ''
                     },
-                    { organsList: venousOrgans, provider }
+                    { organsList: abdominalWallOrgans, provider }
                   );
                   setGeneratedReport(fallback);
                   toast.error('Falha no endpoint de IA. Exibindo laudo básico.');
@@ -329,9 +326,11 @@ function VenousExamModern() {
       statusUnsubscribeRef.current();
       statusUnsubscribeRef.current = null;
     }
+
     if (!isAiProcessing) {
       unifiedAIService.cancelAllOperations();
     }
+
     if (selectedFindings.length === 0 && normalOrgans.length === 0) {
       setAiImpression('');
       setAiError('Adicione achados primeiro');
@@ -339,20 +338,26 @@ function VenousExamModern() {
       setAiStatus('idle');
       return;
     }
+
     unifiedAIService.setProvider(currentAiModel);
+
     statusUnsubscribeRef.current = unifiedAIService.onStatusChange((status) => {
       setAiStatus(status);
       setIsAiProcessing(status === 'loading' || status === 'streaming');
-      setAiError(status === 'error' ? 'Erro ao consultar a IA' : null);
+      if (status === 'error') {
+        setAiError('Erro ao consultar a IA');
+      } else {
+        setAiError(null);
+      }
     });
 
     let accumulatedText = '';
     unifiedAIService.generateClinicalImpression(
       {
-        examType: 'Ecodoppler Venoso de Membros Inferiores',
+        examType: EXAM_TYPE,
         selectedFindings,
         normalOrgans,
-        organsCatalog: venousOrgans
+        organsCatalog: abdominalWallOrgans
       },
       {
         onChunk: (text) => {
@@ -376,11 +381,13 @@ function VenousExamModern() {
 
   useEffect(() => {
     if (!autoGenerateAI) return;
+
     const timer = setTimeout(() => {
       if (selectedFindings.length > 0 || normalOrgans.length > 0) {
         generateAIImpression();
       }
     }, 2000);
+
     return () => {
       clearTimeout(timer);
       if (statusUnsubscribeRef.current && autoGenerateAI) {
@@ -403,7 +410,7 @@ function VenousExamModern() {
     };
   }, []);
 
-  const currentOrgan = venousOrgans.find(organ => organ.id === selectedOrgan);
+  const currentOrgan = abdominalWallOrgans.find(organ => organ.id === selectedOrgan);
   const currentOrganFindings = selectedFindings.filter(f => f.organId === selectedOrgan);
   const isCurrentOrganNormal = normalOrgans.includes(selectedOrgan);
 
@@ -419,8 +426,8 @@ function VenousExamModern() {
             <div className="flex items-center gap-3">
               <img src="/logo-vertex.svg" alt="Vertex Ultrasound" className="h-10 w-10" />
               <div>
-                <h1 className="text-xl font-bold text-white">Ecodoppler Venoso</h1>
-                <p className="text-xs text-gray-400">Membros inferiores</p>
+                <h1 className="text-xl font-bold text-white">Ultrassom de Parede Abdominal</h1>
+                <p className="text-xs text-gray-400">Hérnias, Diástase, Coleções e Lesões de Partes Moles</p>
               </div>
             </div>
           </div>
@@ -432,7 +439,7 @@ function VenousExamModern() {
             onNormalChange={handleNormalChange}
             selectedFindings={selectedFindings}
             normalOrgans={normalOrgans}
-            organsList={venousOrgans}
+            organsList={abdominalWallOrgans}
             showSummary={false}
           />
         )}
@@ -447,7 +454,7 @@ function VenousExamModern() {
               aiError={aiError}
               isAiLoading={isAiProcessing}
               aiStatus={aiStatus}
-              organsList={venousOrgans}
+              organsList={abdominalWallOrgans}
               currentAiModel={currentAiModel}
               currentModelId={currentModelId}
               onGenerateAI={generateAIImpression}
@@ -462,7 +469,7 @@ function VenousExamModern() {
               className="glass-panel flex-1"
               selectedFindings={selectedFindings}
               normalOrgans={normalOrgans}
-              organsList={venousOrgans}
+              organsList={abdominalWallOrgans}
               onGenerateReport={handleGenerateReport}
               isGenerating={isGenerating}
               expandToContent
@@ -489,7 +496,6 @@ function VenousExamModern() {
               leftCss={'calc(25% + 1.5rem)'}
               widthExpanded={'24rem'}
               maxHeight={'80vh'}
-              FindingDetailsComponent={FindingDetailsGeneric}
             />
           ) : null
         )}
@@ -498,5 +504,3 @@ function VenousExamModern() {
     </>
   );
 }
-
-export default VenousExamModern;

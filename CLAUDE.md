@@ -57,12 +57,15 @@ src/
 │   ├── CarotidExamModern.tsx  
 │   ├── ThyroidEchodopplerModern.tsx
 │   ├── BreastUltrasoundExamModern.tsx
-│   └── VenousExamModern.tsx
+│   ├── ArterialExamModern.tsx
+│   ├── VenousExamModern.tsx
+│   └── AbdominalWallExamModern.tsx
 ├── components/
 │   ├── original/          # Componentes core
-│   │   ├── OrganSection.tsx        # Seção de achados (estado persistente)
-│   │   ├── Sidebar.tsx            # Navegação lateral
-│   │   └── ReportCanvas.tsx       # Canvas do laudo
+│   │   ├── OrganSection.tsx           # Seção de achados (estado persistente)
+│   │   ├── FindingDetailsGeneric.tsx  # Renderiza extraFields dinâmicos
+│   │   ├── Sidebar.tsx               # Navegação lateral
+│   │   └── ReportCanvas.tsx          # Canvas do laudo
 │   ├── shared/           # Componentes compartilhados
 │   │   └── FloatingOrganPanelModern.tsx  # Painel flutuante
 │   └── ui/              # Componentes UI base (Radix)
@@ -71,12 +74,17 @@ src/
 │   ├── openaiStreamService.ts    # Streaming OpenAI
 │   ├── unifiedAIService.ts      # Interface unificada
 │   └── promptBuilder.ts         # Construção de prompts
-└── data/
-    ├── organs.ts                 # Abdome total
-    ├── carotidOrgans.ts         # Carótidas
-    ├── thyroidOrgans.ts         # Tireóide
-    ├── breastUltrasoundOrgans.ts # Mama (BI-RADS)
-    └── venousOrgans.ts          # Doppler venoso
+├── data/
+│   ├── organs.ts                 # Abdome total
+│   ├── carotidOrgans.ts         # Carótidas
+│   ├── thyroidOrgans.ts         # Tireóide
+│   ├── breastUltrasoundOrgans.ts # Mama (BI-RADS)
+│   ├── arterialOrgans.ts        # Doppler arterial (5 seções)
+│   ├── venousOrgans.ts          # Doppler venoso (5 seções)
+│   └── abdominalWallOrgans.ts   # Parede abdominal/hérnias
+└── hooks/
+    ├── useDropdownGuard.ts       # Previne fechar painel em dropdown
+    └── useOutsidePointerDismiss.ts # Click-outside com proteção input
 ```
 
 ---
@@ -117,6 +125,27 @@ curl -s http://localhost:8200/ | head -5  # Testar servidor
 - **Rota:** `/venous-exam`
 - **Features:** TVP, insuficiência, classificação CEAP
 - **Status:** Implementado e funcional
+
+### Refatoração Doppler MMII (Nov 2025)
+- **Arterial:** 12 seções → 5 seções (~260 linhas)
+- **Venoso:** 19 seções → 5 seções (~280 linhas)
+- **Padrão:** Bilateralidade como campo dropdown ("Lado: D/E")
+- **Segmentos Arterial:** Aorto-Ilíaco, Femoral, Poplíteo, Infrapoplíteo, Observações
+- **Segmentos Venoso:** Sistema Profundo, Safênico, Perfurantes, Panturrilha, Observações
+
+### FindingDetailsGeneric
+- **Arquivo:** `components/original/FindingDetailsGeneric.tsx`
+- **Função:** Renderiza `extraFields` dinamicamente (select, text, textarea)
+- **Uso:** Substitui componentes específicos por finding details
+
+### Fix: Painel não fecha com input focado
+- **Hook:** `useOutsidePointerDismiss.ts`
+- **Comportamento:** Se input/textarea está focado, clique fora não minimiza
+
+### US Parede Abdominal (Novo Exame)
+- **Rota:** `/abdominal-wall-exam`
+- **Foco:** Hérnias (inguinal, umbilical, incisional, epigástrica)
+- **Campos:** Óstio, saco herniário, conteúdo, redutibilidade
 
 ---
 
@@ -186,6 +215,9 @@ await unifiedAIService.generateReport(data, {
 ### Estado perdido ao minimizar
 **Solução:** Estado `tempFindingDetails` nos componentes pais
 
+### Painel fecha ao preencher input e clicar fora
+**Solução:** `useOutsidePointerDismiss` verifica `document.activeElement` antes de fechar
+
 ### CORS na API
 **Solução:** Usar proxy `/api/gemini` ao invés de URL direta
 
@@ -203,6 +235,8 @@ await unifiedAIService.generateReport(data, {
 3. **Ecodoppler Tireóide** - TI-RADS, nódulos
 4. **Ultrassom Mama** - BI-RADS 5ª edição completo
 5. **Doppler Venoso** - TVP, insuficiência, CEAP
+6. **Doppler Arterial** - Estenose, oclusão, aneurisma poplíteo
+7. **US Parede Abdominal** - Hérnias por região
 
 ---
 
@@ -216,4 +250,4 @@ await unifiedAIService.generateReport(data, {
 
 ---
 
-*Última atualização: 18 de Novembro de 2025*
+*Última atualização: 25 de Novembro de 2025*
