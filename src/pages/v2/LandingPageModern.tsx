@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLastExam } from '@/hooks/useLastExam';
+import { useAuth } from '@/contexts/AuthContext';
 import '@/styles/modern-design.css';
 
 const examRoutes: Record<string, string> = {
@@ -17,6 +18,12 @@ const examRoutes: Record<string, string> = {
 export function LandingPageModern() {
   const navigate = useNavigate();
   const { lastExam, saveLastExam } = useLastExam();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const handleNavigate = (route: string) => {
     saveLastExam(route, examRoutes[route] || 'Exame');
@@ -30,6 +37,22 @@ export function LandingPageModern() {
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
         <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '4s' }}></div>
+      </div>
+
+      {/* User Header */}
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
+        <span className="text-sm text-slate-400">
+          Olá, <span className="text-white font-medium">{user?.name}</span>
+        </span>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-lg text-sm text-slate-300 hover:text-white transition-all flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Sair
+        </button>
       </div>
 
       <div className="relative z-10 max-w-7xl w-full">
@@ -66,7 +89,11 @@ export function LandingPageModern() {
           {/* Abdome Total */}
           <div
             onClick={() => handleNavigate('/abdome-modern')}
-            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+            onKeyDown={(e) => e.key === 'Enter' && handleNavigate('/abdome-modern')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden stagger-item ripple-container"
+            tabIndex={0}
+            role="button"
+            aria-label="Acessar módulo Abdome Total"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -119,7 +146,11 @@ export function LandingPageModern() {
           {/* Ecodoppler Carótidas */}
           <div
             onClick={() => handleNavigate('/carotid-modern')}
-            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+            onKeyDown={(e) => e.key === 'Enter' && handleNavigate('/carotid-modern')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden stagger-item ripple-container"
+            tabIndex={0}
+            role="button"
+            aria-label="Acessar módulo Ecodoppler Carótidas"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -174,7 +205,11 @@ export function LandingPageModern() {
           {/* Ultrassom de Mama */}
           <div
             onClick={() => handleNavigate('/breast-exam')}
-            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+            onKeyDown={(e) => e.key === 'Enter' && handleNavigate('/breast-exam')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden stagger-item ripple-container"
+            tabIndex={0}
+            role="button"
+            aria-label="Acessar módulo Ultrassom de Mama"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -226,7 +261,11 @@ export function LandingPageModern() {
           {/* Doppler Arterial MMII */}
           <div
             onClick={() => handleNavigate('/arterial-modern')}
-            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+            onKeyDown={(e) => e.key === 'Enter' && handleNavigate('/arterial-modern')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden stagger-item ripple-container"
+            tabIndex={0}
+            role="button"
+            aria-label="Acessar módulo Doppler Arterial MMII"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -281,7 +320,11 @@ export function LandingPageModern() {
           {/* Ecodoppler de Tireóide */}
           <div
             onClick={() => handleNavigate('/thyroid-modern')}
-            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+            onKeyDown={(e) => e.key === 'Enter' && handleNavigate('/thyroid-modern')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden stagger-item ripple-container"
+            tabIndex={0}
+            role="button"
+            aria-label="Acessar módulo Ecodoppler de Tireóide"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -333,7 +376,11 @@ export function LandingPageModern() {
           {/* Doppler Venoso MMII */}
           <div
             onClick={() => handleNavigate('/venous-modern')}
-            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+            onKeyDown={(e) => e.key === 'Enter' && handleNavigate('/venous-modern')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden stagger-item ripple-container"
+            tabIndex={0}
+            role="button"
+            aria-label="Acessar módulo Doppler Venoso MMII"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -388,7 +435,11 @@ export function LandingPageModern() {
           {/* Ecodoppler de Vasos Abdominais */}
           <div
             onClick={() => handleNavigate('/abdominal-vessels-modern')}
-            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+            onKeyDown={(e) => e.key === 'Enter' && handleNavigate('/abdominal-vessels-modern')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden stagger-item ripple-container"
+            tabIndex={0}
+            role="button"
+            aria-label="Acessar módulo Ecodoppler de Vasos Abdominais"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -440,7 +491,11 @@ export function LandingPageModern() {
           {/* Ultrassom de Parede Abdominal */}
           <div
             onClick={() => handleNavigate('/abdominal-wall-modern')}
-            className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
+            onKeyDown={(e) => e.key === 'Enter' && handleNavigate('/abdominal-wall-modern')}
+            className="glass-panel p-8 cursor-pointer group relative overflow-hidden stagger-item ripple-container"
+            tabIndex={0}
+            role="button"
+            aria-label="Acessar módulo US Parede Abdominal"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>

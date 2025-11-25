@@ -14,6 +14,22 @@ export const HERNIA_REDUCIBILITY = [
   'Estrangulada'
 ];
 
+export const DYNAMIC_MANEUVERS = [
+  'Valsalva',
+  'Tosse',
+  'Esforço abdominal',
+  'Ortostatismo',
+  'Decúbito'
+];
+
+export const HERNIA_VISIBILITY = [
+  'Visível em repouso',
+  'Visível somente com Valsalva',
+  'Visível somente com tosse',
+  'Visível em ortostatismo',
+  'Não visível (referida)'
+];
+
 export const abdominalWallOrgans: Organ[] = [
   {
     id: 'inguinal-direita',
@@ -29,6 +45,8 @@ export const abdominalWallOrgans: Organ[] = [
             description: 'Lateral aos vasos epigástricos inferiores',
             hasMeasurement: true,
             extraFields: [
+              { id: 'visibilidade', label: 'Visibilidade', type: 'select', options: HERNIA_VISIBILITY },
+              { id: 'manobra', label: 'Manobra realizada', type: 'select', options: DYNAMIC_MANEUVERS },
               { id: 'ostio', label: 'Óstio (mm)', type: 'text', placeholder: 'ex: 15' },
               { id: 'saco', label: 'Saco herniário (mm)', type: 'text', placeholder: 'ex: 25' },
               { id: 'conteudo', label: 'Conteúdo', type: 'select', options: HERNIA_CONTENTS },
@@ -41,6 +59,8 @@ export const abdominalWallOrgans: Organ[] = [
             description: 'Medial aos vasos epigástricos (Hesselbach)',
             hasMeasurement: true,
             extraFields: [
+              { id: 'visibilidade', label: 'Visibilidade', type: 'select', options: HERNIA_VISIBILITY },
+              { id: 'manobra', label: 'Manobra realizada', type: 'select', options: DYNAMIC_MANEUVERS },
               { id: 'ostio', label: 'Óstio (mm)', type: 'text', placeholder: 'ex: 15' },
               { id: 'saco', label: 'Saco herniário (mm)', type: 'text', placeholder: 'ex: 25' },
               { id: 'conteudo', label: 'Conteúdo', type: 'select', options: HERNIA_CONTENTS },
@@ -53,6 +73,8 @@ export const abdominalWallOrgans: Organ[] = [
             description: 'Abaixo do ligamento inguinal',
             hasMeasurement: true,
             extraFields: [
+              { id: 'visibilidade', label: 'Visibilidade', type: 'select', options: HERNIA_VISIBILITY },
+              { id: 'manobra', label: 'Manobra realizada', type: 'select', options: DYNAMIC_MANEUVERS },
               { id: 'ostio', label: 'Óstio (mm)', type: 'text', placeholder: 'ex: 10' },
               { id: 'saco', label: 'Saco herniário (mm)', type: 'text', placeholder: 'ex: 20' },
               { id: 'conteudo', label: 'Conteúdo', type: 'select', options: HERNIA_CONTENTS },
@@ -77,6 +99,8 @@ export const abdominalWallOrgans: Organ[] = [
             description: 'Lateral aos vasos epigástricos inferiores',
             hasMeasurement: true,
             extraFields: [
+              { id: 'visibilidade', label: 'Visibilidade', type: 'select', options: HERNIA_VISIBILITY },
+              { id: 'manobra', label: 'Manobra realizada', type: 'select', options: DYNAMIC_MANEUVERS },
               { id: 'ostio', label: 'Óstio (mm)', type: 'text', placeholder: 'ex: 15' },
               { id: 'saco', label: 'Saco herniário (mm)', type: 'text', placeholder: 'ex: 25' },
               { id: 'conteudo', label: 'Conteúdo', type: 'select', options: HERNIA_CONTENTS },
@@ -89,6 +113,8 @@ export const abdominalWallOrgans: Organ[] = [
             description: 'Medial aos vasos epigástricos (Hesselbach)',
             hasMeasurement: true,
             extraFields: [
+              { id: 'visibilidade', label: 'Visibilidade', type: 'select', options: HERNIA_VISIBILITY },
+              { id: 'manobra', label: 'Manobra realizada', type: 'select', options: DYNAMIC_MANEUVERS },
               { id: 'ostio', label: 'Óstio (mm)', type: 'text', placeholder: 'ex: 15' },
               { id: 'saco', label: 'Saco herniário (mm)', type: 'text', placeholder: 'ex: 25' },
               { id: 'conteudo', label: 'Conteúdo', type: 'select', options: HERNIA_CONTENTS },
@@ -101,6 +127,8 @@ export const abdominalWallOrgans: Organ[] = [
             description: 'Abaixo do ligamento inguinal',
             hasMeasurement: true,
             extraFields: [
+              { id: 'visibilidade', label: 'Visibilidade', type: 'select', options: HERNIA_VISIBILITY },
+              { id: 'manobra', label: 'Manobra realizada', type: 'select', options: DYNAMIC_MANEUVERS },
               { id: 'ostio', label: 'Óstio (mm)', type: 'text', placeholder: 'ex: 10' },
               { id: 'saco', label: 'Saco herniário (mm)', type: 'text', placeholder: 'ex: 20' },
               { id: 'conteudo', label: 'Conteúdo', type: 'select', options: HERNIA_CONTENTS },
@@ -125,6 +153,8 @@ export const abdominalWallOrgans: Organ[] = [
             description: 'Através do anel umbilical',
             hasMeasurement: true,
             extraFields: [
+              { id: 'visibilidade', label: 'Visibilidade', type: 'select', options: HERNIA_VISIBILITY },
+              { id: 'manobra', label: 'Manobra realizada', type: 'select', options: DYNAMIC_MANEUVERS },
               { id: 'ostio', label: 'Óstio (mm)', type: 'text', placeholder: 'ex: 12' },
               { id: 'saco', label: 'Saco herniário (mm)', type: 'text', placeholder: 'ex: 20' },
               { id: 'conteudo', label: 'Conteúdo', type: 'select', options: HERNIA_CONTENTS },
@@ -137,6 +167,8 @@ export const abdominalWallOrgans: Organ[] = [
             description: 'Linha alba acima do umbigo',
             hasMeasurement: true,
             extraFields: [
+              { id: 'visibilidade', label: 'Visibilidade', type: 'select', options: HERNIA_VISIBILITY },
+              { id: 'manobra', label: 'Manobra realizada', type: 'select', options: DYNAMIC_MANEUVERS },
               { id: 'ostio', label: 'Óstio (mm)', type: 'text', placeholder: 'ex: 8' },
               { id: 'saco', label: 'Saco herniário (mm)', type: 'text', placeholder: 'ex: 15' },
               { id: 'conteudo', label: 'Conteúdo', type: 'select', options: HERNIA_CONTENTS },
@@ -149,6 +181,8 @@ export const abdominalWallOrgans: Organ[] = [
             description: 'Em cicatriz cirúrgica prévia',
             hasMeasurement: true,
             extraFields: [
+              { id: 'visibilidade', label: 'Visibilidade', type: 'select', options: HERNIA_VISIBILITY },
+              { id: 'manobra', label: 'Manobra realizada', type: 'select', options: DYNAMIC_MANEUVERS },
               { id: 'ostio', label: 'Óstio (mm)', type: 'text', placeholder: 'ex: 20' },
               { id: 'saco', label: 'Saco herniário (mm)', type: 'text', placeholder: 'ex: 40' },
               { id: 'local', label: 'Local da cicatriz', type: 'text', placeholder: 'ex: Linha média infraumbilical' },
@@ -184,6 +218,8 @@ export const abdominalWallOrgans: Organ[] = [
             description: 'Através da linha semilunar',
             hasMeasurement: true,
             extraFields: [
+              { id: 'visibilidade', label: 'Visibilidade', type: 'select', options: HERNIA_VISIBILITY },
+              { id: 'manobra', label: 'Manobra realizada', type: 'select', options: DYNAMIC_MANEUVERS },
               { id: 'ostio', label: 'Óstio (mm)', type: 'text', placeholder: 'ex: 15' },
               { id: 'saco', label: 'Saco herniário (mm)', type: 'text', placeholder: 'ex: 25' },
               { id: 'conteudo', label: 'Conteúdo', type: 'select', options: HERNIA_CONTENTS },
@@ -196,6 +232,8 @@ export const abdominalWallOrgans: Organ[] = [
             description: 'Através da linha semilunar',
             hasMeasurement: true,
             extraFields: [
+              { id: 'visibilidade', label: 'Visibilidade', type: 'select', options: HERNIA_VISIBILITY },
+              { id: 'manobra', label: 'Manobra realizada', type: 'select', options: DYNAMIC_MANEUVERS },
               { id: 'ostio', label: 'Óstio (mm)', type: 'text', placeholder: 'ex: 15' },
               { id: 'saco', label: 'Saco herniário (mm)', type: 'text', placeholder: 'ex: 25' },
               { id: 'conteudo', label: 'Conteúdo', type: 'select', options: HERNIA_CONTENTS },
@@ -209,6 +247,8 @@ export const abdominalWallOrgans: Organ[] = [
             hasMeasurement: true,
             extraFields: [
               { id: 'lado', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo'] },
+              { id: 'visibilidade', label: 'Visibilidade', type: 'select', options: HERNIA_VISIBILITY },
+              { id: 'manobra', label: 'Manobra realizada', type: 'select', options: DYNAMIC_MANEUVERS },
               { id: 'ostio', label: 'Óstio (mm)', type: 'text', placeholder: 'ex: 20' },
               { id: 'saco', label: 'Saco herniário (mm)', type: 'text', placeholder: 'ex: 30' },
               { id: 'conteudo', label: 'Conteúdo', type: 'select', options: HERNIA_CONTENTS },

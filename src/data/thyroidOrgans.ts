@@ -120,6 +120,69 @@ export const calculateThyroidVolume = (length: number, ap: number, transverse: n
   return length * ap * transverse * 0.52 / 1000; // resultado em ml
 };
 
+// Função para calcular TI-RADS baseado nas características selecionadas
+export const calculateTIRADS = (characteristics: {
+  composition?: string;
+  echogenicity?: string;
+  shape?: string;
+  margins?: string;
+  echogenicFoci?: string;
+}): { points: number; category: string; recommendation: string } => {
+  let totalPoints = 0;
+
+  // Composição (0-2 pontos)
+  const compMatch = NODULE_COMPOSITION.find(c => c.label === characteristics.composition);
+  if (compMatch) totalPoints += compMatch.points;
+
+  // Ecogenicidade (0-3 pontos)
+  const echoMatch = NODULE_ECHOGENICITY.find(e => e.label === characteristics.echogenicity);
+  if (echoMatch) totalPoints += echoMatch.points;
+
+  // Forma (0-3 pontos)
+  const shapeMatch = NODULE_SHAPE.find(s => s.label === characteristics.shape);
+  if (shapeMatch) totalPoints += shapeMatch.points;
+
+  // Margens (0-3 pontos)
+  const marginMatch = NODULE_MARGINS.find(m => m.label === characteristics.margins);
+  if (marginMatch) totalPoints += marginMatch.points;
+
+  // Focos ecogênicos (0-3 pontos)
+  const fociMatch = ECHOGENIC_FOCI.find(f => f.label === characteristics.echogenicFoci);
+  if (fociMatch) totalPoints += fociMatch.points;
+
+  // Determinar categoria TI-RADS
+  let category: string;
+  let recommendation: string;
+
+  if (totalPoints === 0) {
+    category = 'TI-RADS 1 (Benigno)';
+    recommendation = 'Sem necessidade de seguimento';
+  } else if (totalPoints <= 2) {
+    category = 'TI-RADS 2 (Não suspeito)';
+    recommendation = 'Sem necessidade de seguimento';
+  } else if (totalPoints === 3) {
+    category = 'TI-RADS 3 (Levemente suspeito)';
+    recommendation = 'PAAF se ≥2.5cm; Seguimento se ≥1.5cm';
+  } else if (totalPoints >= 4 && totalPoints <= 6) {
+    category = 'TI-RADS 4 (Moderadamente suspeito)';
+    recommendation = 'PAAF se ≥1.5cm; Seguimento se ≥1.0cm';
+  } else {
+    category = 'TI-RADS 5 (Altamente suspeito)';
+    recommendation = 'PAAF se ≥1.0cm; Seguimento se ≥0.5cm';
+  }
+
+  return { points: totalPoints, category, recommendation };
+};
+
+// Opções de TI-RADS para campo calculado
+export const TIRADS_DISPLAY_OPTIONS = [
+  'TI-RADS 1 (Benigno) - 0 pts',
+  'TI-RADS 2 (Não suspeito) - 2 pts',
+  'TI-RADS 3 (Levemente suspeito) - 3 pts',
+  'TI-RADS 4 (Moderadamente suspeito) - 4-6 pts',
+  'TI-RADS 5 (Altamente suspeito) - ≥7 pts'
+];
+
 // ============================================================================
 // DEFINIÇÃO DOS ÓRGÃOS E ACHADOS
 // ============================================================================
@@ -230,6 +293,12 @@ export const thyroidOrgans: Organ[] = [
                 label: 'Elastografia (opcional)',
                 type: 'select',
                 options: ELASTOGRAPHY_SCORE.map(e => e.label)
+              },
+              {
+                id: 'tirads_calculated',
+                label: 'TI-RADS (selecione após preencher acima)',
+                type: 'select',
+                options: TIRADS_DISPLAY_OPTIONS
               }
             ]
           },
@@ -383,6 +452,12 @@ export const thyroidOrgans: Organ[] = [
                 label: 'Elastografia (opcional)',
                 type: 'select',
                 options: ELASTOGRAPHY_SCORE.map(e => e.label)
+              },
+              {
+                id: 'tirads_calculated',
+                label: 'TI-RADS (selecione após preencher acima)',
+                type: 'select',
+                options: TIRADS_DISPLAY_OPTIONS
               }
             ]
           },
@@ -492,6 +567,12 @@ export const thyroidOrgans: Organ[] = [
                 label: 'Focos ecogênicos',
                 type: 'select',
                 options: ECHOGENIC_FOCI.map(f => f.label)
+              },
+              {
+                id: 'tirads_calculated',
+                label: 'TI-RADS (selecione após preencher acima)',
+                type: 'select',
+                options: TIRADS_DISPLAY_OPTIONS
               }
             ]
           }

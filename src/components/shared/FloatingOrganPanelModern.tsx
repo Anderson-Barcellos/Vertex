@@ -75,7 +75,7 @@ export default function FloatingOrganPanelModern({
       className={`fixed top-24 organ-section-panel bg-white shadow-2xl border border-gray-200 rounded-2xl ${
         isMinimized 
           ? 'w-12 animate-slide-out-left' 
-          : 'overflow-y-auto modern-scrollbar animate-slide-in-left'
+          : 'overflow-y-auto modern-scrollbar panel-expand'
       }`}
       style={{ 
         left: leftCss, 

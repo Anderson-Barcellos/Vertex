@@ -35,7 +35,54 @@ export const PLAQUE_TYPE = [
   'Lipídica'
 ];
 
+export const ITB_CLASSIFICATION = [
+  'Normal (0.91-1.30)',
+  'Doença leve (0.70-0.90)',
+  'Doença moderada (0.40-0.69)',
+  'Doença grave (<0.40)',
+  'Incompressível (>1.30)'
+];
+
 export const arterialOrgans: Organ[] = [
+  {
+    id: 'itb',
+    name: 'Índice Tornozelo-Braquial (ITB)',
+    icon: 'stethoscope',
+    normalDescription: 'ITB dentro dos limites da normalidade bilateralmente (0.91-1.30).',
+    categories: [
+      {
+        id: 'itb-medidas',
+        name: 'Medidas',
+        findings: [
+          {
+            id: 'itb-valores',
+            name: 'Avaliação do ITB',
+            description: 'Índice de pressão tornozelo/braço',
+            hasMeasurement: true,
+            extraFields: [
+              { id: 'pas-braquial', label: 'PAS Braquial (mmHg)', type: 'text', placeholder: 'ex: 120' },
+              { id: 'itb-direito', label: 'ITB Direito', type: 'text', placeholder: 'ex: 0.95' },
+              { id: 'itb-esquerdo', label: 'ITB Esquerdo', type: 'text', placeholder: 'ex: 1.02' },
+              { id: 'classificacao-d', label: 'Classificação MID', type: 'select', options: ITB_CLASSIFICATION },
+              { id: 'classificacao-e', label: 'Classificação MIE', type: 'select', options: ITB_CLASSIFICATION }
+            ]
+          },
+          {
+            id: 'itb-pos-exercicio',
+            name: 'ITB Pós-Exercício',
+            description: 'Avaliação após esteira ou flexão plantar',
+            hasMeasurement: true,
+            extraFields: [
+              { id: 'itb-exerc-d', label: 'ITB Pós-Exercício D', type: 'text', placeholder: 'ex: 0.65' },
+              { id: 'itb-exerc-e', label: 'ITB Pós-Exercício E', type: 'text', placeholder: 'ex: 0.70' },
+              { id: 'queda', label: 'Queda significativa (>20%)', type: 'select', options: ['Não', 'Sim - MID', 'Sim - MIE', 'Sim - Bilateral'] },
+              { id: 'tempo-recuperacao', label: 'Tempo de Recuperação', type: 'select', options: ['<2 min', '2-5 min', '5-10 min', '>10 min'] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
   {
     id: 'aorto-iliaco',
     name: 'Segmento Aorto-Ilíaco',

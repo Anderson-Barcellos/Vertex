@@ -69,29 +69,26 @@ export default function Sidebar({
               <div className="flex items-center gap-4">
                 {/* Progress Circle */}
                 <div className="relative w-14 h-14 flex-shrink-0">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  <svg className="w-full h-full progress-circle" viewBox="0 0 36 36">
                     <circle
                       cx="18"
                       cy="18"
                       r="15.5"
-                      fill="none"
-                      className="stroke-current text-sidebar-muted"
+                      className="progress-circle-bg"
                       strokeWidth="3"
                     />
                     <circle
                       cx="18"
                       cy="18"
                       r="15.5"
-                      fill="none"
-                      className="stroke-current text-accent"
+                      className="progress-circle-fill stroke-current text-accent"
                       strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeDasharray={`${completion * 0.97} 100`}
-                      style={{ transition: 'stroke-dasharray 0.5s ease-out' }}
+                      strokeDasharray="97.4"
+                      strokeDashoffset={97.4 - (completion * 0.974)}
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xs font-bold text-accent">{completion}%</span>
+                    <span className={cn("text-xs font-bold text-accent", completion > 0 && "count-up")} key={completion}>{completion}%</span>
                   </div>
                 </div>
 

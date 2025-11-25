@@ -80,7 +80,11 @@ export const organs: Organ[] = [
             description: 'Infiltração gordurosa do parênquima hepático',
             severity: 'leve',
             hasDetails: true,
-            hasSeverity: true  // Will show dropdown for leve/moderado/acentuado
+            hasSeverity: true,
+            extraFields: [
+              { id: 'distribuicao', label: 'Distribuição', type: 'select', options: ['Difusa', 'Focal', 'Multifocal', 'Periportal'] },
+              { id: 'atenuacao', label: 'Atenuação hepática', type: 'select', options: ['Maior que baço', 'Igual ao baço', 'Menor que baço'] }
+            ]
           },
           {
             id: 'cirrose',
@@ -93,6 +97,16 @@ export const organs: Organ[] = [
             name: 'Ecotextura Heterogênea',
             description: 'Alteração difusa da arquitetura hepática',
             hasDetails: true
+          },
+          {
+            id: 'hepatopatia-cronica',
+            name: 'Hepatopatia Crônica',
+            description: 'Sinais de doença hepática crônica',
+            hasDetails: true,
+            extraFields: [
+              { id: 'sinais', label: 'Sinais', type: 'select', options: ['Heterogeneidade', 'Nodularidade', 'Hipertrofia lobo caudado', 'Esplenomegalia associada'] },
+              { id: 'ascite', label: 'Ascite', type: 'select', options: ['Ausente', 'Mínima', 'Moderada', 'Volumosa'] }
+            ]
           }
         ]
       },
@@ -146,7 +160,12 @@ export const organs: Organ[] = [
             description: 'Presença de cálculos na vesícula biliar',
             hasDetails: true,
             hasMeasurement: true,
-            hasQuantity: true
+            hasQuantity: true,
+            extraFields: [
+              { id: 'tipo-calculo', label: 'Tipo', type: 'select', options: ['Único', 'Múltiplos', 'Microlitíase'] },
+              { id: 'mobilidade', label: 'Mobilidade', type: 'select', options: ['Móvel', 'Impactado no infundíbulo', 'Impactado no colo'] },
+              { id: 'sombra', label: 'Sombra acústica', type: 'select', options: ['Presente', 'Ausente'] }
+            ]
           },
           {
             id: 'lama-biliar',
@@ -181,6 +200,21 @@ export const organs: Organ[] = [
             hasDetails: true,
             hasMeasurement: true,
             hasQuantity: true
+          },
+          {
+            id: 'vesicula-porcelana',
+            name: 'Vesícula em Porcelana',
+            description: 'Calcificação parietal da vesícula',
+            hasDetails: true,
+            extraFields: [
+              { id: 'extensao-calc', label: 'Extensão', type: 'select', options: ['Parcial', 'Completa'] }
+            ]
+          },
+          {
+            id: 'murphy-positivo',
+            name: 'Sinal de Murphy US+',
+            description: 'Dor à compressão do transdutor sobre a vesícula',
+            hasDetails: true
           }
         ]
       },
@@ -221,7 +255,27 @@ export const organs: Organ[] = [
             name: 'Aumento de Volume',
             description: 'Dimensões aumentadas do pâncreas',
             hasDetails: true,
-            hasMeasurement: true  // Cabeça >3cm, corpo >2cm, cauda >2cm
+            hasMeasurement: true
+          },
+          {
+            id: 'pancreatite-aguda',
+            name: 'Pancreatite Aguda',
+            description: 'Inflamação aguda do pâncreas',
+            hasDetails: true,
+            extraFields: [
+              { id: 'colecoes', label: 'Coleções', type: 'select', options: ['Ausentes', 'Peripancreáticas', 'Retroperitoneais'] },
+              { id: 'necrose', label: 'Necrose', type: 'select', options: ['Não visível', 'Suspeita', 'Evidente'] }
+            ]
+          },
+          {
+            id: 'pancreatite-cronica',
+            name: 'Pancreatite Crônica',
+            description: 'Alterações crônicas do parênquima',
+            hasDetails: true,
+            extraFields: [
+              { id: 'calcificacoes-panc', label: 'Calcificações', type: 'select', options: ['Ausentes', 'Focais', 'Difusas'] },
+              { id: 'wirsung', label: 'Ducto de Wirsung', type: 'select', options: ['Normal', 'Dilatado', 'Irregular'] }
+            ]
           }
         ]
       },
@@ -287,7 +341,12 @@ export const organs: Organ[] = [
             description: 'Dilatação do sistema pielocalicinal',
             severity: 'leve',
             hasDetails: true,
-            hasSeverity: true  // Leve, moderada, acentuada
+            hasSeverity: true,
+            extraFields: [
+              { id: 'lado-hidro', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral'] },
+              { id: 'causa-provavel', label: 'Causa provável', type: 'select', options: ['Obstrutiva', 'Não obstrutiva', 'Indeterminada'] },
+              { id: 'pelve', label: 'Pelve renal (mm)', type: 'text', placeholder: 'ex: 15' }
+            ]
           }
         ]
       },
@@ -301,8 +360,33 @@ export const organs: Organ[] = [
             description: 'Lesões císticas no parênquima renal',
             hasDetails: true,
             hasMeasurement: true,
-            hasLocation: true,  // Cortical, medular, polo superior/inferior
-            hasQuantity: true
+            hasLocation: true,
+            hasQuantity: true,
+            extraFields: [
+              { id: 'classificacao-bosniak', label: 'Bosniak', type: 'select', options: ['I (simples)', 'II', 'IIF', 'III', 'IV'] },
+              { id: 'lado-cisto', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral'] }
+            ]
+          },
+          {
+            id: 'rim-policistico',
+            name: 'Doença Policística',
+            description: 'Múltiplos cistos renais bilaterais',
+            hasDetails: true,
+            extraFields: [
+              { id: 'tamanho-rins', label: 'Tamanho renal', type: 'select', options: ['Normal', 'Aumentado', 'Muito aumentado'] },
+              { id: 'cistos-hepaticos', label: 'Cistos hepáticos', type: 'select', options: ['Ausentes', 'Presentes'] }
+            ]
+          },
+          {
+            id: 'nefropatia-parenquimatosa',
+            name: 'Nefropatia Parenquimatosa',
+            description: 'Alterações difusas do parênquima renal',
+            hasDetails: true,
+            extraFields: [
+              { id: 'lado-nefro', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral'] },
+              { id: 'ecogenicidade-renal', label: 'Ecogenicidade', type: 'select', options: ['Aumentada (grau I)', 'Aumentada (grau II)', 'Aumentada (grau III)'] },
+              { id: 'diferenciacao', label: 'Diferenciação córtico-medular', type: 'select', options: ['Preservada', 'Reduzida', 'Ausente'] }
+            ]
           }
         ]
       },
@@ -453,8 +537,13 @@ export const organs: Organ[] = [
             name: 'Aneurisma',
             description: 'Dilatação significativa da aorta abdominal (>3,0cm)',
             hasDetails: true,
-            hasMeasurement: true,  // Diâmetro em cm (>3cm = aneurisma)
-            hasLocation: true  // Localização e extensão
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              { id: 'morfologia-aneu', label: 'Morfologia', type: 'select', options: ['Fusiforme', 'Sacular'] },
+              { id: 'trombo-mural', label: 'Trombo mural', type: 'select', options: ['Ausente', 'Parcial', 'Circunferencial'] },
+              { id: 'extensao-aneu', label: 'Extensão', type: 'select', options: ['Infrarrenal', 'Pararrenal', 'Suprarrenal', 'Aorto-ilíaco'] }
+            ]
           }
         ]
       },

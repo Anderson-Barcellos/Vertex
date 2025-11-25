@@ -31,6 +31,21 @@ export const REFLUX_CRITERIA = {
   perfurante: 0.35
 };
 
+export const PROVOCATIVE_MANEUVERS = [
+  'Valsalva',
+  'Compressão distal',
+  'Compressão proximal',
+  'Ortostatismo',
+  'Manobra de Paraná'
+];
+
+export const REFLUX_DURATION = [
+  '<0.5s (normal superficial)',
+  '0.5-1.0s (patológico superficial)',
+  '>1.0s (patológico profundo)',
+  '>0.35s (patológico perfurante)'
+];
+
 export const CEAP_CLINICAL = [
   'C0 - Sem sinais',
   'C1 - Telangiectasias',
@@ -105,6 +120,8 @@ export const venousOrgans: Organ[] = [
             extraFields: [
               { id: 'veia', label: 'Segmento', type: 'select', options: ['Femoral Comum', 'Femoral Superficial proximal', 'Femoral Superficial média', 'Femoral Superficial distal', 'Femoral Profunda'] },
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo', type: 'select', options: REFLUX_DURATION },
               { id: 'diametro', label: 'Diâmetro (mm)', type: 'text', placeholder: 'ex: 12' },
               { id: 'etiologia', label: 'Etiologia', type: 'select', options: ['Primária (valvular)', 'Secundária (pós-trombótica)', 'Indeterminada'] }
             ]
@@ -116,6 +133,8 @@ export const venousOrgans: Organ[] = [
             hasMeasurement: true,
             extraFields: [
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo', type: 'select', options: REFLUX_DURATION },
               { id: 'diametro', label: 'Diâmetro (mm)', type: 'text', placeholder: 'ex: 10' },
               { id: 'etiologia', label: 'Etiologia', type: 'select', options: ['Primária (valvular)', 'Secundária (pós-trombótica)', 'Indeterminada'] }
             ]
@@ -186,6 +205,8 @@ export const venousOrgans: Organ[] = [
             extraFields: [
               { id: 'veia', label: 'Segmento', type: 'select', options: ['Femoral Comum', 'Femoral Superficial proximal', 'Femoral Superficial média', 'Femoral Superficial distal', 'Femoral Profunda'] },
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo', type: 'select', options: REFLUX_DURATION },
               { id: 'diametro', label: 'Diâmetro (mm)', type: 'text', placeholder: 'ex: 12' },
               { id: 'etiologia', label: 'Etiologia', type: 'select', options: ['Primária (valvular)', 'Secundária (pós-trombótica)', 'Indeterminada'] }
             ]
@@ -197,6 +218,8 @@ export const venousOrgans: Organ[] = [
             hasMeasurement: true,
             extraFields: [
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo', type: 'select', options: REFLUX_DURATION },
               { id: 'diametro', label: 'Diâmetro (mm)', type: 'text', placeholder: 'ex: 10' },
               { id: 'etiologia', label: 'Etiologia', type: 'select', options: ['Primária (valvular)', 'Secundária (pós-trombótica)', 'Indeterminada'] }
             ]
@@ -222,6 +245,8 @@ export const venousOrgans: Organ[] = [
             hasMeasurement: true,
             extraFields: [
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo (s)', type: 'text', placeholder: 'ex: 2.5' },
               { id: 'diametro', label: 'Diâmetro na crossa (mm)', type: 'text', placeholder: 'ex: 8' },
               { id: 'ceap', label: 'CEAP', type: 'select', options: CEAP_CLINICAL }
             ]
@@ -234,6 +259,8 @@ export const venousOrgans: Organ[] = [
             extraFields: [
               { id: 'extensao', label: 'Extensão', type: 'select', options: ['Coxa', 'Perna', 'Coxa e perna'] },
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo (s)', type: 'text', placeholder: 'ex: 1.8' },
               { id: 'diametro', label: 'Diâmetro máximo (mm)', type: 'text', placeholder: 'ex: 7' },
               { id: 'ceap', label: 'CEAP', type: 'select', options: CEAP_CLINICAL }
             ]
@@ -245,6 +272,8 @@ export const venousOrgans: Organ[] = [
             hasMeasurement: true,
             extraFields: [
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo (s)', type: 'text', placeholder: 'ex: 1.2' },
               { id: 'diametro', label: 'Diâmetro (mm)', type: 'text', placeholder: 'ex: 5' },
               { id: 'ceap', label: 'CEAP', type: 'select', options: CEAP_CLINICAL }
             ]
@@ -256,6 +285,8 @@ export const venousOrgans: Organ[] = [
             hasMeasurement: true,
             extraFields: [
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo (s)', type: 'text', placeholder: 'ex: 0.8' },
               { id: 'diametro', label: 'Diâmetro (mm)', type: 'text', placeholder: 'ex: 4' }
             ]
           },
@@ -311,6 +342,8 @@ export const venousOrgans: Organ[] = [
             hasMeasurement: true,
             extraFields: [
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo (s)', type: 'text', placeholder: 'ex: 2.5' },
               { id: 'diametro', label: 'Diâmetro na crossa (mm)', type: 'text', placeholder: 'ex: 8' },
               { id: 'ceap', label: 'CEAP', type: 'select', options: CEAP_CLINICAL }
             ]
@@ -323,6 +356,8 @@ export const venousOrgans: Organ[] = [
             extraFields: [
               { id: 'extensao', label: 'Extensão', type: 'select', options: ['Coxa', 'Perna', 'Coxa e perna'] },
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo (s)', type: 'text', placeholder: 'ex: 1.8' },
               { id: 'diametro', label: 'Diâmetro máximo (mm)', type: 'text', placeholder: 'ex: 7' },
               { id: 'ceap', label: 'CEAP', type: 'select', options: CEAP_CLINICAL }
             ]
@@ -334,6 +369,8 @@ export const venousOrgans: Organ[] = [
             hasMeasurement: true,
             extraFields: [
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo (s)', type: 'text', placeholder: 'ex: 1.2' },
               { id: 'diametro', label: 'Diâmetro (mm)', type: 'text', placeholder: 'ex: 5' },
               { id: 'ceap', label: 'CEAP', type: 'select', options: CEAP_CLINICAL }
             ]
@@ -345,6 +382,8 @@ export const venousOrgans: Organ[] = [
             hasMeasurement: true,
             extraFields: [
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo (s)', type: 'text', placeholder: 'ex: 0.8' },
               { id: 'diametro', label: 'Diâmetro (mm)', type: 'text', placeholder: 'ex: 4' }
             ]
           },
@@ -403,6 +442,8 @@ export const venousOrgans: Organ[] = [
               { id: 'lado', label: 'Lado', type: 'select', options: LATERALITY },
               { id: 'local', label: 'Local', type: 'select', options: ['Coxa proximal', 'Coxa média', 'Coxa distal (Hunter)', 'Joelho (Dodd)', 'Perna proximal (Boyd)', 'Perna média (Cockett)', 'Perna distal', 'Retromaleolar medial', 'Retromaleolar lateral'] },
               { id: 'refluxo', label: 'Refluxo', type: 'select', options: REFLUX_STATUS },
+              { id: 'manobra', label: 'Manobra Provocativa', type: 'select', options: PROVOCATIVE_MANEUVERS },
+              { id: 'tempo-refluxo', label: 'Tempo de Refluxo (s)', type: 'text', placeholder: 'ex: 0.5' },
               { id: 'diametro', label: 'Diâmetro (mm)', type: 'text', placeholder: 'ex: 4.5' }
             ]
           }

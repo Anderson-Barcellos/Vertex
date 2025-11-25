@@ -766,3 +766,345 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.5);
 }
+
+/* ============================================
+   ACESSIBILIDADE - MOTION PREFERENCES
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-pulse,
+  .animate-shake,
+  .animate-checkbox-bounce,
+  .animate-slide-in-left,
+  .animate-slide-out-left,
+  .animate-fade-up,
+  .floating {
+    animation: none !important;
+  }
+}
+
+/* ============================================
+   FOCUS STATES MELHORADOS
+   ============================================ */
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--modern-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.glass-panel:focus-visible,
+.glass-card:focus-visible {
+  outline-offset: 4px;
+  box-shadow: var(--glass-shadow), 0 0 0 4px rgba(99, 102, 241, 0.2);
+}
+
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--modern-accent-light);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--modern-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* ============================================
+   PROGRESS CIRCLE ANIMADO
+   ============================================ */
+
+.progress-circle {
+  transform: rotate(-90deg);
+}
+
+.progress-circle-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.progress-circle-fill {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-circle-fill.animate {
+  animation: progress-fill 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes progress-fill {
+  from {
+    stroke-dashoffset: var(--progress-circumference, 283);
+  }
+  to {
+    stroke-dashoffset: var(--progress-offset, 0);
+  }
+}
+
+/* ============================================
+   INDICADOR DE DADOS NÃO SALVOS
+   ============================================ */
+
+.has-unsaved-data {
+  position: relative;
+}
+
+.has-unsaved-data::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(45deg, var(--modern-warning), var(--modern-accent), var(--modern-warning));
+  background-size: 200% 200%;
+  animation: unsaved-glow 2s ease-in-out infinite;
+  opacity: 0.6;
+  z-index: -1;
+  filter: blur(4px);
+}
+
+@keyframes unsaved-glow {
+  0%, 100% {
+    background-position: 0% 50%;
+    opacity: 0.4;
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 0.7;
+  }
+}
+
+.unsaved-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--modern-warning);
+  border-radius: 50%;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+}
+
+/* ============================================
+   DROPDOWN ANIMATIONS
+   ============================================ */
+
+.dropdown-content {
+  transform-origin: top center;
+  animation: dropdown-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dropdown-content[data-state="closed"] {
+  animation: dropdown-out 0.15s ease-in;
+}
+
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: scaleY(0.96) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+  }
+}
+
+@keyframes dropdown-out {
+  from {
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scaleY(0.96) translateY(-8px);
+  }
+}
+
+.dropdown-item {
+  opacity: 0;
+  animation: dropdown-item-in 0.2s ease forwards;
+}
+
+.dropdown-item:nth-child(1) { animation-delay: 0.02s; }
+.dropdown-item:nth-child(2) { animation-delay: 0.04s; }
+.dropdown-item:nth-child(3) { animation-delay: 0.06s; }
+.dropdown-item:nth-child(4) { animation-delay: 0.08s; }
+.dropdown-item:nth-child(5) { animation-delay: 0.10s; }
+.dropdown-item:nth-child(6) { animation-delay: 0.12s; }
+.dropdown-item:nth-child(7) { animation-delay: 0.14s; }
+.dropdown-item:nth-child(8) { animation-delay: 0.16s; }
+
+@keyframes dropdown-item-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================
+   SKELETON LOADING
+   ============================================ */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-text {
+  height: 1em;
+  margin-bottom: 0.5em;
+}
+
+.skeleton-text:last-child {
+  width: 70%;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+.skeleton-card {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================
+   RIPPLE EFFECT
+   ============================================ */
+
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0);
+  animation: ripple-effect 0.6s linear;
+  pointer-events: none;
+}
+
+@keyframes ripple-effect {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   STAGGERED ANIMATIONS
+   ============================================ */
+
+.stagger-item {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: stagger-in 0.4s ease forwards;
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.05s; }
+.stagger-item:nth-child(2) { animation-delay: 0.1s; }
+.stagger-item:nth-child(3) { animation-delay: 0.15s; }
+.stagger-item:nth-child(4) { animation-delay: 0.2s; }
+.stagger-item:nth-child(5) { animation-delay: 0.25s; }
+.stagger-item:nth-child(6) { animation-delay: 0.3s; }
+.stagger-item:nth-child(7) { animation-delay: 0.35s; }
+.stagger-item:nth-child(8) { animation-delay: 0.4s; }
+
+@keyframes stagger-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   ELASTIC PANEL EXPAND
+   ============================================ */
+
+.panel-expand {
+  animation: panel-elastic-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes panel-elastic-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateX(-20px);
+  }
+  60% {
+    transform: scale(1.02) translateX(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+}
+
+/* ============================================
+   NUMBER COUNT ANIMATION
+   ============================================ */
+
+.count-up {
+  display: inline-block;
+  animation: count-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes count-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

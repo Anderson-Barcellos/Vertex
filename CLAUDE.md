@@ -147,6 +147,26 @@ curl -s http://localhost:8200/ | head -5  # Testar servidor
 - **Foco:** Hérnias (inguinal, umbilical, incisional, epigástrica)
 - **Campos:** Óstio, saco herniário, conteúdo, redutibilidade
 
+### Melhorias UX (Nov 2025)
+Implementações de acessibilidade e animações fluidas em `modern-design.css`:
+
+- **Acessibilidade Motion:** `@media (prefers-reduced-motion)` desativa animações
+- **Focus States:** `:focus-visible` com outline accent para navegação por teclado
+- **Progress Circle:** SVG animado com `stroke-dashoffset` transition na Sidebar
+- **Indicador Unsaved:** Classe `.has-unsaved-data` com glow animado
+- **Dropdown Animations:** Entrada com `scaleY` + stagger delay nos items
+- **Skeleton Loading:** Shimmer effect para estados de carregamento
+- **Ripple Effect:** `.ripple-container` para feedback visual em cliques
+- **Stagger Animation:** `.stagger-item` com delays incrementais (usado na Landing)
+- **Panel Expand:** Animação elástica `cubic-bezier(0.34, 1.56, 0.64, 1)`
+- **Count Animation:** `.count-up` com pop effect na porcentagem
+
+**Arquivos afetados:**
+- `src/styles/modern-design.css` - Classes CSS novas
+- `src/components/original/Sidebar.tsx` - Progress circle animado
+- `src/components/shared/FloatingOrganPanelModern.tsx` - Panel expand
+- `src/pages/v2/LandingPageModern.tsx` - Cards com stagger + acessibilidade
+
 ---
 
 ## Padrões de Código
@@ -220,6 +240,52 @@ await unifiedAIService.generateReport(data, {
 
 ### CORS na API
 **Solução:** Usar proxy `/api/gemini` ao invés de URL direta
+
+---
+
+## Sistema de Autenticação (Nov 2025)
+
+### Arquivos
+- `src/contexts/AuthContext.tsx` - Provider de autenticação
+- `src/pages/LoginPage.tsx` - Tela de login
+- `src/components/ProtectedRoute.tsx` - Proteção de rotas
+
+### Credenciais
+- **Usuário:** anders
+- **Senha:** vertex2025
+
+### Funcionalidades
+- Sessão persistente via localStorage
+- Todas as rotas protegidas exceto `/login`
+- Botão de logout na Landing Page
+
+---
+
+## Melhorias em Campos Médicos (Nov 2025)
+
+### Doppler Arterial
+- **ITB (Índice Tornozelo-Braquial)** com classificação SBACV
+- ITB pós-exercício com tempo de recuperação
+
+### Abdome Total - Campos Condicionais
+- Esteatose: distribuição + atenuação hepática
+- Colelitíase: tipo + mobilidade + sombra acústica
+- Hidronefrose: lado + causa provável + medida pelve
+- Aneurisma: morfologia + trombo mural + extensão
+- Novos achados: hepatopatia crônica, vesícula porcelana, Murphy US+, pancreatite aguda/crônica, Bosniak, nefropatia parenquimatosa
+
+### Tireóide - TI-RADS Automático
+- Função `calculateTIRADS()` exportada
+- Campo de TI-RADS calculado nos nódulos
+- Recomendações automáticas (PAAF/seguimento)
+
+### Doppler Venoso
+- Manobras provocativas (Valsalva, compressão, ortostatismo)
+- Tempo de refluxo em todos os achados de insuficiência
+
+### Parede Abdominal
+- Visibilidade dinâmica (repouso, Valsalva, tosse)
+- Manobra realizada em todas as hérnias
 
 ---
 
