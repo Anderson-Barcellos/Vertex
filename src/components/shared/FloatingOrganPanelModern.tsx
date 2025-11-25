@@ -72,10 +72,17 @@ export default function FloatingOrganPanelModern({
   const panel = (
     <div
       ref={ref}
-      className={`fixed top-24 organ-section-panel bg-white shadow-2xl border border-gray-200 rounded-2xl transition-all duration-300 ${
-        isMinimized ? 'w-12' : 'overflow-y-auto modern-scrollbar'
+      className={`fixed top-24 organ-section-panel bg-white shadow-2xl border border-gray-200 rounded-2xl ${
+        isMinimized 
+          ? 'w-12 animate-slide-out-left' 
+          : 'overflow-y-auto modern-scrollbar animate-slide-in-left'
       }`}
-      style={{ left: leftCss, width: isMinimized ? undefined : widthExpanded, maxHeight }}
+      style={{ 
+        left: leftCss, 
+        width: isMinimized ? undefined : widthExpanded, 
+        maxHeight,
+        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+      }}
     >
       {isMinimized ? (
         <div

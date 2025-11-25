@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { SelectedFinding, ReportData, type AIProvider } from '@/types/report';
 import { organs as defaultOrgans, type Organ } from '@/data/organs';
@@ -40,6 +41,7 @@ export default function SelectedFindingsPanel({
   const [selectedGeminiModel, setSelectedGeminiModel] = useState(GEMINI_MODELS[0].id);
   const [selectedOpenAIModel, setSelectedOpenAIModel] = useState(OPENAI_MODELS[0].id);
   const [activeMenu, setActiveMenu] = useState<'gemini' | 'openai' | null>(null);
+  const [isShaking, setIsShaking] = useState(false);
 
   const geminiMenuRef = useRef<HTMLDivElement>(null);
   const openaiMenuRef = useRef<HTMLDivElement>(null);
@@ -92,13 +94,19 @@ export default function SelectedFindingsPanel({
     : 0;
 
   const handleGenerateReport = () => {
+    if (selectedFindings.length === 0 && normalOrgans.length === 0) {
+      setIsShaking(true);
+      toast.warning('Adicione achados ou marque órgãos como normais primeiro', { duration: 3000 });
+      setTimeout(() => setIsShaking(false), 500);
+      return;
+    }
+
     const reportData: ReportData = {
       selectedFindings,
       normalOrgans,
       additionalNotes: ''
     };
 
-    // Determinar qual modelo específico usar baseado no provider
     const specificModel = selectedModel === 'gemini' ? selectedGeminiModel : selectedOpenAIModel;
 
     onGenerateReport(reportData, {
@@ -406,8 +414,11 @@ export default function SelectedFindingsPanel({
         {/* Generate Report Button */}
         <button
           onClick={handleGenerateReport}
-          disabled={isGenerating || (selectedFindings.length === 0 && normalOrgans.length === 0)}
-          className="w-full py-2.5 bg-accent text-accent-foreground text-sm font-medium rounded-md hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
+          disabled={isGenerating}
+          className={cn(
+            "w-full py-2.5 bg-accent text-accent-foreground text-sm font-medium rounded-md hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md",
+            isShaking && "animate-shake"
+          )}
         >
           {isGenerating ? (
             <>

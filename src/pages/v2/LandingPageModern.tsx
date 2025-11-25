@@ -1,9 +1,27 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useLastExam } from '@/hooks/useLastExam';
 import '@/styles/modern-design.css';
+
+const examRoutes: Record<string, string> = {
+  '/abdome-modern': 'Abdome Total',
+  '/carotid-modern': 'Ecodoppler Carótidas',
+  '/breast-exam': 'Ultrassom de Mama',
+  '/arterial-modern': 'Doppler Arterial MMII',
+  '/thyroid-modern': 'Ecodoppler de Tireóide',
+  '/venous-modern': 'Doppler Venoso MMII',
+  '/abdominal-vessels-modern': 'Ecodoppler de Vasos Abdominais',
+  '/abdominal-wall-modern': 'US Parede Abdominal',
+};
 
 export function LandingPageModern() {
   const navigate = useNavigate();
+  const { lastExam, saveLastExam } = useLastExam();
+
+  const handleNavigate = (route: string) => {
+    saveLastExam(route, examRoutes[route] || 'Exame');
+    navigate(route);
+  };
 
   return (
     <div className="modern-layout min-h-screen flex items-center justify-center p-4">
@@ -47,11 +65,18 @@ export function LandingPageModern() {
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           {/* Abdome Total */}
           <div
-            onClick={() => navigate('/abdome-modern')}
+            onClick={() => handleNavigate('/abdome-modern')}
             className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            {/* Badge Continuar */}
+            {lastExam?.route === '/abdome-modern' && (
+              <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full text-xs font-bold text-white shadow-lg animate-pulse">
+                Continuar
+              </div>
+            )}
 
             <div className="relative z-10">
               {/* Icon */}
@@ -93,11 +118,17 @@ export function LandingPageModern() {
 
           {/* Ecodoppler Carótidas */}
           <div
-            onClick={() => navigate('/carotid-modern')}
+            onClick={() => handleNavigate('/carotid-modern')}
             className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            {lastExam?.route === '/carotid-modern' && (
+              <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full text-xs font-bold text-white shadow-lg animate-pulse">
+                Continuar
+              </div>
+            )}
 
             <div className="relative z-10">
               {/* Icon */}
@@ -142,11 +173,17 @@ export function LandingPageModern() {
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           {/* Ultrassom de Mama */}
           <div
-            onClick={() => navigate('/breast-exam')}
+            onClick={() => handleNavigate('/breast-exam')}
             className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            {lastExam?.route === '/breast-exam' && (
+              <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full text-xs font-bold text-white shadow-lg animate-pulse">
+                Continuar
+              </div>
+            )}
 
             <div className="relative z-10">
               {/* Icon */}
@@ -188,11 +225,17 @@ export function LandingPageModern() {
 
           {/* Doppler Arterial MMII */}
           <div
-            onClick={() => navigate('/arterial-modern')}
+            onClick={() => handleNavigate('/arterial-modern')}
             className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            {lastExam?.route === '/arterial-modern' && (
+              <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full text-xs font-bold text-white shadow-lg animate-pulse">
+                Continuar
+              </div>
+            )}
 
             <div className="relative z-10">
               {/* Icon */}
@@ -237,11 +280,17 @@ export function LandingPageModern() {
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           {/* Ecodoppler de Tireóide */}
           <div
-            onClick={() => navigate('/thyroid-modern')}
+            onClick={() => handleNavigate('/thyroid-modern')}
             className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            {lastExam?.route === '/thyroid-modern' && (
+              <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full text-xs font-bold text-white shadow-lg animate-pulse">
+                Continuar
+              </div>
+            )}
 
             <div className="relative z-10">
               {/* Icon */}
@@ -283,11 +332,17 @@ export function LandingPageModern() {
 
           {/* Doppler Venoso MMII */}
           <div
-            onClick={() => navigate('/venous-modern')}
+            onClick={() => handleNavigate('/venous-modern')}
             className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            {lastExam?.route === '/venous-modern' && (
+              <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full text-xs font-bold text-white shadow-lg animate-pulse">
+                Continuar
+              </div>
+            )}
 
             <div className="relative z-10">
               {/* Icon */}
@@ -332,11 +387,17 @@ export function LandingPageModern() {
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           {/* Ecodoppler de Vasos Abdominais */}
           <div
-            onClick={() => navigate('/abdominal-vessels-modern')}
+            onClick={() => handleNavigate('/abdominal-vessels-modern')}
             className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            {lastExam?.route === '/abdominal-vessels-modern' && (
+              <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full text-xs font-bold text-white shadow-lg animate-pulse">
+                Continuar
+              </div>
+            )}
 
             <div className="relative z-10">
               {/* Icon */}
@@ -378,11 +439,17 @@ export function LandingPageModern() {
 
           {/* Ultrassom de Parede Abdominal */}
           <div
-            onClick={() => navigate('/abdominal-wall-modern')}
+            onClick={() => handleNavigate('/abdominal-wall-modern')}
             className="glass-panel p-8 cursor-pointer group relative overflow-hidden"
           >
             {/* Gradient Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            {lastExam?.route === '/abdominal-wall-modern' && (
+              <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full text-xs font-bold text-white shadow-lg animate-pulse">
+                Continuar
+              </div>
+            )}
 
             <div className="relative z-10">
               {/* Icon */}

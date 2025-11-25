@@ -3,7 +3,7 @@
  * Ecodoppler Arterial de Membros Inferiores
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toaster, toast } from 'sonner';
 import { ArrowLeft } from '@phosphor-icons/react';
@@ -33,6 +33,7 @@ import { estimateCostUsd, estimateTokensFromText } from '@/utils/aiMetrics';
 import '@/styles/modern-design.css';
 import ModernExamLayout from '@/layouts/ModernExamLayout';
 import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelModern';
+import { useAutoSave } from '@/hooks/useAutoSave';
 
 function ArterialExamModern() {
   const navigate = useNavigate();
@@ -62,6 +63,24 @@ function ArterialExamModern() {
   const [tempFindingDetails, setTempFindingDetails] = useState<
     Record<string, Record<string, { severity?: string; instances?: FindingInstance[] }>>
   >({});
+
+  // Auto-save hook
+  const [isRestored, setIsRestored] = useState(false);
+  useAutoSave(
+    'arterial-exam',
+    selectedFindings,
+    normalOrgans,
+    tempFindingDetails,
+    (state) => {
+      if (!isRestored) {
+        setSelectedFindings(state.selectedFindings);
+        setNormalOrgans(state.normalOrgans);
+        setTempFindingDetails(state.tempFindingDetails);
+        setIsRestored(true);
+        toast.info('Exame anterior restaurado', { duration: 3000 });
+      }
+    }
+  );
 
   const handleOrganSelect = (organId: string) => {
     if (selectedOrgan === organId) {

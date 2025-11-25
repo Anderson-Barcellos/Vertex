@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { toast } from 'sonner';
 import { organs as defaultOrgans, type Organ } from '@/data/organs';
 import { cn } from '@/lib/utils';
 import { SelectedFinding } from '@/types/report';
@@ -65,56 +66,58 @@ export default function Sidebar({
         {showSummary && (
           <div className="mb-6 space-y-3">
             <div className="bg-sidebar-muted/40 rounded-lg border border-white/5 p-4 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <div>
+              <div className="flex items-center gap-4">
+                {/* Progress Circle */}
+                <div className="relative w-14 h-14 flex-shrink-0">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.5"
+                      fill="none"
+                      className="stroke-current text-sidebar-muted"
+                      strokeWidth="3"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.5"
+                      fill="none"
+                      className="stroke-current text-accent"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeDasharray={`${completion * 0.97} 100`}
+                      style={{ transition: 'stroke-dasharray 0.5s ease-out' }}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs font-bold text-accent">{completion}%</span>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="flex-1 space-y-1.5">
                   <h3
                     style={{ color: 'var(--sidebar-foreground)' }}
                     className="text-xs font-semibold uppercase tracking-wide opacity-70"
                   >
-                    Resumo do exame
+                    Progresso
                   </h3>
-                  <p
-                    style={{ color: 'var(--sidebar-foreground)' }}
-                    className="text-[11px] opacity-60"
-                  >
-                    Acompanhe o progresso do preenchimento
-                  </p>
+                  <div className="space-y-1 text-[11px]">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                      <span style={{ color: 'var(--sidebar-foreground)' }} className="opacity-80">
+                        {uniqueOrgansWithFindings.size} com achados
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      <span style={{ color: 'var(--sidebar-foreground)' }} className="opacity-80">
+                        {uniqueNormalOrgans.size} normais
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-sm font-semibold text-accent">{completion}%</span>
-              </div>
-
-              <div className="grid grid-cols-1 gap-2 text-[11px]">
-                <div className="flex items-center justify-between">
-                  <span style={{ color: 'var(--sidebar-foreground)' }} className="opacity-70">
-                    Órgãos com achados
-                  </span>
-                  <span style={{ color: 'var(--sidebar-foreground)' }} className="font-medium">
-                    {uniqueOrgansWithFindings.size}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span style={{ color: 'var(--sidebar-foreground)' }} className="opacity-70">
-                    Órgãos normais
-                  </span>
-                  <span style={{ color: 'var(--sidebar-foreground)' }} className="font-medium">
-                    {uniqueNormalOrgans.size}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span style={{ color: 'var(--sidebar-foreground)' }} className="opacity-70">
-                    Achados registrados
-                  </span>
-                  <span style={{ color: 'var(--sidebar-foreground)' }} className="font-medium">
-                    {selectedFindings.length}
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-3 h-1.5 bg-sidebar-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-accent transition-all duration-300"
-                  style={{ width: `${completion}%` }}
-                ></div>
               </div>
             </div>
           </div>
@@ -141,7 +144,11 @@ export default function Sidebar({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onNormalChange(organ.id, !isNormal);
+                        const newState = !isNormal;
+                        onNormalChange(organ.id, newState);
+                        if (newState) {
+                          toast.success(`${organ.name} marcado como normal`, { duration: 2000 });
+                        }
                       }}
                       className={cn(
                         "p-1.5 rounded-md transition-all",
