@@ -46,6 +46,9 @@ function AbdominalVesselsExamModern() {
   // Estado de persistência temporária para os painéis flutuantes
   const [tempFindingDetails, setTempFindingDetails] = useState<Record<string, any>>({});
 
+  // Estado para observações extras por órgão
+  const [observations, setObservations] = useState<Record<string, string[]>>({});
+
   // Estado IA
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAiProcessing, setIsAiProcessing] = useState(false);
@@ -124,6 +127,24 @@ function AbdominalVesselsExamModern() {
 
   const getTempDetails = (organId: string) => {
     return tempFindingDetails[organId] || {};
+  };
+
+  const getObservations = (organId: string) => {
+    return observations[organId] || [];
+  };
+
+  const handleAddObservation = (organId: string, text: string) => {
+    setObservations(prev => ({
+      ...prev,
+      [organId]: [...(prev[organId] || []), text]
+    }));
+  };
+
+  const handleRemoveObservation = (organId: string, index: number) => {
+    setObservations(prev => ({
+      ...prev,
+      [organId]: (prev[organId] || []).filter((_, i) => i !== index)
+    }));
   };
 
   const handleGenerateReport = async (
@@ -495,6 +516,9 @@ function AbdominalVesselsExamModern() {
               onNormalChange={handleNormalChange}
               tempDetails={getTempDetails(currentOrgan.id)}
               onTempDetailsChange={handleTempDetailsChange}
+              observations={getObservations(currentOrgan.id)}
+              onAddObservation={handleAddObservation}
+              onRemoveObservation={handleRemoveObservation}
               leftCss={'calc(25% + 1.5rem)'}
               widthExpanded={'24rem'}
               maxHeight={'80vh'}

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Organ, Finding } from '@/data/organs';
 import { SelectedFinding, FindingInstance } from '@/types/report';
 import FindingDetailsEnhanced from './FindingDetailsEnhanced';
+import ObservationInput from './ObservationInput';
 
 interface OrganSectionProps {
   organ: Organ;
@@ -34,6 +35,9 @@ interface OrganSectionProps {
     onSeverityChange: (severity: string) => void;
     onInstancesChange: (instances: FindingInstance[]) => void;
   }>;
+  observations?: string[];
+  onAddObservation?: (organId: string, text: string) => void;
+  onRemoveObservation?: (organId: string, index: number) => void;
 }
 
 export default function OrganSection({
@@ -44,7 +48,10 @@ export default function OrganSection({
   isNormal,
   tempDetails = {},
   onTempDetailsChange,
-  FindingDetailsComponent = FindingDetailsEnhanced
+  FindingDetailsComponent = FindingDetailsEnhanced,
+  observations = [],
+  onAddObservation,
+  onRemoveObservation
 }: OrganSectionProps) {
   // Use tempDetails from props if available, fallback to local state
   const [localFindingDetails, setLocalFindingDetails] = useState<Record<string, {
@@ -56,7 +63,7 @@ export default function OrganSection({
   const findingDetails = onTempDetailsChange ? tempDetails : localFindingDetails;
 
   const isFindingSelected = (findingId: string) => {
-    return selectedFindings.some(sf => sf.findingId === findingId);
+    return selectedFindings.some(sf => sf.findingId === findingId && sf.organId === organ.id);
   };
 
   const hasAnyFindingSelected = selectedFindings.some(sf => sf.organId === organ.id);
@@ -236,6 +243,15 @@ export default function OrganSection({
               </div>
             ))}
           </div>
+        )}
+
+        {onAddObservation && onRemoveObservation && (
+          <ObservationInput
+            organId={organ.id}
+            observations={observations}
+            onAddObservation={onAddObservation}
+            onRemoveObservation={onRemoveObservation}
+          />
         )}
       </div>
     </div>

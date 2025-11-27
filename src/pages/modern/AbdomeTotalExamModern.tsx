@@ -50,6 +50,9 @@ function AbdomeTotalExamModern() {
     Record<string, Record<string, { severity?: string; instances?: FindingInstance[] }>>
   >({});
 
+  // Estado para observações extras por órgão
+  const [observations, setObservations] = useState<Record<string, string[]>>({});
+
   // Outside click e guardas de dropdown agora são tratados pelo FloatingOrganPanelModern.
 
   // Dropdown guard é tratado dentro do FloatingOrganPanelModern (hooks compartilhados)
@@ -91,6 +94,24 @@ function AbdomeTotalExamModern() {
 
   const getTempDetails = (organId: string) => {
     return tempFindingDetails[organId] || {};
+  };
+
+  const getObservations = (organId: string) => {
+    return observations[organId] || [];
+  };
+
+  const handleAddObservation = (organId: string, text: string) => {
+    setObservations(prev => ({
+      ...prev,
+      [organId]: [...(prev[organId] || []), text]
+    }));
+  };
+
+  const handleRemoveObservation = (organId: string, index: number) => {
+    setObservations(prev => ({
+      ...prev,
+      [organId]: (prev[organId] || []).filter((_, i) => i !== index)
+    }));
   };
 
   const handleFindingChange = (
@@ -542,6 +563,9 @@ function AbdomeTotalExamModern() {
               onNormalChange={handleNormalChange}
               tempDetails={getTempDetails(currentOrgan.id)}
               onTempDetailsChange={handleTempDetailsChange}
+              observations={getObservations(currentOrgan.id)}
+              onAddObservation={handleAddObservation}
+              onRemoveObservation={handleRemoveObservation}
               leftCss={'calc(25% + 1.5rem)'}
               widthExpanded={'24rem'}
               maxHeight={'80vh'}

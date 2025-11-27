@@ -69,6 +69,9 @@ export default function BreastExamModern() {
     Record<string, Record<string, { severity?: string; instances?: FindingInstance[] }>>
   >({});
 
+  // Estado para observações extras por órgão
+  const [observations, setObservations] = useState<Record<string, string[]>>({});
+
   const EXAM_TYPE = 'Ultrassonografia de Mamas';
 
   const handleOrganSelect = (organId: string) => {
@@ -99,6 +102,24 @@ export default function BreastExamModern() {
     return tempFindingDetails[organId] || {};
   };
 
+  const getObservations = (organId: string) => {
+    return observations[organId] || [];
+  };
+
+  const handleAddObservation = (organId: string, text: string) => {
+    setObservations(prev => ({
+      ...prev,
+      [organId]: [...(prev[organId] || []), text]
+    }));
+  };
+
+  const handleRemoveObservation = (organId: string, index: number) => {
+    setObservations(prev => ({
+      ...prev,
+      [organId]: (prev[organId] || []).filter((_, i) => i !== index)
+    }));
+  };
+
   const handleFindingChange = (
     organId: string,
     categoryId: string,
@@ -110,7 +131,7 @@ export default function BreastExamModern() {
   ) => {
     setSelectedFindings(currentFindings => {
       if (checked) {
-        const existingIndex = currentFindings.findIndex(f => f.findingId === findingId);
+        const existingIndex = currentFindings.findIndex(f => f.findingId === findingId && f.organId === organId);
         if (existingIndex >= 0) {
           const updated = [...currentFindings];
           updated[existingIndex] = {
@@ -130,7 +151,7 @@ export default function BreastExamModern() {
           }];
         }
       } else {
-        return currentFindings.filter(f => f.findingId !== findingId);
+        return currentFindings.filter(f => !(f.findingId === findingId && f.organId === organId));
       }
     });
 
@@ -543,6 +564,9 @@ export default function BreastExamModern() {
               FindingDetailsComponent={BreastUltrasoundFindingDetails}
               tempDetails={getTempDetails(currentOrgan.id)}
               onTempDetailsChange={handleTempDetailsChange}
+              observations={getObservations(currentOrgan.id)}
+              onAddObservation={handleAddObservation}
+              onRemoveObservation={handleRemoveObservation}
             />
           ) : null
         )}

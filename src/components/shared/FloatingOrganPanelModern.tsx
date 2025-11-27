@@ -42,6 +42,9 @@ type FloatingOrganPanelModernProps = {
   widthExpanded?: string; // default '24rem'
   maxHeight?: string; // default 'calc(80vh)'
   FindingDetailsComponent?: React.ComponentType<FindingDetailsComponentProps>;
+  observations?: string[];
+  onAddObservation?: (organId: string, text: string) => void;
+  onRemoveObservation?: (organId: string, index: number) => void;
 };
 
 export default function FloatingOrganPanelModern({
@@ -57,7 +60,10 @@ export default function FloatingOrganPanelModern({
   leftCss = 'calc(25% + 1.5rem)',
   widthExpanded = '24rem',
   maxHeight = '80vh',
-  FindingDetailsComponent
+  FindingDetailsComponent,
+  observations = [],
+  onAddObservation,
+  onRemoveObservation
 }: FloatingOrganPanelModernProps) {
   const ref = useRef<HTMLDivElement>(null);
   const { isAnyDropdownOpen } = useDropdownGuard([ref]);
@@ -119,6 +125,9 @@ export default function FloatingOrganPanelModern({
               tempDetails={tempDetails}
               onTempDetailsChange={onTempDetailsChange}
               FindingDetailsComponent={FindingDetailsComponent}
+              observations={observations}
+              onAddObservation={onAddObservation}
+              onRemoveObservation={onRemoveObservation}
             />
           </div>
         </div>
