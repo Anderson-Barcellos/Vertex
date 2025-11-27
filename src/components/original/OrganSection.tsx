@@ -288,7 +288,11 @@ export default function OrganSection({
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => {
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('Adicionando achado:', finding.name, category.id);
                                 handleFindingToggle(category.id, finding, true);
                                 toast.success(`✓ ${finding.name} adicionado`, { duration: 2000 });
                               }}
