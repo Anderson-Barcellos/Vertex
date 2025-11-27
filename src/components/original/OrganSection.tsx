@@ -1,10 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { toast } from 'sonner';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Plus, Check } from '@phosphor-icons/react';
 import { Organ, Finding } from '@/data/organs';
 import { SelectedFinding, FindingInstance } from '@/types/report';
 import FindingDetailsEnhanced from './FindingDetailsEnhanced';
@@ -61,51 +58,9 @@ export default function OrganSection({
     severity?: string;
     instances?: FindingInstance[];
   }>>({});
-
+  
   // Usar tempDetails das props se disponível, senão usar estado local
   const findingDetails = onTempDetailsChange ? tempDetails : localFindingDetails;
-
-  // Estado para rastrear qual finding está sendo editado (para Ctrl+Enter)
-  const [activeFindingId, setActiveFindingId] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Ctrl+Enter para adicionar o achado ativo
-  const handleCtrlEnter = useCallback((e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      // Verificar se o foco está dentro deste componente
-      if (!containerRef.current?.contains(document.activeElement)) return;
-
-      e.preventDefault();
-
-      // Encontrar o finding ativo baseado no elemento focado
-      const activeElement = document.activeElement as HTMLElement;
-      const findingContainer = activeElement?.closest('[data-finding-id]');
-      const findingId = findingContainer?.getAttribute('data-finding-id');
-
-      if (findingId) {
-        // Encontrar o finding e category correspondentes
-        for (const category of organ.categories) {
-          const finding = category.findings.find(f => f.id === findingId);
-          if (finding) {
-            const isSelected = isFindingSelected(findingId);
-            if (!isSelected) {
-              // Adicionar o achado
-              handleFindingToggle(category.id, finding, true);
-              toast.success(`✓ ${finding.name} adicionado`, { duration: 2000 });
-            } else {
-              toast.info(`${finding.name} já está na lista`, { duration: 1500 });
-            }
-            break;
-          }
-        }
-      }
-    }
-  }, [organ.categories]);
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleCtrlEnter);
-    return () => document.removeEventListener('keydown', handleCtrlEnter);
-  }, [handleCtrlEnter]);
 
   const isFindingSelected = (findingId: string) => {
     return selectedFindings.some(sf => sf.findingId === findingId && sf.organId === organ.id);
@@ -192,7 +147,7 @@ export default function OrganSection({
   };
 
   return (
-    <div ref={containerRef} className="h-full flex flex-col max-h-full">
+    <div className="h-full flex flex-col max-h-full">
       {/* Header compacto com background */}
       <div className="bg-primary text-primary-foreground p-4 rounded-t-lg flex-shrink-0">
         <h2 className="text-lg font-semibold">{organ.name}</h2>
@@ -231,7 +186,7 @@ export default function OrganSection({
                     const instanceCount = details.instances?.length || 0;
 
                     return (
-                      <div key={finding.id} data-finding-id={finding.id}>
+                      <div key={finding.id}>
                         <div
                           className="flex items-start space-x-2 p-2 rounded-md hover:bg-muted/30 transition-colors"
                         >
@@ -280,36 +235,6 @@ export default function OrganSection({
                             onSeverityChange={(severity) => handleSeverityChange(finding.id, finding, category.id, severity)}
                             onInstancesChange={(instances) => handleInstancesChange(finding.id, finding, category.id, instances)}
                           />
-                        )}
-
-                        {/* Botão de adicionar achado */}
-                        {!isSelected && (
-                          <div className="mt-2 ml-6">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log('Adicionando achado:', finding.name, category.id);
-                                handleFindingToggle(category.id, finding, true);
-                                toast.success(`✓ ${finding.name} adicionado`, { duration: 2000 });
-                              }}
-                              className="h-7 text-xs gap-1.5 text-primary hover:bg-primary hover:text-primary-foreground"
-                            >
-                              <Plus size={14} weight="bold" />
-                              Adicionar
-                            </Button>
-                          </div>
-                        )}
-
-                        {/* Indicador de achado já adicionado */}
-                        {isSelected && (
-                          <div className="mt-2 ml-6 flex items-center gap-1.5 text-xs text-green-600">
-                            <Check size={14} weight="bold" />
-                            <span>Adicionado à lista</span>
-                          </div>
                         )}
                       </div>
                     );

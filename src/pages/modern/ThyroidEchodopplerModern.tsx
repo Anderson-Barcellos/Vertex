@@ -452,27 +452,6 @@ function ThyroidEchodopplerModern() {
   const currentOrganFindings = selectedFindings.filter(f => f.organId === selectedOrgan);
   const isCurrentOrganNormal = normalOrgans.includes(selectedOrgan);
 
-  // Navegação entre órgãos
-  const currentOrganIndex = thyroidOrgans.findIndex(organ => organ.id === selectedOrgan);
-  const hasPreviousOrgan = currentOrganIndex > 0;
-  const hasNextOrgan = currentOrganIndex < thyroidOrgans.length - 1 && currentOrganIndex >= 0;
-
-  const handlePreviousOrgan = useCallback(() => {
-    if (hasPreviousOrgan) {
-      const prevOrgan = thyroidOrgans[currentOrganIndex - 1];
-      setSelectedOrgan(prevOrgan.id);
-      setIsPanelMinimized(false);
-    }
-  }, [currentOrganIndex, hasPreviousOrgan]);
-
-  const handleNextOrgan = useCallback(() => {
-    if (hasNextOrgan) {
-      const nextOrgan = thyroidOrgans[currentOrganIndex + 1];
-      setSelectedOrgan(nextOrgan.id);
-      setIsPanelMinimized(false);
-    }
-  }, [currentOrganIndex, hasNextOrgan]);
-
   return (
     <>
       <ModernExamLayout
@@ -561,12 +540,6 @@ function ThyroidEchodopplerModern() {
               widthExpanded={'24rem'}
               maxHeight={'80vh'}
               FindingDetailsComponent={ThyroidFindingDetails}
-              onPreviousOrgan={handlePreviousOrgan}
-              onNextOrgan={handleNextOrgan}
-              hasPreviousOrgan={hasPreviousOrgan}
-              hasNextOrgan={hasNextOrgan}
-              currentOrganIndex={currentOrganIndex}
-              totalOrgans={thyroidOrgans.length}
             />
           ) : null
         )}

@@ -435,27 +435,6 @@ export default function AbdominalWallExamModern() {
   const currentOrganFindings = selectedFindings.filter(f => f.organId === selectedOrgan);
   const isCurrentOrganNormal = normalOrgans.includes(selectedOrgan);
 
-  // Navegação entre órgãos
-  const currentOrganIndex = abdominalWallOrgans.findIndex(organ => organ.id === selectedOrgan);
-  const hasPreviousOrgan = currentOrganIndex > 0;
-  const hasNextOrgan = currentOrganIndex < abdominalWallOrgans.length - 1 && currentOrganIndex >= 0;
-
-  const handlePreviousOrgan = useCallback(() => {
-    if (hasPreviousOrgan) {
-      const prevOrgan = abdominalWallOrgans[currentOrganIndex - 1];
-      setSelectedOrgan(prevOrgan.id);
-      setIsPanelMinimized(false);
-    }
-  }, [currentOrganIndex, hasPreviousOrgan]);
-
-  const handleNextOrgan = useCallback(() => {
-    if (hasNextOrgan) {
-      const nextOrgan = abdominalWallOrgans[currentOrganIndex + 1];
-      setSelectedOrgan(nextOrgan.id);
-      setIsPanelMinimized(false);
-    }
-  }, [currentOrganIndex, hasNextOrgan]);
-
   return (
     <>
       <ModernExamLayout
@@ -541,12 +520,6 @@ export default function AbdominalWallExamModern() {
               leftCss={'calc(25% + 1.5rem)'}
               widthExpanded={'24rem'}
               maxHeight={'80vh'}
-              onPreviousOrgan={handlePreviousOrgan}
-              onNextOrgan={handleNextOrgan}
-              hasPreviousOrgan={hasPreviousOrgan}
-              hasNextOrgan={hasNextOrgan}
-              currentOrganIndex={currentOrganIndex}
-              totalOrgans={abdominalWallOrgans.length}
             />
           ) : null
         )}

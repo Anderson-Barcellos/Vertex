@@ -144,23 +144,22 @@ export default function Sidebar({
                         const newState = !isNormal;
                         onNormalChange(organ.id, newState);
                         if (newState) {
-                          toast.success(`✓ ${organ.name} marcado como normal`, { duration: 2000 });
+                          toast.success(`${organ.name} marcado como normal`, { duration: 2000 });
                         }
                       }}
                       className={cn(
-                        "p-1.5 rounded-md transition-all duration-200",
+                        "p-1.5 rounded-md transition-all",
                         isNormal
-                          ? "text-green-500 bg-green-500/10 hover:bg-green-500/20 scale-110"
+                          ? "text-green-500 hover:bg-green-500/10"
                           : "text-sidebar-foreground/30 hover:text-green-500 hover:bg-white/5"
                       )}
-                      title={isNormal ? "Remover normal" : "Marcar como normal (✓)"}
+                      title={isNormal ? "Remover normal" : "Marcar como normal"}
                       aria-label={isNormal ? `Remover ${organ.name} como normal` : `Marcar ${organ.name} como normal`}
                       aria-pressed={isNormal}
                     >
                       <CheckCircle
                         size={18}
                         weight={isNormal ? "fill" : "regular"}
-                        className={isNormal ? "animate-checkbox-bounce" : ""}
                       />
                     </button>
                   )}

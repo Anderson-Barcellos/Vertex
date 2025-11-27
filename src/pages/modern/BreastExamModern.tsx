@@ -479,27 +479,6 @@ export default function BreastExamModern() {
   const currentOrganFindings = selectedFindings.filter(f => f.organId === selectedOrgan);
   const isCurrentOrganNormal = normalOrgans.includes(selectedOrgan);
 
-  // Navegação entre órgãos
-  const currentOrganIndex = breastUltrasoundOrgans.findIndex(organ => organ.id === selectedOrgan);
-  const hasPreviousOrgan = currentOrganIndex > 0;
-  const hasNextOrgan = currentOrganIndex < breastUltrasoundOrgans.length - 1 && currentOrganIndex >= 0;
-
-  const handlePreviousOrgan = useCallback(() => {
-    if (hasPreviousOrgan) {
-      const prevOrgan = breastUltrasoundOrgans[currentOrganIndex - 1];
-      setSelectedOrgan(prevOrgan.id);
-      setIsPanelMinimized(false);
-    }
-  }, [currentOrganIndex, hasPreviousOrgan]);
-
-  const handleNextOrgan = useCallback(() => {
-    if (hasNextOrgan) {
-      const nextOrgan = breastUltrasoundOrgans[currentOrganIndex + 1];
-      setSelectedOrgan(nextOrgan.id);
-      setIsPanelMinimized(false);
-    }
-  }, [currentOrganIndex, hasNextOrgan]);
-
   return (
     <>
       <ModernExamLayout
@@ -588,12 +567,6 @@ export default function BreastExamModern() {
               observations={getObservations(currentOrgan.id)}
               onAddObservation={handleAddObservation}
               onRemoveObservation={handleRemoveObservation}
-              onPreviousOrgan={handlePreviousOrgan}
-              onNextOrgan={handleNextOrgan}
-              hasPreviousOrgan={hasPreviousOrgan}
-              hasNextOrgan={hasNextOrgan}
-              currentOrganIndex={currentOrganIndex}
-              totalOrgans={breastUltrasoundOrgans.length}
             />
           ) : null
         )}

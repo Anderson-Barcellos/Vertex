@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretLeft, CaretRight, ArrowLeft, ArrowRight } from '@phosphor-icons/react';
+import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import OrganSection from '@/components/original/OrganSection';
 import type { Organ, Finding } from '@/data/organs';
 import type { SelectedFinding, FindingInstance } from '@/types/report';
@@ -45,13 +45,6 @@ type FloatingOrganPanelModernProps = {
   observations?: string[];
   onAddObservation?: (organId: string, text: string) => void;
   onRemoveObservation?: (organId: string, index: number) => void;
-  // Navegação entre órgãos
-  onPreviousOrgan?: () => void;
-  onNextOrgan?: () => void;
-  hasPreviousOrgan?: boolean;
-  hasNextOrgan?: boolean;
-  currentOrganIndex?: number;
-  totalOrgans?: number;
 };
 
 export default function FloatingOrganPanelModern({
@@ -70,13 +63,7 @@ export default function FloatingOrganPanelModern({
   FindingDetailsComponent,
   observations = [],
   onAddObservation,
-  onRemoveObservation,
-  onPreviousOrgan,
-  onNextOrgan,
-  hasPreviousOrgan = false,
-  hasNextOrgan = false,
-  currentOrganIndex,
-  totalOrgans
+  onRemoveObservation
 }: FloatingOrganPanelModernProps) {
   const ref = useRef<HTMLDivElement>(null);
   const { isAnyDropdownOpen } = useDropdownGuard([ref]);
@@ -87,28 +74,6 @@ export default function FloatingOrganPanelModern({
     isDropdownOpen: isAnyDropdownOpen,
     onDismiss: () => onToggleMinimized(true)
   });
-
-  // Atalhos de teclado para navegação
-  const handleKeyNavigation = useCallback((e: KeyboardEvent) => {
-    if (isMinimized) return;
-
-    // Não interferir se estiver em input/textarea
-    const activeEl = document.activeElement;
-    if (activeEl?.tagName === 'INPUT' || activeEl?.tagName === 'TEXTAREA') return;
-
-    if (e.key === 'ArrowLeft' && hasPreviousOrgan && onPreviousOrgan) {
-      e.preventDefault();
-      onPreviousOrgan();
-    } else if (e.key === 'ArrowRight' && hasNextOrgan && onNextOrgan) {
-      e.preventDefault();
-      onNextOrgan();
-    }
-  }, [isMinimized, hasPreviousOrgan, hasNextOrgan, onPreviousOrgan, onNextOrgan]);
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyNavigation);
-    return () => document.removeEventListener('keydown', handleKeyNavigation);
-  }, [handleKeyNavigation]);
 
   const panel = (
     <div
@@ -140,53 +105,17 @@ export default function FloatingOrganPanelModern({
         </div>
       ) : (
         <div className="h-full flex flex-col text-gray-900">
-          {/* Header com navegação */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50/50">
-            {/* Botão anterior */}
+          <div className="absolute top-3 right-3 z-20">
             <button
-              onClick={onPreviousOrgan}
-              disabled={!hasPreviousOrgan}
-              className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Órgão anterior (←)"
-              aria-label="Órgão anterior"
+              onClick={() => onToggleMinimized(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-700"
+              title="Minimizar painel"
+              aria-label="Minimizar painel"
             >
-              <ArrowLeft size={16} className="text-gray-600" />
+              <CaretLeft size={16} className="text-gray-700" />
             </button>
-
-            {/* Indicador de posição */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-gray-700 truncate max-w-[120px]">
-                {organ.name}
-              </span>
-              {currentOrganIndex !== undefined && totalOrgans !== undefined && (
-                <span className="text-[10px] text-gray-400 font-mono">
-                  {currentOrganIndex + 1}/{totalOrgans}
-                </span>
-              )}
-            </div>
-
-            {/* Botões direita */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={onNextOrgan}
-                disabled={!hasNextOrgan}
-                className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Próximo órgão (→)"
-                aria-label="Próximo órgão"
-              >
-                <ArrowRight size={16} className="text-gray-600" />
-              </button>
-              <button
-                onClick={() => onToggleMinimized(true)}
-                className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors text-gray-600"
-                title="Minimizar painel"
-                aria-label="Minimizar painel"
-              >
-                <CaretLeft size={16} />
-              </button>
-            </div>
           </div>
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1">
             <OrganSection
               organ={organ}
               selectedFindings={selectedFindings}
