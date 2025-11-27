@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { SelectedFinding, ReportData, type AIProvider } from '@/types/report';
@@ -43,6 +43,9 @@ export default function SelectedFindingsPanel({
 
   const geminiMenuRef = useRef<HTMLDivElement>(null);
   const openaiMenuRef = useRef<HTMLDivElement>(null);
+
+  // Ref para o handler de geração (usado no atalho de teclado)
+  const generateReportRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -99,6 +102,26 @@ export default function SelectedFindingsPanel({
       return;
     }
 
+    // Validação: verificar órgãos não preenchidos
+    const coveredOrganIds = new Set([
+      ...selectedFindings.map(f => f.organId),
+      ...normalOrgans
+    ]);
+    const uncoveredOrgans = organsList.filter(organ => !coveredOrganIds.has(organ.id));
+
+    if (uncoveredOrgans.length > 0 && uncoveredOrgans.length <= 5) {
+      const organNames = uncoveredOrgans.map(o => o.name).join(', ');
+      toast.warning(
+        `⚠️ Órgãos não preenchidos: ${organNames}`,
+        { duration: 5000, description: 'O laudo será gerado mesmo assim.' }
+      );
+    } else if (uncoveredOrgans.length > 5) {
+      toast.warning(
+        `⚠️ ${uncoveredOrgans.length} órgãos ainda não foram preenchidos`,
+        { duration: 4000, description: 'O laudo será gerado mesmo assim.' }
+      );
+    }
+
     const reportData: ReportData = {
       selectedFindings,
       normalOrgans,
@@ -112,6 +135,20 @@ export default function SelectedFindingsPanel({
       specificModel
     });
   };
+
+  // Atualizar ref e configurar atalho de teclado
+  generateReportRef.current = handleGenerateReport;
+
+  useEffect(() => {
+    const handleKeyboardShortcut = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !isGenerating) {
+        e.preventDefault();
+        generateReportRef.current();
+      }
+    };
+    document.addEventListener('keydown', handleKeyboardShortcut);
+    return () => document.removeEventListener('keydown', handleKeyboardShortcut);
+  }, [isGenerating]);
 
   // Calculate dynamic height based on content
   const hasContent = selectedFindings.length > 0 || normalOrgans.length > 0;
@@ -147,9 +184,9 @@ export default function SelectedFindingsPanel({
           </div>
           <Badge
             variant="secondary"
-            className="text-[10px] px-2 py-0.5 bg-sidebar-muted text-sidebar-foreground"
+            className="text-xs px-2 py-0.5 bg-sidebar-muted text-sidebar-foreground font-medium"
           >
-            {selectedFindings.length} registro{selectedFindings.length === 1 ? '' : 's'}
+            📌 {selectedFindings.length}
           </Badge>
         </div>
 
@@ -413,6 +450,7 @@ export default function SelectedFindingsPanel({
         <button
           onClick={handleGenerateReport}
           disabled={isGenerating}
+          title="Gerar laudo (Ctrl+Enter)"
           className={cn(
             "w-full py-2.5 bg-accent text-accent-foreground text-sm font-medium rounded-md hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md",
             isShaking && "animate-shake"
@@ -427,6 +465,7 @@ export default function SelectedFindingsPanel({
             <>
               <Lightning size={16} />
               Gerar Laudo
+              <span className="text-[10px] opacity-60 ml-1">(⌘↵)</span>
             </>
           )}
         </button>
