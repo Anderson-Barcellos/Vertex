@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -58,9 +59,51 @@ export default function OrganSection({
     severity?: string;
     instances?: FindingInstance[];
   }>>({});
-  
+
   // Usar tempDetails das props se disponível, senão usar estado local
   const findingDetails = onTempDetailsChange ? tempDetails : localFindingDetails;
+
+  // Estado para rastrear qual finding está sendo editado (para Ctrl+Enter)
+  const [activeFindingId, setActiveFindingId] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Ctrl+Enter para adicionar o achado ativo
+  const handleCtrlEnter = useCallback((e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      // Verificar se o foco está dentro deste componente
+      if (!containerRef.current?.contains(document.activeElement)) return;
+
+      e.preventDefault();
+
+      // Encontrar o finding ativo baseado no elemento focado
+      const activeElement = document.activeElement as HTMLElement;
+      const findingContainer = activeElement?.closest('[data-finding-id]');
+      const findingId = findingContainer?.getAttribute('data-finding-id');
+
+      if (findingId) {
+        // Encontrar o finding e category correspondentes
+        for (const category of organ.categories) {
+          const finding = category.findings.find(f => f.id === findingId);
+          if (finding) {
+            const isSelected = isFindingSelected(findingId);
+            if (!isSelected) {
+              // Adicionar o achado
+              handleFindingToggle(category.id, finding, true);
+              toast.success(`✓ ${finding.name} adicionado`, { duration: 2000 });
+            } else {
+              toast.info(`${finding.name} já está na lista`, { duration: 1500 });
+            }
+            break;
+          }
+        }
+      }
+    }
+  }, [organ.categories]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleCtrlEnter);
+    return () => document.removeEventListener('keydown', handleCtrlEnter);
+  }, [handleCtrlEnter]);
 
   const isFindingSelected = (findingId: string) => {
     return selectedFindings.some(sf => sf.findingId === findingId && sf.organId === organ.id);
@@ -147,7 +190,7 @@ export default function OrganSection({
   };
 
   return (
-    <div className="h-full flex flex-col max-h-full">
+    <div ref={containerRef} className="h-full flex flex-col max-h-full">
       {/* Header compacto com background */}
       <div className="bg-primary text-primary-foreground p-4 rounded-t-lg flex-shrink-0">
         <h2 className="text-lg font-semibold">{organ.name}</h2>
@@ -186,7 +229,7 @@ export default function OrganSection({
                     const instanceCount = details.instances?.length || 0;
 
                     return (
-                      <div key={finding.id}>
+                      <div key={finding.id} data-finding-id={finding.id}>
                         <div
                           className="flex items-start space-x-2 p-2 rounded-md hover:bg-muted/30 transition-colors"
                         >

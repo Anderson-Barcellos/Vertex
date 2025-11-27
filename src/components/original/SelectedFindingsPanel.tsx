@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { SelectedFinding, ReportData, type AIProvider } from '@/types/report';
@@ -44,8 +44,6 @@ export default function SelectedFindingsPanel({
   const geminiMenuRef = useRef<HTMLDivElement>(null);
   const openaiMenuRef = useRef<HTMLDivElement>(null);
 
-  // Ref para o handler de geração (usado no atalho de teclado)
-  const generateReportRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -135,20 +133,6 @@ export default function SelectedFindingsPanel({
       specificModel
     });
   };
-
-  // Atualizar ref e configurar atalho de teclado
-  generateReportRef.current = handleGenerateReport;
-
-  useEffect(() => {
-    const handleKeyboardShortcut = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !isGenerating) {
-        e.preventDefault();
-        generateReportRef.current();
-      }
-    };
-    document.addEventListener('keydown', handleKeyboardShortcut);
-    return () => document.removeEventListener('keydown', handleKeyboardShortcut);
-  }, [isGenerating]);
 
   // Calculate dynamic height based on content
   const hasContent = selectedFindings.length > 0 || normalOrgans.length > 0;
@@ -465,7 +449,6 @@ export default function SelectedFindingsPanel({
             <>
               <Lightning size={16} />
               Gerar Laudo
-              <span className="text-[10px] opacity-60 ml-1">(⌘↵)</span>
             </>
           )}
         </button>
