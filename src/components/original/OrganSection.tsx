@@ -3,6 +3,8 @@ import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Plus, Check } from '@phosphor-icons/react';
 import { Organ, Finding } from '@/data/organs';
 import { SelectedFinding, FindingInstance } from '@/types/report';
 import FindingDetailsEnhanced from './FindingDetailsEnhanced';
@@ -278,6 +280,32 @@ export default function OrganSection({
                             onSeverityChange={(severity) => handleSeverityChange(finding.id, finding, category.id, severity)}
                             onInstancesChange={(instances) => handleInstancesChange(finding.id, finding, category.id, instances)}
                           />
+                        )}
+
+                        {/* Botão de adicionar achado */}
+                        {!isSelected && (
+                          <div className="mt-2 ml-6">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                handleFindingToggle(category.id, finding, true);
+                                toast.success(`✓ ${finding.name} adicionado`, { duration: 2000 });
+                              }}
+                              className="h-7 text-xs gap-1.5 text-primary hover:bg-primary hover:text-primary-foreground"
+                            >
+                              <Plus size={14} weight="bold" />
+                              Adicionar
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Indicador de achado já adicionado */}
+                        {isSelected && (
+                          <div className="mt-2 ml-6 flex items-center gap-1.5 text-xs text-green-600">
+                            <Check size={14} weight="bold" />
+                            <span>Adicionado à lista</span>
+                          </div>
                         )}
                       </div>
                     );
