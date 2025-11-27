@@ -6,7 +6,7 @@ import type { SelectedFinding } from '@/types/report';
 const GEMINI_API_ENDPOINT =
   import.meta.env.VITE_GEMINI_API_URL || '/api/gemini';
 const GEMINI_MODEL =
-  import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-pro';
+  import.meta.env.VITE_GEMINI_MODEL || 'gemini-3-pro-preview';
 
 /**
  * Gera impressão clínica usando Gemini AI

@@ -13,7 +13,7 @@ export interface StreamCallbacks {
 const GEMINI_API_ENDPOINT =
   import.meta.env.VITE_GEMINI_API_URL || '/api/gemini';
 export const GEMINI_MODEL =
-  import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-pro';
+  import.meta.env.VITE_GEMINI_MODEL || 'gemini-3-pro-preview';
 
 // System instruction for the AI (incorporated into prompt text)
 const SYSTEM_INSTRUCTION = `Você é um radiologista especialista em ultrassonografia com mais de 20 anos de experiência, responsável por revisar e aprimorar laudos médicos.

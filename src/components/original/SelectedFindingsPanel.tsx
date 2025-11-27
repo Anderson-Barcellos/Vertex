@@ -8,9 +8,7 @@ import { cn } from '@/lib/utils';
 
 // Model configurations
 const GEMINI_MODELS = [
-  { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash', description: 'Rápido e eficiente' },
-  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', description: 'Mais avançado' },
-  { id: 'gemini-flash-lite-latest', name: 'Gemini 2.5 Lite', description: 'Leve e econômico' }
+  { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro', description: 'Mais avançado' }
 ];
 
 const OPENAI_MODELS = [
