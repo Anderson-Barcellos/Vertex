@@ -428,6 +428,27 @@ function VenousExamModern() {
   const currentOrganFindings = selectedFindings.filter(f => f.organId === selectedOrgan);
   const isCurrentOrganNormal = normalOrgans.includes(selectedOrgan);
 
+  // Navegação entre órgãos
+  const currentOrganIndex = venousOrgans.findIndex(organ => organ.id === selectedOrgan);
+  const hasPreviousOrgan = currentOrganIndex > 0;
+  const hasNextOrgan = currentOrganIndex < venousOrgans.length - 1 && currentOrganIndex >= 0;
+
+  const handlePreviousOrgan = useCallback(() => {
+    if (hasPreviousOrgan) {
+      const prevOrgan = venousOrgans[currentOrganIndex - 1];
+      setSelectedOrgan(prevOrgan.id);
+      setIsPanelMinimized(false);
+    }
+  }, [currentOrganIndex, hasPreviousOrgan]);
+
+  const handleNextOrgan = useCallback(() => {
+    if (hasNextOrgan) {
+      const nextOrgan = venousOrgans[currentOrganIndex + 1];
+      setSelectedOrgan(nextOrgan.id);
+      setIsPanelMinimized(false);
+    }
+  }, [currentOrganIndex, hasNextOrgan]);
+
   return (
     <>
       <ModernExamLayout
@@ -514,6 +535,12 @@ function VenousExamModern() {
               widthExpanded={'24rem'}
               maxHeight={'80vh'}
               FindingDetailsComponent={FindingDetailsGeneric}
+              onPreviousOrgan={handlePreviousOrgan}
+              onNextOrgan={handleNextOrgan}
+              hasPreviousOrgan={hasPreviousOrgan}
+              hasNextOrgan={hasNextOrgan}
+              currentOrganIndex={currentOrganIndex}
+              totalOrgans={venousOrgans.length}
             />
           ) : null
         )}
