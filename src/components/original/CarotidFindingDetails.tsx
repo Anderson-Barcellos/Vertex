@@ -780,11 +780,11 @@ function CarotidFindingDetailsComponent({
                   </div>
 
                   {stenosisAnalysis && stenosisAnalysis.nascet !== 'N/A' && (
-                    <div className="mt-2 p-3 bg-accent/30 rounded-lg border border-accent/50">
+                    <div className="mt-2 p-3 bg-slate-800/90 rounded-lg border border-slate-600/50">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <Activity size={14} className="text-accent-foreground" />
-                          <span className="text-xs font-semibold text-accent-foreground">
+                          <Activity size={14} className="text-sky-400" />
+                          <span className="text-xs font-semibold text-slate-100">
                             Classificação Automática (IAC/NASCET)
                           </span>
                         </div>
@@ -795,33 +795,33 @@ function CarotidFindingDetailsComponent({
                       
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">Grau estimado:</span>
-                          <span className="text-sm font-bold text-accent-foreground">
+                          <span className="text-xs text-slate-400">Grau estimado:</span>
+                          <span className="text-sm font-bold text-emerald-400">
                             {stenosisAnalysis.grade} ({stenosisAnalysis.nascet})
                           </span>
                         </div>
                         
-                        <div className="text-[10px] text-muted-foreground">
-                          <span className="font-medium">Critérios usados ({stenosisAnalysis.criteriaCount}):</span>
+                        <div className="text-[10px] text-slate-400">
+                          <span className="font-medium text-slate-300">Critérios usados ({stenosisAnalysis.criteriaCount}):</span>
                           <ul className="mt-0.5 space-y-0.5">
                             {stenosisAnalysis.criteriaUsed.map((c, i) => (
                               <li key={i} className="flex items-center gap-1">
-                                <span className="w-1 h-1 rounded-full bg-accent-foreground/50" />
-                                {c}
+                                <span className="w-1 h-1 rounded-full bg-sky-400" />
+                                <span className="text-slate-300">{c}</span>
                               </li>
                             ))}
                           </ul>
                         </div>
 
                         {stenosisAnalysis.alerts.length > 0 && (
-                          <div className="mt-2 p-2 bg-yellow-500/10 rounded border border-yellow-500/30">
+                          <div className="mt-2 p-2 bg-amber-900/40 rounded border border-amber-600/50">
                             <div className="flex items-center gap-1 mb-1">
-                              <ShieldAlert size={12} className="text-yellow-400" />
-                              <span className="text-[10px] font-semibold text-yellow-400">Alertas</span>
+                              <ShieldAlert size={12} className="text-amber-400" />
+                              <span className="text-[10px] font-semibold text-amber-400">Alertas</span>
                             </div>
                             <ul className="space-y-0.5">
                               {stenosisAnalysis.alerts.map((alert, i) => (
-                                <li key={i} className="text-[10px] text-yellow-300">
+                                <li key={i} className="text-[10px] text-amber-200">
                                   • {alert}
                                 </li>
                               ))}
@@ -829,9 +829,9 @@ function CarotidFindingDetailsComponent({
                           </div>
                         )}
 
-                        <div className="mt-2 pt-2 border-t border-accent/30">
-                          <span className="text-[10px] text-muted-foreground">Recomendação ESVS:</span>
-                          <p className="text-[11px] text-accent-foreground/90 mt-0.5">
+                        <div className="mt-2 pt-2 border-t border-slate-600/50">
+                          <span className="text-[10px] text-slate-400">Recomendação ESVS:</span>
+                          <p className="text-[11px] text-slate-200 mt-0.5">
                             {stenosisAnalysis.interventionRecommendation}
                           </p>
                         </div>
