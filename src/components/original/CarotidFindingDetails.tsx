@@ -15,7 +15,10 @@ import {
   PLAQUE_RISK,
   PLAQUE_SURFACE,
   FLOW_PATTERN,
-  getGrayWealeType
+  SPECTRAL_BROADENING,
+  getGrayWealeType,
+  calculateStenosisGrade,
+  type StenosisAnalysis
 } from '@/data/carotidOrgans';
 
 interface CarotidFindingDetailsProps {
@@ -249,6 +252,24 @@ const normalizeMeasurements = (measurement: FindingMeasurement): FindingMeasurem
   return normalized;
 };
 
+const getConfidenceBadgeColor = (confidence: 'high' | 'medium' | 'low') => {
+  switch (confidence) {
+    case 'high': return 'bg-green-500/20 text-green-300 border-green-500/30';
+    case 'medium': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+    case 'low': return 'bg-orange-500/20 text-orange-300 border-orange-500/30';
+    default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+  }
+};
+
+const getConfidenceLabel = (confidence: 'high' | 'medium' | 'low') => {
+  switch (confidence) {
+    case 'high': return 'Alta';
+    case 'medium': return 'Média';
+    case 'low': return 'Baixa';
+    default: return '';
+  }
+};
+
 function CarotidFindingDetailsComponent({
   finding,
   organId,
@@ -257,15 +278,63 @@ function CarotidFindingDetailsComponent({
   onSeverityChange,
   onInstancesChange
 }: CarotidFindingDetailsProps) {
-  // Local state for the current form
   const [currentMeasurement, setCurrentMeasurement] = useState<FindingMeasurement>({});
   const [isEditing, setIsEditing] = useState(false);
+  const [stenosisAnalysis, setStenosisAnalysis] = useState<StenosisAnalysis | null>(null);
 
-  // Detectar tipo de achado
   const isStenosis = finding.id.includes('estenose');
   const isPlaque = finding.id.includes('placa');
   const isEMI = finding.id.includes('imi') || finding.id.includes('espessamento');
   const isVertebral = organId === 'vd' || organId === 've';
+
+  React.useEffect(() => {
+    if (!isStenosis) {
+      setStenosisAnalysis(null);
+      return;
+    }
+
+    const hasAnyVelocity = currentMeasurement.vps || currentMeasurement.vdf || 
+      currentMeasurement.ratio || currentMeasurement.ratioICA_CCA || 
+      currentMeasurement.ratio_aci_acc || currentMeasurement.spectralBroadening;
+
+    if (!hasAnyVelocity) {
+      setStenosisAnalysis(null);
+      return;
+    }
+
+    const analysis = calculateStenosisGrade({
+      vps: currentMeasurement.vps,
+      vdf: currentMeasurement.vdf,
+      ratio: currentMeasurement.ratio || currentMeasurement.ratioICA_CCA || currentMeasurement.ratio_aci_acc,
+      spectralBroadening: currentMeasurement.spectralBroadening
+    });
+
+    setStenosisAnalysis(analysis);
+
+    if (analysis.nascet !== 'N/A' && analysis.confidence !== 'low') {
+      const nascetLabel = NASCET_CRITERIA.find(n => 
+        analysis.nascet.includes(n.value) || n.label.includes(analysis.nascet)
+      )?.label || analysis.grade;
+      
+      if (currentMeasurement.nascet !== nascetLabel && currentMeasurement.nascetGrade !== nascetLabel) {
+        setCurrentMeasurement(prev => ({
+          ...prev,
+          nascet: nascetLabel,
+          nascetGrade: nascetLabel,
+          calculatedGrade: analysis.grade,
+          calculatedConfidence: analysis.confidence
+        }));
+      }
+    }
+  }, [
+    isStenosis,
+    currentMeasurement.vps,
+    currentMeasurement.vdf,
+    currentMeasurement.ratio,
+    currentMeasurement.ratioICA_CCA,
+    currentMeasurement.ratio_aci_acc,
+    currentMeasurement.spectralBroadening
+  ]);
 
   const handleAddInstance = () => {
     if (currentMeasurement.size ||
@@ -294,6 +363,7 @@ function CarotidFindingDetailsComponent({
         currentMeasurement.flowPattern ||
         currentMeasurement.vertebralFlowPattern ||
         currentMeasurement.subclavianSteal ||
+        currentMeasurement.spectralBroadening ||
         currentMeasurement.description) {
       const normalizedMeasurements = normalizeMeasurements(currentMeasurement);
       const newInstance: FindingInstance = {
@@ -429,6 +499,20 @@ function CarotidFindingDetailsComponent({
                       )}
                       {nascetValue && (
                         <p><span className="text-muted-foreground">NASCET:</span> {nascetValue}</p>
+                      )}
+                      {instance.measurements.spectralBroadening && (
+                        <p><span className="text-muted-foreground">Borramento:</span> {instance.measurements.spectralBroadening}</p>
+                      )}
+                      {instance.measurements.calculatedGrade && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Classificação:</span>
+                          <span className="font-medium">{instance.measurements.calculatedGrade}</span>
+                          {instance.measurements.calculatedConfidence && (
+                            <Badge className={`text-[10px] ${getConfidenceBadgeColor(instance.measurements.calculatedConfidence as 'high' | 'medium' | 'low')}`}>
+                              {getConfidenceLabel(instance.measurements.calculatedConfidence as 'high' | 'medium' | 'low')}
+                            </Badge>
+                          )}
+                        </div>
                       )}
                       {instance.measurements.echogenicity && (
                         <div className="flex items-center gap-2">
@@ -642,6 +726,33 @@ function CarotidFindingDetailsComponent({
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium text-muted-foreground min-w-[80px] flex items-center gap-1">
+                      <Waves size={12} />
+                      Borramento:
+                    </label>
+                    <Select
+                      value={currentMeasurement.spectralBroadening || ''}
+                      onValueChange={(value) =>
+                        setCurrentMeasurement({
+                          ...currentMeasurement,
+                          spectralBroadening: value
+                        })
+                      }
+                    >
+                      <SelectTrigger className="h-7 text-xs flex-1">
+                        <SelectValue placeholder="Selecione..." />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[200px] overflow-y-auto">
+                        {SPECTRAL_BROADENING.map(s => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
                     <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
                       NASCET:
                     </label>
@@ -667,6 +778,66 @@ function CarotidFindingDetailsComponent({
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {stenosisAnalysis && stenosisAnalysis.nascet !== 'N/A' && (
+                    <div className="mt-2 p-3 bg-accent/30 rounded-lg border border-accent/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Activity size={14} className="text-accent-foreground" />
+                          <span className="text-xs font-semibold text-accent-foreground">
+                            Classificação Automática (IAC/NASCET)
+                          </span>
+                        </div>
+                        <Badge className={`text-[10px] px-1.5 py-0.5 ${getConfidenceBadgeColor(stenosisAnalysis.confidence)}`}>
+                          Confiança: {getConfidenceLabel(stenosisAnalysis.confidence)}
+                        </Badge>
+                      </div>
+                      
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">Grau estimado:</span>
+                          <span className="text-sm font-bold text-accent-foreground">
+                            {stenosisAnalysis.grade} ({stenosisAnalysis.nascet})
+                          </span>
+                        </div>
+                        
+                        <div className="text-[10px] text-muted-foreground">
+                          <span className="font-medium">Critérios usados ({stenosisAnalysis.criteriaCount}):</span>
+                          <ul className="mt-0.5 space-y-0.5">
+                            {stenosisAnalysis.criteriaUsed.map((c, i) => (
+                              <li key={i} className="flex items-center gap-1">
+                                <span className="w-1 h-1 rounded-full bg-accent-foreground/50" />
+                                {c}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {stenosisAnalysis.alerts.length > 0 && (
+                          <div className="mt-2 p-2 bg-yellow-500/10 rounded border border-yellow-500/30">
+                            <div className="flex items-center gap-1 mb-1">
+                              <ShieldAlert size={12} className="text-yellow-400" />
+                              <span className="text-[10px] font-semibold text-yellow-400">Alertas</span>
+                            </div>
+                            <ul className="space-y-0.5">
+                              {stenosisAnalysis.alerts.map((alert, i) => (
+                                <li key={i} className="text-[10px] text-yellow-300">
+                                  • {alert}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <div className="mt-2 pt-2 border-t border-accent/30">
+                          <span className="text-[10px] text-muted-foreground">Recomendação ESVS:</span>
+                          <p className="text-[11px] text-accent-foreground/90 mt-0.5">
+                            {stenosisAnalysis.interventionRecommendation}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
 
@@ -1012,6 +1183,7 @@ function CarotidFindingDetailsComponent({
                     !currentMeasurement.flowPattern &&
                     !currentMeasurement.vertebralFlowPattern &&
                     !currentMeasurement.subclavianSteal &&
+                    !currentMeasurement.spectralBroadening &&
                     !currentMeasurement.description
                   }
                   className="h-7 text-xs"

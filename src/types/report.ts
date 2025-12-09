@@ -29,6 +29,11 @@ export interface FindingMeasurement {
   vertebralFlowPattern?: string; // Padrão de fluxo vertebral
   subclavianSteal?: string; // Roubo da subclávia (Sim/Não)
 
+  // Carotid Doppler - Auto-cálculo NASCET (IAC/ESVS)
+  spectralBroadening?: string; // Borramento espectral
+  calculatedGrade?: string; // Grau calculado automaticamente
+  calculatedConfidence?: string; // Confiança do cálculo (high/medium/low)
+
   // Breast Ultrasound specific fields
   biradsCategory?: string; // BI-RADS categorization (1-6)
   depth?: string; // Profundidade da lesão (superficial, intermediária, profunda)

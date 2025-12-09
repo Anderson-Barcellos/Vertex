@@ -69,6 +69,23 @@ export const IAC_2021_CRITERIA = {
   occlusion: { stenosis: 'Oclusão', vps: 'Ausente', edv: 'Ausente', ratio: 'N/A' }
 };
 
+// Borramento Espectral (Spectral Broadening) - Critério adicional
+export const SPECTRAL_BROADENING = [
+  'Ausente (janela espectral preservada)',
+  'Leve (preenchimento parcial da janela)',
+  'Moderado (janela quase preenchida)',
+  'Acentuado (janela totalmente preenchida)'
+];
+
+// Critérios adicionais de estenose
+export const ADDITIONAL_STENOSIS_CRITERIA = [
+  'Turbulência pós-estenótica',
+  'Aliasing ao color Doppler',
+  'Mosaico de cores',
+  'Jato de alta velocidade focal',
+  'Fluxo tardus-parvus distal'
+];
+
 // Velocidades e Critérios de Estenose (SRU 2003 + IAC 2021)
 export const VELOCITY_THRESHOLDS = {
   VPS_NORMAL: '<125 cm/s',
@@ -1319,52 +1336,166 @@ export const RESISTIVITY_INDEX = [
 export interface StenosisAnalysis {
   grade: string;
   nascet: string;
+  nascetRange: string;
   confidence: 'high' | 'medium' | 'low';
+  confidenceReason: string;
   interventionRecommendation: string;
   alerts: string[];
+  criteriaUsed: string[];
+  criteriaCount: number;
 }
 
+type StenosisLevel = 'normal' | 'mild' | 'moderate' | 'severe' | 'critical' | 'near_occlusion' | 'occlusion';
+
+const getStenosisLevelFromVPS = (vps: number): StenosisLevel => {
+  if (vps === 0) return 'occlusion';
+  if (vps < 50) return 'near_occlusion';
+  if (vps < 125) return 'mild';
+  if (vps <= 230) return 'moderate';
+  if (vps <= 280) return 'severe';
+  return 'critical';
+};
+
+const getStenosisLevelFromVDF = (vdf: number): StenosisLevel => {
+  if (vdf === 0) return 'occlusion';
+  if (vdf < 40) return 'mild';
+  if (vdf <= 100) return 'moderate';
+  return 'severe';
+};
+
+const getStenosisLevelFromRatio = (ratio: number): StenosisLevel => {
+  if (ratio < 2.0) return 'mild';
+  if (ratio <= 4.0) return 'moderate';
+  return 'severe';
+};
+
+const getStenosisLevelFromBroadening = (broadening: string): StenosisLevel | null => {
+  const lower = broadening.toLowerCase();
+  if (lower.includes('ausente')) return 'mild';
+  if (lower.includes('leve')) return 'mild';
+  if (lower.includes('moderado')) return 'moderate';
+  if (lower.includes('acentuado')) return 'severe';
+  return null;
+};
+
+const LEVEL_PRIORITY: Record<StenosisLevel, number> = {
+  normal: 0,
+  mild: 1,
+  moderate: 2,
+  severe: 3,
+  critical: 4,
+  near_occlusion: 5,
+  occlusion: 6
+};
+
+const LEVEL_TO_NASCET: Record<StenosisLevel, { grade: string; nascet: string; range: string }> = {
+  normal: { grade: 'Normal', nascet: '<50%', range: '0-49%' },
+  mild: { grade: 'Estenose leve', nascet: '<50%', range: '0-49%' },
+  moderate: { grade: 'Estenose moderada', nascet: '50-69%', range: '50-69%' },
+  severe: { grade: 'Estenose grave', nascet: '≥70%', range: '70-89%' },
+  critical: { grade: 'Estenose crítica', nascet: '>80%', range: '80-99%' },
+  near_occlusion: { grade: 'Suboclusão (near-occlusion)', nascet: '99%', range: '99%' },
+  occlusion: { grade: 'Oclusão', nascet: '100%', range: '100%' }
+};
+
 export const calculateStenosisGrade = (params: {
-  vps: number;
-  vdf?: number;
-  ratio?: number;
-  symptomatic: boolean;
+  vps?: number | string;
+  vdf?: number | string;
+  ratio?: number | string;
+  spectralBroadening?: string;
+  symptomatic?: boolean;
   plaqueGSM?: string;
   vulnerableFeatures?: string[];
 }): StenosisAnalysis => {
-  const { vps, vdf, ratio, symptomatic, plaqueGSM, vulnerableFeatures = [] } = params;
   const alerts: string[] = [];
-  let grade: string;
-  let nascet: string;
-  let confidence: 'high' | 'medium' | 'low' = 'high';
+  const criteriaUsed: string[] = [];
+  const levels: StenosisLevel[] = [];
 
-  if (vps === 0) {
-    grade = 'Oclusão';
-    nascet = '100%';
-  } else if (vps < 50 && ratio && ratio < 1.5) {
-    grade = 'Suboclusão (near-occlusion)';
-    nascet = '99%';
-    alerts.push('String sign - fluxo filiforme');
-  } else if (vps > 230 || (vdf && vdf > 100) || (ratio && ratio > 4.0)) {
-    grade = 'Estenose grave';
-    nascet = '≥70%';
-    if (vps > 280) {
-      alerts.push('Estenose crítica (>80%)');
-      nascet = '>80%';
-    }
-  } else if (vps >= 125 || (vdf && vdf >= 40) || (ratio && ratio >= 2.0)) {
-    grade = 'Estenose moderada';
-    nascet = '50-69%';
-  } else if (vps < 125) {
-    grade = 'Normal ou estenose leve';
-    nascet = '<50%';
-  } else {
-    grade = 'Indeterminado';
-    nascet = 'N/A';
-    confidence = 'low';
+  const parseNumeric = (val?: number | string): number | undefined => {
+    if (val === undefined || val === null || val === '') return undefined;
+    if (typeof val === 'number') return val;
+    const match = val.match(/[\d.]+/);
+    return match ? parseFloat(match[0]) : undefined;
+  };
+
+  const vps = parseNumeric(params.vps);
+  const vdf = parseNumeric(params.vdf);
+  const ratio = parseNumeric(params.ratio);
+  const { spectralBroadening, symptomatic = false, plaqueGSM, vulnerableFeatures = [] } = params;
+
+  if (vps !== undefined) {
+    const level = getStenosisLevelFromVPS(vps);
+    levels.push(level);
+    criteriaUsed.push(`VPS ${vps} cm/s → ${LEVEL_TO_NASCET[level].nascet}`);
   }
 
-  if (plaqueGSM?.includes('tipo1') || plaqueGSM?.includes('tipo2')) {
+  if (vdf !== undefined) {
+    const level = getStenosisLevelFromVDF(vdf);
+    levels.push(level);
+    criteriaUsed.push(`VDF ${vdf} cm/s → ${LEVEL_TO_NASCET[level].nascet}`);
+  }
+
+  if (ratio !== undefined) {
+    const level = getStenosisLevelFromRatio(ratio);
+    levels.push(level);
+    criteriaUsed.push(`Ratio ${ratio} → ${LEVEL_TO_NASCET[level].nascet}`);
+  }
+
+  if (spectralBroadening) {
+    const level = getStenosisLevelFromBroadening(spectralBroadening);
+    if (level) {
+      levels.push(level);
+      criteriaUsed.push(`Borramento ${spectralBroadening} → ${LEVEL_TO_NASCET[level].nascet}`);
+    }
+  }
+
+  if (levels.length === 0) {
+    return {
+      grade: 'Indeterminado',
+      nascet: 'N/A',
+      nascetRange: 'N/A',
+      confidence: 'low',
+      confidenceReason: 'Nenhum critério de velocidade informado',
+      interventionRecommendation: 'Preencher VPS, VDF e Ratio para classificação',
+      alerts: ['Dados insuficientes para classificação'],
+      criteriaUsed: [],
+      criteriaCount: 0
+    };
+  }
+
+  const maxLevel = levels.reduce((max, curr) =>
+    LEVEL_PRIORITY[curr] > LEVEL_PRIORITY[max] ? curr : max
+  , levels[0]);
+
+  const { grade, nascet, range } = LEVEL_TO_NASCET[maxLevel];
+
+  const levelCounts = levels.reduce((acc, l) => {
+    acc[l] = (acc[l] || 0) + 1;
+    return acc;
+  }, {} as Record<StenosisLevel, number>);
+
+  const maxLevelCount = levelCounts[maxLevel] || 0;
+  const totalCriteria = levels.length;
+
+  let confidence: 'high' | 'medium' | 'low';
+  let confidenceReason: string;
+
+  if (totalCriteria >= 3 && maxLevelCount >= 2) {
+    confidence = 'high';
+    confidenceReason = `${totalCriteria} critérios avaliados, ${maxLevelCount} concordantes`;
+  } else if (totalCriteria >= 2 && maxLevelCount >= 1) {
+    confidence = 'medium';
+    confidenceReason = `${totalCriteria} critérios avaliados`;
+    if (maxLevelCount < totalCriteria) {
+      alerts.push('Critérios parcialmente discordantes - usar critério mais severo');
+    }
+  } else {
+    confidence = 'low';
+    confidenceReason = 'Apenas 1 critério avaliado';
+    alerts.push('Avaliar VDF e Razão ACI/ACC para maior precisão');
+  }
+
+  if (plaqueGSM?.includes('tipo1') || plaqueGSM?.includes('tipo2') || plaqueGSM?.toLowerCase().includes('ecolucente')) {
     alerts.push('Placa vulnerável (ecolucente) - maior risco de eventos');
   }
 
@@ -1373,46 +1504,62 @@ export const calculateStenosisGrade = (params: {
   }
 
   let interventionRecommendation: string;
-  const stenosisPercent = parseInt(nascet) || 0;
+  const isSevere = LEVEL_PRIORITY[maxLevel] >= LEVEL_PRIORITY['moderate'];
+  const isVerySevere = LEVEL_PRIORITY[maxLevel] >= LEVEL_PRIORITY['severe'];
 
   if (symptomatic) {
-    if (stenosisPercent >= 50) {
+    if (isSevere) {
       interventionRecommendation = 'ESVS Classe I: CEA/CAS recomendado (idealmente <14 dias do evento)';
       alerts.push('SINTOMÁTICO ≥50% - Avaliar intervenção urgente');
     } else {
       interventionRecommendation = 'ESVS Classe III: Tratamento clínico otimizado (BMT)';
     }
   } else {
-    if (stenosisPercent >= 60) {
+    if (isVerySevere) {
       const hasHighRiskFeatures = vulnerableFeatures.length > 0 ||
         plaqueGSM?.includes('tipo1') || plaqueGSM?.includes('tipo2');
 
       if (hasHighRiskFeatures) {
-        interventionRecommendation = 'ESVS Classe I: CEA recomendado (features de alto risco presentes)';
+        interventionRecommendation = 'ESVS Classe I: CEA recomendado (features de alto risco)';
         alerts.push('ASSINTOMÁTICO com features de alto risco - Considerar CEA');
       } else {
-        interventionRecommendation = 'ESVS Classe IIa: Considerar CEA se expectativa de vida >5 anos e risco <3%';
+        interventionRecommendation = 'ESVS Classe IIa: Considerar CEA se expectativa >5 anos e risco <3%';
       }
+    } else if (isSevere) {
+      interventionRecommendation = 'ESVS Classe IIb: CEA pode ser considerado';
     } else {
       interventionRecommendation = 'ESVS Classe III: Tratamento clínico otimizado (BMT)';
     }
   }
 
-  if (!vdf && !ratio) {
-    confidence = confidence === 'high' ? 'medium' : 'low';
-    alerts.push('Avaliar VDF e Razão ACI/ACC para maior precisão');
-  }
-
   return {
     grade,
     nascet,
+    nascetRange: range,
     confidence,
+    confidenceReason,
     interventionRecommendation,
-    alerts
+    alerts,
+    criteriaUsed,
+    criteriaCount: totalCriteria
   };
 };
 
 export const getGSMRiskLevel = (gsm: string): 'high' | 'medium' | 'low' => {
   const found = PLAQUE_GSM.find(p => gsm.includes(p.value) || gsm.includes(p.label));
   return (found?.risk as 'high' | 'medium' | 'low') || 'medium';
+};
+
+export const findMostSevereStenosis = (stenoses: StenosisAnalysis[]): StenosisAnalysis | null => {
+  if (stenoses.length === 0) return null;
+  
+  const nascetPriority: Record<string, number> = {
+    '<50%': 1, '50-69%': 2, '≥70%': 3, '>80%': 4, '99%': 5, '100%': 6
+  };
+
+  return stenoses.reduce((worst, current) => {
+    const worstPriority = nascetPriority[worst.nascet] || 0;
+    const currentPriority = nascetPriority[current.nascet] || 0;
+    return currentPriority > worstPriority ? current : worst;
+  });
 };
