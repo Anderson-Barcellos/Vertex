@@ -562,5 +562,28 @@ export const organs: Organ[] = [
         ]
       }
     ]
+  },
+  {
+    id: 'observacoes-abdome',
+    name: 'Observações',
+    icon: 'notes',
+    normalDescription: '',
+    categories: [
+      {
+        id: 'obs-abdome',
+        name: 'Observações Gerais',
+        findings: [
+          {
+            id: 'obs-abdome-texto',
+            name: 'Observação Adicional',
+            description: 'Informações complementares ao exame',
+            hasDetails: true,
+            extraFields: [
+              { id: 'texto', label: 'Observações', type: 'textarea', placeholder: 'Digite observações adicionais...' }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ];

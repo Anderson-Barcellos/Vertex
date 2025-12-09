@@ -13,10 +13,11 @@ import Sidebar from '@/components/original/Sidebar';
 import ReportCanvas from '@/components/original/ReportCanvas';
 import type { AIStatus } from '@/components/original/ReportCanvas';
 import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
-import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
+import QuickActionsPanel from '@/components/original/QuickActionsPanel';
 import { organs } from '@/data/organs';
 import { SelectedFinding, ReportData, FindingInstance, type AIProvider, type AIGenerationStats } from '@/types/report';
 import { Finding } from '@/data/organs';
+import FindingDetailsGeneric from '@/components/original/FindingDetailsGeneric';
 import { generateReport } from '@/services/reportGenerator';
 import { geminiStreamService, GEMINI_MODEL } from '@/services/geminiStreamService';
 import { openaiStreamService, OPENAI_MODEL } from '@/services/openaiStreamService';
@@ -50,8 +51,6 @@ function AbdomeTotalExamModern() {
     Record<string, Record<string, { severity?: string; instances?: FindingInstance[] }>>
   >({});
 
-  // Estado para observações extras por órgão
-  const [observations, setObservations] = useState<Record<string, string[]>>({});
 
   // Outside click e guardas de dropdown agora são tratados pelo FloatingOrganPanelModern.
 
@@ -96,23 +95,21 @@ function AbdomeTotalExamModern() {
     return tempFindingDetails[organId] || {};
   };
 
-  const getObservations = (organId: string) => {
-    return observations[organId] || [];
+  const handleSetAllNormal = () => {
+    const organIds = organs.map(o => o.id).filter(id => id !== 'observacoes-abdome');
+    setNormalOrgans(organIds);
+    setSelectedFindings([]);
   };
 
-  const handleAddObservation = (organId: string, text: string) => {
-    setObservations(prev => ({
-      ...prev,
-      [organId]: [...(prev[organId] || []), text]
-    }));
+  const handleResetExam = () => {
+    setSelectedFindings([]);
+    setNormalOrgans([]);
+    setGeneratedReport('');
+    setAiImpression('');
+    setAiGenerationStats(null);
+    setTempFindingDetails({});
   };
 
-  const handleRemoveObservation = (organId: string, index: number) => {
-    setObservations(prev => ({
-      ...prev,
-      [organId]: (prev[organId] || []).filter((_, i) => i !== index)
-    }));
-  };
 
   const handleFindingChange = (
     organId: string,
@@ -541,13 +538,22 @@ function AbdomeTotalExamModern() {
               onGenerateReport={handleGenerateReport}
               isGenerating={isGenerating}
               expandToContent
+              onModelChange={(model, specificModel) => {
+                setCurrentAiModel(model as 'gemini' | 'openai');
+                setCurrentModelId(specificModel);
+              }}
             />
-            <ExamStatisticsPanel
+            <QuickActionsPanel
               className="glass-panel"
-              stats={aiGenerationStats}
+              organsList={organs}
+              selectedFindingsCount={selectedFindings.length}
+              normalOrgansCount={normalOrgans.length}
+              generatedReport={generatedReport}
               isGenerating={isGenerating}
-              currentProvider={currentAiModel === 'gemini' ? 'gemini' : 'openai'}
-              currentModel={currentModelId}
+              currentAiModel={currentAiModel}
+              currentModelId={currentModelId}
+              onSetAllNormal={handleSetAllNormal}
+              onResetExam={handleResetExam}
             />
           </>
         )}
@@ -563,12 +569,10 @@ function AbdomeTotalExamModern() {
               onNormalChange={handleNormalChange}
               tempDetails={getTempDetails(currentOrgan.id)}
               onTempDetailsChange={handleTempDetailsChange}
-              observations={getObservations(currentOrgan.id)}
-              onAddObservation={handleAddObservation}
-              onRemoveObservation={handleRemoveObservation}
               leftCss={'calc(25% + 1.5rem)'}
               widthExpanded={'24rem'}
               maxHeight={'80vh'}
+              FindingDetailsComponent={FindingDetailsGeneric}
             />
           ) : null
         )}

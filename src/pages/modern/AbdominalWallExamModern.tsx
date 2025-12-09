@@ -14,6 +14,7 @@ import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelMode
 
 import type { SelectedFinding, ReportData, FindingInstance, AIProvider, AIGenerationStats } from '@/types/report';
 import type { Finding } from '@/data/organs';
+import FindingDetailsGeneric from '@/components/original/FindingDetailsGeneric';
 
 import { abdominalWallOrgans } from '@/data/abdominalWallOrgans';
 
@@ -520,6 +521,7 @@ export default function AbdominalWallExamModern() {
               leftCss={'calc(25% + 1.5rem)'}
               widthExpanded={'24rem'}
               maxHeight={'80vh'}
+              FindingDetailsComponent={FindingDetailsGeneric}
             />
           ) : null
         )}

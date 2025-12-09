@@ -1,5 +1,131 @@
 import type { SelectedFinding } from '@/types/report';
 
+const FIELD_LABELS: Record<string, string> = {
+  size: 'Tamanho',
+  location: 'Localização',
+  segment: 'Segmento',
+  vps: 'VPS',
+  vdf: 'VDF',
+  ratioICA_CCA: 'Razão ICA/CCA',
+  ratioICA_ICA: 'Razão ICA/ICA contralateral',
+  ratio_aci_acc: 'Razão ACI/ACC',
+  nascetGrade: 'Grau NASCET',
+  nascet_grade: 'Grau NASCET',
+  stenosis_percent: 'Estenose estimada',
+  extension: 'Extensão longitudinal',
+  diameter: 'Diâmetro',
+  emi: 'EMI',
+  emi_classification: 'Classificação EMI',
+  emiClassification: 'Classificação EMI',
+  echogenicity: 'Ecogenicidade',
+  plaqueEchogenicity: 'Ecogenicidade da placa',
+  composition: 'Composição',
+  plaqueComposition: 'Composição da placa',
+  surface: 'Superfície',
+  plaqueSurface: 'Superfície da placa',
+  risk: 'Estratificação de risco',
+  plaqueRisk: 'Risco plaquetário',
+  flow_pattern: 'Padrão de fluxo',
+  vertebralFlowPattern: 'Fluxo vertebral',
+  subclavian_steal: 'Roubo da subclávia',
+  subclavianSteal: 'Roubo da subclávia',
+  ir: 'Índice de Resistividade (IR)',
+  description: 'Observações',
+  texto: 'Observações',
+  
+  quadrant: 'Quadrante',
+  depth: 'Profundidade',
+  distanceFromNipple: 'Distância do mamilo',
+  clockPosition: 'Posição horária',
+  shape: 'Forma',
+  margins: 'Margens',
+  orientation: 'Orientação',
+  posteriorFeatures: 'Acústica posterior',
+  vascularization: 'Vascularização',
+  vascularPattern: 'Padrão vascular',
+  peakVelocity: 'Velocidade de pico',
+  pulsatilityIndex: 'IP',
+  resistivityIndex: 'IR',
+  mobility: 'Mobilidade',
+  elastographyScore: 'Elastografia',
+  strainRatio: 'Strain ratio',
+  biradsCategory: 'BI-RADS',
+  calcificationMorphology: 'Calcificações (morfologia)',
+  calcificationDistribution: 'Calcificações (distribuição)',
+  internalContent: 'Conteúdo interno',
+  wallThickness: 'Espessura parede',
+  surroundingEdema: 'Edema',
+  implantType: 'Tipo implante',
+  ruptureType: 'Tipo ruptura',
+  bakerGrade: 'Baker',
+  corticalThickness: 'Espessura cortical',
+  hilusPresence: 'Hilo',
+  morphology: 'Morfologia',
+  axillaryLevel: 'Nível axilar',
+  
+  visibilidade: 'Visibilidade',
+  manobra: 'Manobra realizada',
+  ostio: 'Óstio',
+  saco: 'Saco herniário',
+  conteudo: 'Conteúdo',
+  redutibilidade: 'Redutibilidade',
+  distancia: 'Distância inter-retos',
+  nivel: 'Nível',
+  local: 'Local da cicatriz',
+  lado: 'Lado',
+  
+  'localizacao-lipoma': 'Localização',
+  'ecogenicidade-lipoma': 'Ecogenicidade',
+  'contornos-lipoma': 'Contornos',
+  'localizacao-endo': 'Localização',
+  'ecogenicidade-endo': 'Ecogenicidade',
+  'vascularizacao-endo': 'Vascularização',
+  'sintomas-ciclicos': 'Dor cíclica',
+  'localizacao-seroma': 'Localização',
+  'conteudo-seroma': 'Conteúdo',
+  'tempo-pos-op': 'Tempo pós-operatório',
+  'localizacao-hematoma': 'Localização',
+  'fase-hematoma': 'Fase',
+  'causa-hematoma': 'Causa',
+  'localizacao-abscesso': 'Localização',
+  'conteudo-abscesso': 'Conteúdo',
+  'parede-abscesso': 'Parede',
+  'localizacao-nodulo': 'Localização',
+  'ecogenicidade-nodulo': 'Ecogenicidade',
+  'vascularizacao-nodulo': 'Vascularização',
+  'mobilidade-nodulo': 'Mobilidade',
+  'localizacao-tela': 'Localização',
+  'aspecto-tela': 'Aspecto',
+  'localizacao-comp': 'Localização',
+  'tipo-comp': 'Tipo de complicação',
+  colecao: 'Coleção associada',
+  
+  refluxo_tempo: 'Tempo de refluxo',
+  manobra_realizada: 'Manobra realizada',
+  calibre: 'Calibre',
+  extensao: 'Extensão',
+  localizacao: 'Localização',
+  ceap: 'Classificação CEAP',
+  trombo_aspecto: 'Aspecto do trombo',
+  compressibilidade: 'Compressibilidade',
+  fluxo: 'Fluxo',
+  
+  itb_repouso: 'ITB repouso',
+  itb_pos_exercicio: 'ITB pós-exercício',
+  tempo_recuperacao: 'Tempo recuperação',
+  classificacao_itb: 'Classificação ITB',
+  morfologia_aneurisma: 'Morfologia',
+  trombo_mural: 'Trombo mural',
+  extensao_aneurisma: 'Extensão',
+};
+
+function formatFieldName(key: string): string {
+  return key
+    .replace(/[-_]/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export interface ReportPromptPayload {
   examType?: string;
   selectedFindings: SelectedFinding[];
@@ -153,61 +279,12 @@ function buildClinicalFindings(data: ReportPromptPayload): string {
           const measurements = instance.measurements;
           const segments: string[] = [];
 
-          if (measurements.size) segments.push(`Tamanho: ${measurements.size}`);
-          if (measurements.location) segments.push(`Localização: ${measurements.location}`);
-          if (measurements.segment) segments.push(`Segmento: ${measurements.segment}`);
-          if (measurements.vps) segments.push(`VPS: ${measurements.vps} cm/s`);
-          if (measurements.vdf) segments.push(`VDF: ${measurements.vdf} cm/s`);
-          if (measurements.ratioICA_CCA) segments.push(`Razão ICA/CCA: ${measurements.ratioICA_CCA}`);
-          if (measurements.ratioICA_ICA) segments.push(`Razão ICA/ICA contralateral: ${measurements.ratioICA_ICA}`);
-          if (measurements.nascetGrade) segments.push(`Grau NASCET: ${measurements.nascetGrade}`);
-          if (measurements.stenosis_percent) segments.push(`Estenose visual: ${measurements.stenosis_percent}`);
-          if (measurements.extension) segments.push(`Extensão longitudinal: ${measurements.extension}`);
-          if (measurements.diameter) segments.push(`Diâmetro: ${measurements.diameter}`);
-          if (measurements.emi) segments.push(`EMI: ${measurements.emi} mm`);
-          if (measurements.emiClassification) segments.push(`Classificação EMI: ${measurements.emiClassification}`);
-          if (measurements.plaqueEchogenicity) segments.push(`Ecogenicidade da placa: ${measurements.plaqueEchogenicity}`);
-          if (measurements.plaqueComposition) segments.push(`Composição da placa: ${measurements.plaqueComposition}`);
-          if (measurements.plaqueSurface) segments.push(`Superfície da placa: ${measurements.plaqueSurface}`);
-          if (measurements.plaqueRisk) segments.push(`Risco plaquetário: ${measurements.plaqueRisk}`);
-          if (measurements.vertebralFlowPattern) segments.push(`Fluxo vertebral: ${measurements.vertebralFlowPattern}`);
-          if (measurements.subclavianSteal) segments.push(`Roubo da subclávia: ${measurements.subclavianSteal}`);
-          if (measurements.description) segments.push(`Observações: ${measurements.description}`);
-
-          // BI-RADS specific fields (Breast Ultrasound)
-          if (measurements.quadrant) segments.push(`Quadrante: ${measurements.quadrant}`);
-          if (measurements.depth) segments.push(`Profundidade: ${measurements.depth}`);
-          if (measurements.distanceFromNipple) segments.push(`Distância do mamilo: ${measurements.distanceFromNipple}`);
-          if (measurements.clockPosition) segments.push(`Posição: ${measurements.clockPosition}`);
-          if (measurements.shape) segments.push(`Forma: ${measurements.shape}`);
-          if (measurements.margins) segments.push(`Margens: ${measurements.margins}`);
-          if (measurements.orientation) segments.push(`Orientação: ${measurements.orientation}`);
-          if (measurements.echogenicity) segments.push(`Ecogenicidade: ${measurements.echogenicity}`);
-          if (measurements.posteriorFeatures) segments.push(`Acústica posterior: ${measurements.posteriorFeatures}`);
-          if (measurements.vascularization) segments.push(`Vascularização: ${measurements.vascularization}`);
-          if (measurements.vascularPattern) segments.push(`Padrão vascular: ${measurements.vascularPattern}`);
-          if (measurements.peakVelocity) segments.push(`Velocidade de pico: ${measurements.peakVelocity}`);
-          if (measurements.pulsatilityIndex) segments.push(`IP: ${measurements.pulsatilityIndex}`);
-          if (measurements.resistivityIndex) segments.push(`IR: ${measurements.resistivityIndex}`);
-          if (measurements.mobility) segments.push(`Mobilidade: ${measurements.mobility}`);
-          if (measurements.elastographyScore) segments.push(`Elastografia: ${measurements.elastographyScore}`);
-          if (measurements.strainRatio) segments.push(`Strain ratio: ${measurements.strainRatio}`);
-          if (measurements.biradsCategory) segments.push(`BI-RADS: ${measurements.biradsCategory}`);
-          if (measurements.composition) segments.push(`Composição: ${measurements.composition}`);
-          if (measurements.calcificationMorphology) segments.push(`Calcificações (morfologia): ${measurements.calcificationMorphology}`);
-          if (measurements.calcificationDistribution) segments.push(`Calcificações (distribuição): ${measurements.calcificationDistribution}`);
-          
-          // Specific findings fields
-          if (measurements.internalContent) segments.push(`Conteúdo: ${measurements.internalContent}`);
-          if (measurements.wallThickness) segments.push(`Espessura parede: ${measurements.wallThickness}`);
-          if (measurements.surroundingEdema) segments.push(`Edema: ${measurements.surroundingEdema}`);
-          if (measurements.implantType) segments.push(`Tipo implante: ${measurements.implantType}`);
-          if (measurements.ruptureType) segments.push(`Tipo ruptura: ${measurements.ruptureType}`);
-          if (measurements.bakerGrade) segments.push(`Baker: ${measurements.bakerGrade}`);
-          if (measurements.corticalThickness) segments.push(`Espessura cortical: ${measurements.corticalThickness}`);
-          if (measurements.hilusPresence) segments.push(`Hilo: ${measurements.hilusPresence}`);
-          if (measurements.morphology) segments.push(`Morfologia: ${measurements.morphology}`);
-          if (measurements.axillaryLevel) segments.push(`Nível: ${measurements.axillaryLevel}`);
+          Object.entries(measurements).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+              const label = FIELD_LABELS[key] || formatFieldName(key);
+              segments.push(`${label}: ${value}`);
+            }
+          });
 
           if (segments.length === 0) {
             content += 'Sem medidas adicionais informadas.';

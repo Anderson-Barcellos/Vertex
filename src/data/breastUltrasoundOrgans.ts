@@ -1363,6 +1363,29 @@ export const breastUltrasoundOrgans: Organ[] = [
     icon: 'circle',
     normalDescription: 'são visualizados linfonodos de morfologia preservada, com hilo gorduroso evidente e espessura cortical normal (<3mm). Padrão de vascularização hilar ao Doppler colorido.',
     categories: linfonodosCategories // Mesmas categorias
+  },
+  {
+    id: 'observacoes-mama',
+    name: 'Observações',
+    icon: 'notes',
+    normalDescription: '',
+    categories: [
+      {
+        id: 'obs-mama',
+        name: 'Observações Gerais',
+        findings: [
+          {
+            id: 'obs-mama-texto',
+            name: 'Observação Adicional',
+            description: 'Informações complementares ao exame',
+            hasDetails: true,
+            extraFields: [
+              { id: 'texto', label: 'Observações', type: 'textarea', placeholder: 'Digite observações adicionais...' }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ];
 

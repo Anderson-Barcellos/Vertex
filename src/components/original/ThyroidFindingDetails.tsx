@@ -681,6 +681,70 @@ function ThyroidFindingDetailsComponent({
                 </>
               )}
 
+              {/* ExtraFields genéricos (para Paratireoides e outros) */}
+              {finding.extraFields && finding.extraFields.length > 0 && !isNodule && !isEchotexture && !isLymphNode && !isIsthmusThickening && !isVolumeIncrease && !isCyst && (
+                <>
+                  {finding.extraFields.map((field) => {
+                    if (typeof field === 'string') return null;
+                    const { id, label, type, options, placeholder } = field;
+                    
+                    if (type === 'select' && options) {
+                      return (
+                        <div key={id} className="flex items-center gap-2">
+                          <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
+                            {label}:
+                          </label>
+                          <Select
+                            value={(currentMeasurement as Record<string, string>)[id] || ''}
+                            onValueChange={(value) => setCurrentMeasurement({...currentMeasurement, [id]: value})}
+                          >
+                            <SelectTrigger className="h-7 text-xs flex-1">
+                              <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[200px] overflow-y-auto">
+                              {options.map((opt: string) => (
+                                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      );
+                    }
+                    
+                    if (type === 'textarea') {
+                      return (
+                        <div key={id} className="flex items-start gap-2">
+                          <label className="text-xs font-medium text-muted-foreground min-w-[80px] pt-1">
+                            {label}:
+                          </label>
+                          <textarea
+                            placeholder={placeholder || ''}
+                            value={(currentMeasurement as Record<string, string>)[id] || ''}
+                            onChange={(e) => setCurrentMeasurement({...currentMeasurement, [id]: e.target.value})}
+                            className="flex-1 min-h-[40px] p-1.5 text-xs bg-background border rounded-md resize-none"
+                          />
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <div key={id} className="flex items-center gap-2">
+                        <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
+                          {label}:
+                        </label>
+                        <Input
+                          type="text"
+                          placeholder={placeholder || ''}
+                          value={(currentMeasurement as Record<string, string>)[id] || ''}
+                          onChange={(e) => setCurrentMeasurement({...currentMeasurement, [id]: e.target.value})}
+                          className="h-7 text-xs flex-1"
+                        />
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+
               {/* Description */}
               <div className="flex items-start gap-2">
                 <label className="text-xs font-medium text-muted-foreground min-w-[80px] pt-1">

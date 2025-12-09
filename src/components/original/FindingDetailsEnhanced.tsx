@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Finding } from '@/data/organs';
 import { FindingMeasurement, FindingInstance } from '@/types/report';
@@ -74,6 +75,21 @@ export default function FindingDetailsEnhanced({
   // Local state for the current form
   const [currentMeasurement, setCurrentMeasurement] = useState<FindingMeasurement>({});
   const [isEditing, setIsEditing] = useState(false);
+  const [extraFieldValues, setExtraFieldValues] = useState<Record<string, string>>({});
+
+  React.useEffect(() => {
+    if (instances.length > 0 && instances[0].measurements) {
+      const measurements = instances[0].measurements as Record<string, string>;
+      const extraKeys = (finding.extraFields || []).map(f => typeof f === 'string' ? f : f.id);
+      const extraData: Record<string, string> = {};
+      extraKeys.forEach(key => {
+        if (measurements[key]) extraData[key] = measurements[key];
+      });
+      if (Object.keys(extraData).length > 0) {
+        setExtraFieldValues(extraData);
+      }
+    }
+  }, [instances, finding.extraFields]);
 
   const handleAddInstance = () => {
     if (currentMeasurement.size || currentMeasurement.segment || currentMeasurement.location) {
@@ -169,6 +185,105 @@ export default function FindingDetailsEnhanced({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {finding.extraFields && finding.extraFields.length > 0 && (
+        <div className="space-y-2 pt-2 border-t border-border/30">
+          {finding.extraFields.map((field) => {
+            if (typeof field === 'string') return null;
+            const { id, label, type, options, placeholder } = field;
+
+            if (type === 'select' && options) {
+              return (
+                <div key={id} className="flex items-center gap-2">
+                  <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
+                    {label}:
+                  </label>
+                  <Select
+                    value={extraFieldValues[id] || ''}
+                    onValueChange={(value) => {
+                      const newValues = { ...extraFieldValues, [id]: value };
+                      setExtraFieldValues(newValues);
+                      const newInstance: FindingInstance = {
+                        id: instances.length > 0 ? instances[0].id : Date.now().toString(),
+                        measurements: { ...newValues }
+                      };
+                      onInstancesChange([newInstance]);
+                    }}
+                  >
+                    <SelectTrigger className="h-7 text-xs flex-1">
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[200px] overflow-y-auto">
+                      {options.map((opt: string) => (
+                        <SelectItem key={opt} value={opt}>
+                          {opt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              );
+            }
+
+            if (type === 'textarea') {
+              return (
+                <div key={id} className="flex items-start gap-2">
+                  <label className="text-xs font-medium text-muted-foreground min-w-[80px] pt-1">
+                    {label}:
+                  </label>
+                  <Textarea
+                    placeholder={placeholder || ''}
+                    value={extraFieldValues[id] || ''}
+                    onChange={(e) => {
+                      const newValues = { ...extraFieldValues, [id]: e.target.value };
+                      setExtraFieldValues(newValues);
+                    }}
+                    onBlur={() => {
+                      const hasData = Object.values(extraFieldValues).some(v => v && v.trim() !== '');
+                      if (hasData) {
+                        const newInstance: FindingInstance = {
+                          id: instances.length > 0 ? instances[0].id : Date.now().toString(),
+                          measurements: { ...extraFieldValues }
+                        };
+                        onInstancesChange([newInstance]);
+                      }
+                    }}
+                    className="flex-1 min-h-[60px] text-xs resize-none"
+                  />
+                </div>
+              );
+            }
+
+            return (
+              <div key={id} className="flex items-center gap-2">
+                <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
+                  {label}:
+                </label>
+                <Input
+                  type="text"
+                  placeholder={placeholder || ''}
+                  value={extraFieldValues[id] || ''}
+                  onChange={(e) => {
+                    const newValues = { ...extraFieldValues, [id]: e.target.value };
+                    setExtraFieldValues(newValues);
+                  }}
+                  onBlur={() => {
+                    const hasData = Object.values(extraFieldValues).some(v => v && v.trim() !== '');
+                    if (hasData) {
+                      const newInstance: FindingInstance = {
+                        id: instances.length > 0 ? instances[0].id : Date.now().toString(),
+                        measurements: { ...extraFieldValues }
+                      };
+                      onInstancesChange([newInstance]);
+                    }
+                  }}
+                  className="h-7 text-xs flex-1"
+                />
+              </div>
+            );
+          })}
         </div>
       )}
 

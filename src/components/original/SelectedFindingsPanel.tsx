@@ -24,6 +24,7 @@ interface SelectedFindingsPanelProps {
   isGenerating?: boolean;
   className?: string;
   expandToContent?: boolean;
+  onModelChange?: (model: AIProvider, specificModel: string) => void;
 }
 
 export default function SelectedFindingsPanel({
@@ -33,11 +34,17 @@ export default function SelectedFindingsPanel({
   onGenerateReport,
   isGenerating = false,
   className,
-  expandToContent = false
+  expandToContent = false,
+  onModelChange
 }: SelectedFindingsPanelProps) {
   const [selectedModel, setSelectedModel] = useState<AIProvider>('gemini');
   const [selectedGeminiModel, setSelectedGeminiModel] = useState(GEMINI_MODELS[0].id);
   const [selectedOpenAIModel, setSelectedOpenAIModel] = useState(OPENAI_MODELS[0].id);
+
+  useEffect(() => {
+    const specificModel = selectedModel === 'gemini' ? selectedGeminiModel : selectedOpenAIModel;
+    onModelChange?.(selectedModel, specificModel);
+  }, [selectedModel, selectedGeminiModel, selectedOpenAIModel, onModelChange]);
   const [activeMenu, setActiveMenu] = useState<'gemini' | 'openai' | null>(null);
   const [isShaking, setIsShaking] = useState(false);
 
@@ -207,67 +214,78 @@ export default function SelectedFindingsPanel({
                         {/* Show instances */}
                         {finding.instances && finding.instances.length > 0 && (
                           <div className="pl-3 mt-1 space-y-1">
-                            {finding.instances.map((instance, idx) => (
-                              <div key={instance.id} className="bg-sidebar-muted/30 rounded px-2 py-1.5 border border-sidebar-muted/50">
-                                <div className="text-[11px] font-semibold text-sidebar-accent flex items-center gap-1">
-                                  <span className="w-1.5 h-1.5 bg-sidebar-accent rounded-full"></span>
-                                  Lesão {idx + 1}
+                            {finding.instances.map((instance, idx) => {
+                              const measurements = instance.measurements as Record<string, string | undefined>;
+                              const fieldLabels: Record<string, string> = {
+                                size: 'Tamanho',
+                                location: 'Localização',
+                                segment: 'Segmento',
+                                vps: 'VPS',
+                                vdf: 'VDF',
+                                ratioICA_CCA: 'Razão ICA/CCA',
+                                ratio: 'Razão ICA/CCA',
+                                nascetGrade: 'NASCET',
+                                nascet: 'NASCET',
+                                emi: 'EMI',
+                                emiValue: 'EMI',
+                                plaqueEchogenicity: 'Ecogenicidade',
+                                echogenicity: 'Ecogenicidade',
+                                plaqueComposition: 'Composição',
+                                composition: 'Composição',
+                                plaqueSurface: 'Superfície',
+                                surface: 'Superfície',
+                                plaqueRisk: 'Risco',
+                                risk: 'Risco',
+                                vertebralVelocity: 'Velocidade vertebral',
+                                vertebralIR: 'IR vertebral',
+                                vertebralFlowPattern: 'Padrão de fluxo',
+                                flowPattern: 'Padrão de fluxo',
+                                subclavianSteal: 'Roubo da subclávia',
+                                description: 'Obs',
+                                texto: 'Observação',
+                                visibilidade: 'Visibilidade',
+                                manobra: 'Manobra',
+                                ostio: 'Óstio',
+                                saco: 'Saco herniário',
+                                conteudo: 'Conteúdo',
+                                redutibilidade: 'Redutibilidade',
+                                lado: 'Lado',
+                                lateralidade: 'Lateralidade',
+                                distribuicao: 'Distribuição',
+                                atenuacao: 'Atenuação',
+                                ecogenicidade: 'Ecogenicidade',
+                                vascularizacao: 'Vascularização',
+                                diametro: 'Diâmetro',
+                                extensao: 'Extensão',
+                                morfologia: 'Morfologia'
+                              };
+                              const renderedKeys = new Set<string>();
+                              const entries = Object.entries(measurements).filter(([key, value]) => {
+                                if (!value || value.toString().trim() === '') return false;
+                                if (renderedKeys.has(key)) return false;
+                                renderedKeys.add(key);
+                                return true;
+                              });
+
+                              if (entries.length === 0) return null;
+
+                              return (
+                                <div key={instance.id} className="bg-sidebar-muted/30 rounded px-2 py-1.5 border border-sidebar-muted/50">
+                                  <div className="text-[11px] font-semibold text-sidebar-accent flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-sidebar-accent rounded-full"></span>
+                                    {entries.length === 1 && entries[0][0] === 'texto' ? 'Detalhes' : `Lesão ${idx + 1}`}
+                                  </div>
+                                  <div className="text-[10px] text-sidebar-foreground opacity-90 space-y-0.5 mt-1 pl-2.5">
+                                    {entries.map(([key, value]) => {
+                                      const label = fieldLabels[key] || key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+                                      return (
+                                        <div key={key}>• {label}: {value}</div>
+                                      );
+                                    })}
+                                  </div>
                                 </div>
-                                <div className="text-[10px] text-sidebar-foreground opacity-90 space-y-0.5 mt-1 pl-2.5">
-                                  {instance.measurements.size && (
-                                    <div>• Tamanho: {instance.measurements.size}</div>
-                                  )}
-                                  {instance.measurements.location && (
-                                    <div>• Localização: {instance.measurements.location}</div>
-                                  )}
-                                  {instance.measurements.segment && (
-                                    <div>• Segmento: {instance.measurements.segment}</div>
-                                  )}
-                                  {instance.measurements.vps && (
-                                    <div>• VPS: {instance.measurements.vps}</div>
-                                  )}
-                                  {instance.measurements.vdf && (
-                                    <div>• VDF: {instance.measurements.vdf}</div>
-                                  )}
-                                  {(instance.measurements.ratioICA_CCA || instance.measurements.ratio) && (
-                                    <div>• Razão ICA/CCA: {instance.measurements.ratioICA_CCA || instance.measurements.ratio}</div>
-                                  )}
-                                  {(instance.measurements.nascetGrade || instance.measurements.nascet) && (
-                                    <div>• NASCET: {instance.measurements.nascetGrade || instance.measurements.nascet}</div>
-                                  )}
-                                  {(instance.measurements.emi || instance.measurements.emiValue) && (
-                                    <div>• EMI: {instance.measurements.emi || instance.measurements.emiValue} mm</div>
-                                  )}
-                                  {(instance.measurements.plaqueEchogenicity || instance.measurements.echogenicity) && (
-                                    <div>• Ecogenicidade: {instance.measurements.plaqueEchogenicity || instance.measurements.echogenicity}</div>
-                                  )}
-                                  {(instance.measurements.plaqueComposition || instance.measurements.composition) && (
-                                    <div>• Composição: {instance.measurements.plaqueComposition || instance.measurements.composition}</div>
-                                  )}
-                                  {(instance.measurements.plaqueSurface || instance.measurements.surface) && (
-                                    <div>• Superfície: {instance.measurements.plaqueSurface || instance.measurements.surface}</div>
-                                  )}
-                                  {(instance.measurements.plaqueRisk || instance.measurements.risk) && (
-                                    <div>• Risco: {instance.measurements.plaqueRisk || instance.measurements.risk}</div>
-                                  )}
-                                  {instance.measurements.vertebralVelocity && (
-                                    <div>• Velocidade vertebral: {instance.measurements.vertebralVelocity}</div>
-                                  )}
-                                  {instance.measurements.vertebralIR && (
-                                    <div>• IR vertebral: {instance.measurements.vertebralIR}</div>
-                                  )}
-                                  {(instance.measurements.vertebralFlowPattern || instance.measurements.flowPattern) && (
-                                    <div>• Padrão de fluxo: {instance.measurements.vertebralFlowPattern || instance.measurements.flowPattern}</div>
-                                  )}
-                                  {instance.measurements.subclavianSteal && (
-                                    <div>• Roubo da subclávia: {instance.measurements.subclavianSteal}</div>
-                                  )}
-                                  {instance.measurements.description && (
-                                    <div>• Obs: {instance.measurements.description}</div>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
                       </div>

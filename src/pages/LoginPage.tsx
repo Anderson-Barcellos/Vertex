@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -17,7 +18,7 @@ export default function LoginPage() {
 
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    if (login(username, password)) {
+    if (login(username, password, rememberMe)) {
       navigate('/');
     } else {
       setError('Usuário ou senha inválidos');
@@ -70,6 +71,19 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 required
               />
+            </div>
+
+            <div className="flex items-center">
+              <input
+                id="rememberMe"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded border-slate-600 bg-slate-700/50 text-blue-500 focus:ring-blue-500 focus:ring-offset-slate-800"
+              />
+              <label htmlFor="rememberMe" className="ml-2 text-sm text-slate-300 cursor-pointer">
+                Lembrar-me por 30 dias
+              </label>
             </div>
 
             {error && (

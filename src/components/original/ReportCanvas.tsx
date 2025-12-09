@@ -132,10 +132,10 @@ export default function ReportCanvas({
         </div>
       </header>
 
-      {/* Main Report Area - Fluid responsive layout */}
-      <section className="flex-1 p-4 bg-muted/30 overflow-y-auto overflow-x-hidden">
-        {/* Report Container - Simplified structure */}
-        <div className="w-full max-w-5xl mx-auto">
+      {/* Main Report Area - Paper on desk visual */}
+      <section className="flex-1 p-6 bg-slate-100 overflow-y-auto overflow-x-hidden">
+        {/* Report Container */}
+        <div className="w-full max-w-4xl mx-auto space-y-4">
             {/* Enhanced AI Suggestion Panel with Status Indicators */}
             {(aiImpression || aiError || aiStatus !== 'idle') && (
               <div className="bg-white/80 border border-primary/20 rounded-lg p-4 shadow-sm w-full">

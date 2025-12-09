@@ -1,10 +1,75 @@
 import { Organ, OrganCategory, Finding } from './organs';
 
 // ============================================================================
-// CONSTANTES - DIRETRIZES DIC/CBR/SBACV 2023
+// CONSTANTES - DIRETRIZES ESVS 2023 / IAC 2021 / SRU 2003
 // ============================================================================
 
-// Velocidades e Critérios de Estenose
+// Status Sintomático do Paciente (ESVS 2023 - Essencial para indicação)
+export const PATIENT_SYMPTOMS = [
+  'Assintomático',
+  'AIT hemisférico ipsilateral (<6 meses)',
+  'AVC isquêmico ipsilateral (<6 meses)',
+  'Amaurose fugaz ipsilateral',
+  'AIT/AVC >6 meses (considerar assintomático)',
+  'Sintomas inespecíficos (tontura, cefaleia)'
+];
+
+// GSM (Gray Scale Median) - Vulnerabilidade de Placa
+export const PLAQUE_GSM = [
+  { value: 'tipo1-ecolucente', label: 'Tipo 1 - Ecolucente (GSM <25) - ALTO RISCO', risk: 'high' },
+  { value: 'tipo2-predominante-ecolucente', label: 'Tipo 2 - Predominantemente ecolucente (GSM 25-50)', risk: 'high' },
+  { value: 'tipo3-predominante-ecogenica', label: 'Tipo 3 - Predominantemente ecogênica (GSM 50-75)', risk: 'medium' },
+  { value: 'tipo4-ecogenica', label: 'Tipo 4 - Ecogênica/Calcificada (GSM >75)', risk: 'low' }
+];
+
+// Features de Placa Vulnerável (ESVS 2023)
+export const VULNERABLE_PLAQUE_FEATURES = [
+  'JBA - Área negra justa-luminal (juxta-luminal black area)',
+  'IPN - Neovascularização intraplaca (ao CEUS)',
+  'DWA - Áreas brancas discretas (calcificações focais)',
+  'Hemorragia intraplaca (hiperecóica focal)',
+  'Ulceração >2mm de profundidade',
+  'Trombo luminal',
+  'Superfície irregular',
+  'Progressão rápida (>0.5mm/ano)'
+];
+
+// Indicações de Intervenção (ESVS 2023)
+export const INTERVENTION_INDICATION = {
+  symptomatic: {
+    '50-99%': 'Classe I - CEA/CAS recomendado (idealmente <14 dias do evento)',
+    '<50%': 'Classe III - Intervenção NÃO recomendada'
+  },
+  asymptomatic: {
+    '>60%': 'Classe IIa - Considerar CEA se expectativa de vida >5 anos e risco cirúrgico <3%',
+    '60-99% + high_risk_features': 'Classe I - CEA recomendado se features de alto risco',
+    '<60%': 'Classe III - Apenas tratamento clínico otimizado (BMT)'
+  }
+};
+
+// Features de Alto Risco em Assintomáticos (ESVS 2023)
+export const HIGH_RISK_FEATURES_ASYMPTOMATIC = [
+  'Progressão de estenose >20% em 6 meses',
+  'Estenose contralateral ocluída',
+  'Infartos silenciosos ipsilaterais na TC/RM',
+  'Placa ecolucente (GSM <25)',
+  'Hemorragia intraplaca na RM',
+  'Microêmbolos ao DTC (Doppler transcraniano)',
+  'Reserva cerebrovascular reduzida',
+  'Estenose >80%'
+];
+
+// Critérios IAC 2021 (Atualização dos SRU 2003)
+export const IAC_2021_CRITERIA = {
+  normal: { stenosis: 'Normal', vps: '<125', edv: '<40', ratio: '<2.0' },
+  mild: { stenosis: '<50%', vps: '<125', edv: '<40', ratio: '<2.0', note: 'Placa visível sem aceleração' },
+  moderate_50_69: { stenosis: '50-69%', vps: '125-230', edv: '40-100', ratio: '2.0-4.0' },
+  severe_70_99: { stenosis: '≥70%', vps: '>230', edv: '>100', ratio: '>4.0' },
+  near_occlusion: { stenosis: 'Suboclusão', vps: 'Variável/Baixa', edv: 'Variável', ratio: 'Variável', note: 'String sign, fluxo filiforme' },
+  occlusion: { stenosis: 'Oclusão', vps: 'Ausente', edv: 'Ausente', ratio: 'N/A' }
+};
+
+// Velocidades e Critérios de Estenose (SRU 2003 + IAC 2021)
 export const VELOCITY_THRESHOLDS = {
   VPS_NORMAL: '<125 cm/s',
   VPS_MODERATE: '125-230 cm/s',
@@ -374,9 +439,15 @@ export const carotidOrgans: Organ[] = [
             description: 'Depósito de colesterol na parede arterial',
             hasDetails: true,
             hasMeasurement: true,
-            hasLocation: true,  // Bulbo, segmento cervical
+            hasLocation: true,
             hasSeverity: true,
             extraFields: [
+              {
+                id: 'gsm',
+                label: 'GSM (Gray Scale Median)',
+                type: 'select',
+                options: PLAQUE_GSM.map(p => p.label)
+              },
               {
                 id: 'echogenicity',
                 label: 'Ecogenicidade (Gray-Weale)',
@@ -400,6 +471,12 @@ export const carotidOrgans: Organ[] = [
                 label: 'Extensão longitudinal',
                 type: 'text',
                 placeholder: 'Ex: 12 mm'
+              },
+              {
+                id: 'vulnerable_features',
+                label: 'Features de Vulnerabilidade',
+                type: 'select',
+                options: ['Nenhuma', ...VULNERABLE_PLAQUE_FEATURES]
               },
               {
                 id: 'risk',
@@ -454,10 +531,16 @@ export const carotidOrgans: Organ[] = [
             name: 'Estenose',
             description: 'Redução luminal da artéria carótida interna',
             hasDetails: true,
-            hasMeasurement: true,  // % e velocidades (VPS, VDF)
+            hasMeasurement: true,
             hasLocation: true,
-            hasSeverity: true,  // <50%, 50-69%, ≥70%
+            hasSeverity: true,
             extraFields: [
+              {
+                id: 'symptomatic_status',
+                label: 'Status Sintomático (ESVS 2023)',
+                type: 'select',
+                options: PATIENT_SYMPTOMS
+              },
               {
                 id: 'stenosis_percent',
                 label: 'Estenose estimada (%)',
@@ -466,19 +549,19 @@ export const carotidOrgans: Organ[] = [
               },
               {
                 id: 'vps',
-                label: 'VPS (Velocidade Pico Sistólico)',
+                label: 'VPS (cm/s) - IAC: <125 normal, 125-230 moderada, >230 grave',
                 type: 'text',
-                placeholder: 'Ex: 250 cm/s'
+                placeholder: 'Ex: 250'
               },
               {
                 id: 'vdf',
-                label: 'VDF (Velocidade Diastólica Final)',
+                label: 'VDF (cm/s) - IAC: <40 normal, 40-100 moderada, >100 grave',
                 type: 'text',
-                placeholder: 'Ex: 120 cm/s'
+                placeholder: 'Ex: 120'
               },
               {
                 id: 'ratio_aci_acc',
-                label: 'Razão VPS ACI/ACC',
+                label: 'Razão VPS ACI/ACC - IAC: <2.0 normal, 2.0-4.0 moderada, >4.0 grave',
                 type: 'text',
                 placeholder: 'Ex: 4.2'
               },
@@ -487,6 +570,17 @@ export const carotidOrgans: Organ[] = [
                 label: 'Grau NASCET',
                 type: 'select',
                 options: NASCET_CRITERIA
+              },
+              {
+                id: 'intervention_indication',
+                label: 'Indicação de Intervenção (ESVS 2023)',
+                type: 'select',
+                options: [
+                  'Classe I - CEA/CAS recomendado (sintomático ≥50%)',
+                  'Classe I - CEA recomendado (assintomático + alto risco)',
+                  'Classe IIa - Considerar CEA (assintomático >60%)',
+                  'Classe III - Apenas tratamento clínico (BMT)'
+                ]
               }
             ]
           },
@@ -540,6 +634,12 @@ export const carotidOrgans: Organ[] = [
             hasSeverity: true,
             extraFields: [
               {
+                id: 'gsm',
+                label: 'GSM (Gray Scale Median)',
+                type: 'select',
+                options: PLAQUE_GSM.map(p => p.label)
+              },
+              {
                 id: 'echogenicity',
                 label: 'Ecogenicidade (Gray-Weale)',
                 type: 'select',
@@ -562,6 +662,12 @@ export const carotidOrgans: Organ[] = [
                 label: 'Extensão longitudinal',
                 type: 'text',
                 placeholder: 'Ex: 12 mm'
+              },
+              {
+                id: 'vulnerable_features',
+                label: 'Features de Vulnerabilidade',
+                type: 'select',
+                options: ['Nenhuma', ...VULNERABLE_PLAQUE_FEATURES]
               },
               {
                 id: 'risk',
@@ -621,6 +727,12 @@ export const carotidOrgans: Organ[] = [
             hasSeverity: true,
             extraFields: [
               {
+                id: 'symptomatic_status',
+                label: 'Status Sintomático (ESVS 2023)',
+                type: 'select',
+                options: PATIENT_SYMPTOMS
+              },
+              {
                 id: 'stenosis_percent',
                 label: 'Estenose estimada (%)',
                 type: 'text',
@@ -628,19 +740,19 @@ export const carotidOrgans: Organ[] = [
               },
               {
                 id: 'vps',
-                label: 'VPS (Velocidade Pico Sistólico)',
+                label: 'VPS (cm/s) - IAC: <125 normal, 125-230 moderada, >230 grave',
                 type: 'text',
-                placeholder: 'Ex: 250 cm/s'
+                placeholder: 'Ex: 250'
               },
               {
                 id: 'vdf',
-                label: 'VDF (Velocidade Diastólica Final)',
+                label: 'VDF (cm/s) - IAC: <40 normal, 40-100 moderada, >100 grave',
                 type: 'text',
-                placeholder: 'Ex: 120 cm/s'
+                placeholder: 'Ex: 120'
               },
               {
                 id: 'ratio_aci_acc',
-                label: 'Razão VPS ACI/ACC',
+                label: 'Razão VPS ACI/ACC - IAC: <2.0 normal, 2.0-4.0 moderada, >4.0 grave',
                 type: 'text',
                 placeholder: 'Ex: 4.2'
               },
@@ -649,6 +761,17 @@ export const carotidOrgans: Organ[] = [
                 label: 'Grau NASCET',
                 type: 'select',
                 options: NASCET_CRITERIA
+              },
+              {
+                id: 'intervention_indication',
+                label: 'Indicação de Intervenção (ESVS 2023)',
+                type: 'select',
+                options: [
+                  'Classe I - CEA/CAS recomendado (sintomático ≥50%)',
+                  'Classe I - CEA recomendado (assintomático + alto risco)',
+                  'Classe IIa - Considerar CEA (assintomático >60%)',
+                  'Classe III - Apenas tratamento clínico (BMT)'
+                ]
               }
             ]
           },
@@ -1069,6 +1192,30 @@ export const carotidOrgans: Organ[] = [
         ]
       }
     ]
+  },
+  {
+    id: 'observacoes-carotidas',
+    name: 'Observações',
+    icon: 'notes',
+    normalDescription: '',
+    categories: [
+      {
+        id: 'obs-gerais',
+        name: 'Observações Gerais',
+        findings: [
+          {
+            id: 'obs-carotidas-texto',
+            name: 'Observação Adicional',
+            description: 'Informações complementares ao exame',
+            hasDetails: true,
+            hasMeasurement: true,
+            extraFields: [
+              { id: 'texto', label: 'Observações', type: 'textarea', placeholder: 'Digite observações adicionais...' }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ];
 
@@ -1164,3 +1311,108 @@ export const RESISTIVITY_INDEX = [
   { range: '<0.55', interpretation: 'Baixa resistência' },
   { range: '>0.75', interpretation: 'Alta resistência' }
 ];
+
+// ============================================================================
+// FUNÇÕES CALCULADORAS - ESTENOSE E RISCO
+// ============================================================================
+
+export interface StenosisAnalysis {
+  grade: string;
+  nascet: string;
+  confidence: 'high' | 'medium' | 'low';
+  interventionRecommendation: string;
+  alerts: string[];
+}
+
+export const calculateStenosisGrade = (params: {
+  vps: number;
+  vdf?: number;
+  ratio?: number;
+  symptomatic: boolean;
+  plaqueGSM?: string;
+  vulnerableFeatures?: string[];
+}): StenosisAnalysis => {
+  const { vps, vdf, ratio, symptomatic, plaqueGSM, vulnerableFeatures = [] } = params;
+  const alerts: string[] = [];
+  let grade: string;
+  let nascet: string;
+  let confidence: 'high' | 'medium' | 'low' = 'high';
+
+  if (vps === 0) {
+    grade = 'Oclusão';
+    nascet = '100%';
+  } else if (vps < 50 && ratio && ratio < 1.5) {
+    grade = 'Suboclusão (near-occlusion)';
+    nascet = '99%';
+    alerts.push('String sign - fluxo filiforme');
+  } else if (vps > 230 || (vdf && vdf > 100) || (ratio && ratio > 4.0)) {
+    grade = 'Estenose grave';
+    nascet = '≥70%';
+    if (vps > 280) {
+      alerts.push('Estenose crítica (>80%)');
+      nascet = '>80%';
+    }
+  } else if (vps >= 125 || (vdf && vdf >= 40) || (ratio && ratio >= 2.0)) {
+    grade = 'Estenose moderada';
+    nascet = '50-69%';
+  } else if (vps < 125) {
+    grade = 'Normal ou estenose leve';
+    nascet = '<50%';
+  } else {
+    grade = 'Indeterminado';
+    nascet = 'N/A';
+    confidence = 'low';
+  }
+
+  if (plaqueGSM?.includes('tipo1') || plaqueGSM?.includes('tipo2')) {
+    alerts.push('Placa vulnerável (ecolucente) - maior risco de eventos');
+  }
+
+  if (vulnerableFeatures.length > 0) {
+    alerts.push(`Features de vulnerabilidade: ${vulnerableFeatures.length} identificadas`);
+  }
+
+  let interventionRecommendation: string;
+  const stenosisPercent = parseInt(nascet) || 0;
+
+  if (symptomatic) {
+    if (stenosisPercent >= 50) {
+      interventionRecommendation = 'ESVS Classe I: CEA/CAS recomendado (idealmente <14 dias do evento)';
+      alerts.push('SINTOMÁTICO ≥50% - Avaliar intervenção urgente');
+    } else {
+      interventionRecommendation = 'ESVS Classe III: Tratamento clínico otimizado (BMT)';
+    }
+  } else {
+    if (stenosisPercent >= 60) {
+      const hasHighRiskFeatures = vulnerableFeatures.length > 0 ||
+        plaqueGSM?.includes('tipo1') || plaqueGSM?.includes('tipo2');
+
+      if (hasHighRiskFeatures) {
+        interventionRecommendation = 'ESVS Classe I: CEA recomendado (features de alto risco presentes)';
+        alerts.push('ASSINTOMÁTICO com features de alto risco - Considerar CEA');
+      } else {
+        interventionRecommendation = 'ESVS Classe IIa: Considerar CEA se expectativa de vida >5 anos e risco <3%';
+      }
+    } else {
+      interventionRecommendation = 'ESVS Classe III: Tratamento clínico otimizado (BMT)';
+    }
+  }
+
+  if (!vdf && !ratio) {
+    confidence = confidence === 'high' ? 'medium' : 'low';
+    alerts.push('Avaliar VDF e Razão ACI/ACC para maior precisão');
+  }
+
+  return {
+    grade,
+    nascet,
+    confidence,
+    interventionRecommendation,
+    alerts
+  };
+};
+
+export const getGSMRiskLevel = (gsm: string): 'high' | 'medium' | 'low' => {
+  const found = PLAQUE_GSM.find(p => gsm.includes(p.value) || gsm.includes(p.label));
+  return (found?.risk as 'high' | 'medium' | 'low') || 'medium';
+};

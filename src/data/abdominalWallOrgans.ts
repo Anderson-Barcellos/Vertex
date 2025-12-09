@@ -34,6 +34,8 @@ export const abdominalWallOrgans: Organ[] = [
   {
     id: 'inguinal-direita',
     name: 'Região Inguinal Direita',
+    icon: 'hernia',
+    normalDescription: 'região inguinal direita sem evidências de hérnias ou defeitos parietais ao estudo estático e dinâmico (Valsalva).',
     categories: [
       {
         id: 'hernias-ing-d',
@@ -88,6 +90,8 @@ export const abdominalWallOrgans: Organ[] = [
   {
     id: 'inguinal-esquerda',
     name: 'Região Inguinal Esquerda',
+    icon: 'hernia',
+    normalDescription: 'região inguinal esquerda sem evidências de hérnias ou defeitos parietais ao estudo estático e dinâmico (Valsalva).',
     categories: [
       {
         id: 'hernias-ing-e',
@@ -142,6 +146,8 @@ export const abdominalWallOrgans: Organ[] = [
   {
     id: 'parede-anterior',
     name: 'Parede Anterior',
+    icon: 'abdominal-wall',
+    normalDescription: 'parede abdominal anterior com integridade muscular preservada, sem defeitos herniários na linha alba ou região umbilical.',
     categories: [
       {
         id: 'hernias-anteriores',
@@ -207,6 +213,8 @@ export const abdominalWallOrgans: Organ[] = [
   {
     id: 'parede-lateral',
     name: 'Parede Lateral',
+    icon: 'abdominal-wall',
+    normalDescription: 'paredes laterais do abdome sem defeitos herniários identificáveis (linhas semilunares e região lombar).',
     categories: [
       {
         id: 'hernias-laterais',
@@ -260,8 +268,134 @@ export const abdominalWallOrgans: Organ[] = [
     ]
   },
   {
+    id: 'outras-lesoes',
+    name: 'Outras Lesões de Parede',
+    icon: 'lesion',
+    normalDescription: 'sem lesões de partes moles identificáveis na parede abdominal.',
+    categories: [
+      {
+        id: 'lesoes-partes-moles',
+        name: 'Lesões de Partes Moles',
+        findings: [
+          {
+            id: 'lipoma-parede',
+            name: 'Lipoma de Parede Abdominal',
+            description: 'Lesão adiposa benigna',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              { id: 'localizacao-lipoma', label: 'Localização', type: 'select', options: ['Subcutâneo', 'Intramuscular', 'Subfascial'] },
+              { id: 'ecogenicidade-lipoma', label: 'Ecogenicidade', type: 'select', options: ['Hiperecóico homogêneo', 'Isoecóico à gordura', 'Levemente heterogêneo'] },
+              { id: 'contornos-lipoma', label: 'Contornos', type: 'select', options: ['Bem definidos', 'Lobulados', 'Mal definidos'] }
+            ]
+          },
+          {
+            id: 'endometrioma-parede',
+            name: 'Endometrioma de Parede',
+            description: 'Implante endometriótico em cicatriz (Pfannenstiel, cesárea)',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              { id: 'localizacao-endo', label: 'Localização', type: 'select', options: ['Cicatriz de cesárea', 'Cicatriz de Pfannenstiel', 'Cicatriz umbilical (laparoscopia)', 'Outra'] },
+              { id: 'ecogenicidade-endo', label: 'Ecogenicidade', type: 'select', options: ['Hipoecóico heterogêneo', 'Sólido-cístico', 'Cistos internos'] },
+              { id: 'vascularizacao-endo', label: 'Vascularização', type: 'select', options: ['Ausente', 'Periférica', 'Central', 'Mista'] },
+              { id: 'sintomas-ciclicos', label: 'Dor cíclica (menstrual)', type: 'select', options: ['Sim', 'Não', 'Não informado'] }
+            ]
+          },
+          {
+            id: 'seroma-parede',
+            name: 'Seroma Pós-operatório',
+            description: 'Coleção líquida em cicatriz/loja cirúrgica',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              { id: 'localizacao-seroma', label: 'Localização', type: 'text', placeholder: 'ex: Loja de tela inguinal D' },
+              { id: 'conteudo-seroma', label: 'Conteúdo', type: 'select', options: ['Anecóico', 'Ecos finos (proteináceo)', 'Septações', 'Debris (infectado?)'] },
+              { id: 'tempo-pos-op', label: 'Tempo pós-operatório', type: 'text', placeholder: 'ex: 15 dias' }
+            ]
+          },
+          {
+            id: 'hematoma-parede',
+            name: 'Hematoma de Parede',
+            description: 'Coleção hemática intramuscular ou subfascial',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              { id: 'localizacao-hematoma', label: 'Localização', type: 'select', options: ['Reto abdominal D', 'Reto abdominal E', 'Oblíquo externo', 'Oblíquo interno', 'Transverso', 'Subcutâneo'] },
+              { id: 'fase-hematoma', label: 'Fase', type: 'select', options: ['Agudo (hiperecóico)', 'Subagudo (misto)', 'Crônico (hipoecóico/anecóico)'] },
+              { id: 'causa-hematoma', label: 'Causa', type: 'select', options: ['Pós-operatório', 'Trauma', 'Anticoagulação', 'Espontâneo', 'Não esclarecida'] }
+            ]
+          },
+          {
+            id: 'abscesso-parede',
+            name: 'Abscesso de Parede',
+            description: 'Coleção purulenta na parede abdominal',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              { id: 'localizacao-abscesso', label: 'Localização', type: 'text', placeholder: 'ex: Região inguinal D' },
+              { id: 'conteudo-abscesso', label: 'Conteúdo', type: 'select', options: ['Hipoecóico heterogêneo', 'Debris ecogênicos', 'Nível líquido', 'Gas (artefatos)'] },
+              { id: 'parede-abscesso', label: 'Parede', type: 'select', options: ['Fina', 'Espessa', 'Irregular'] }
+            ]
+          },
+          {
+            id: 'nodulo-solido-parede',
+            name: 'Nódulo Sólido a Esclarecer',
+            description: 'Lesão sólida de natureza indeterminada',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              { id: 'localizacao-nodulo', label: 'Localização', type: 'text', placeholder: 'ex: Subcutâneo, região periumbilical' },
+              { id: 'ecogenicidade-nodulo', label: 'Ecogenicidade', type: 'select', options: ['Hipoecóico', 'Isoecóico', 'Hiperecóico', 'Heterogêneo'] },
+              { id: 'vascularizacao-nodulo', label: 'Vascularização', type: 'select', options: ['Ausente', 'Escassa', 'Moderada', 'Acentuada'] },
+              { id: 'mobilidade-nodulo', label: 'Mobilidade', type: 'select', options: ['Móvel', 'Aderido a planos profundos', 'Fixo'] }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'tela-cirurgica',
+        name: 'Tela Cirúrgica',
+        findings: [
+          {
+            id: 'tela-normoposta',
+            name: 'Tela Cirúrgica Normoposicionada',
+            description: 'Tela de hernioplastia em posição adequada',
+            hasDetails: true,
+            hasLocation: true,
+            extraFields: [
+              { id: 'localizacao-tela', label: 'Localização', type: 'select', options: ['Inguinal D', 'Inguinal E', 'Umbilical', 'Incisional', 'Epigástrica'] },
+              { id: 'aspecto-tela', label: 'Aspecto', type: 'select', options: ['Integra, sem coleções', 'Com seroma adjacente', 'Parcialmente visualizada'] }
+            ]
+          },
+          {
+            id: 'complicacao-tela',
+            name: 'Complicação de Tela',
+            description: 'Alteração relacionada à tela cirúrgica',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              { id: 'localizacao-comp', label: 'Localização', type: 'select', options: ['Inguinal D', 'Inguinal E', 'Umbilical', 'Incisional', 'Epigástrica'] },
+              { id: 'tipo-comp', label: 'Tipo de Complicação', type: 'select', options: ['Seroma peritela', 'Infecção/abscesso', 'Recidiva herniária', 'Migração da tela', 'Aderências'] },
+              { id: 'colecao', label: 'Coleção associada', type: 'select', options: ['Ausente', 'Presente - anecóica', 'Presente - com debris', 'Presente - loculada'] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     id: 'observacoes',
     name: 'Observações',
+    icon: 'notes',
+    normalDescription: '',
     categories: [
       {
         id: 'obs-gerais',

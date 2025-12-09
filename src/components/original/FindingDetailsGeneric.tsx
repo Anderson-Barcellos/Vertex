@@ -33,7 +33,7 @@ export default function FindingDetailsGeneric({
       setFormData(measurements);
       setSaved(true);
     }
-  }, []);
+  }, [instances]);
 
   const handleFieldChange = (fieldId: string, value: string) => {
     setFormData(prev => ({ ...prev, [fieldId]: value }));

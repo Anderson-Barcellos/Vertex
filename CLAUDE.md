@@ -43,7 +43,7 @@ Sistema web para geração automatizada de laudos ultrassonográficos com IA (Ge
 - **Frontend:** React 19 + TypeScript 5.9
 - **Build:** Vite 7.2.0  
 - **Estilização:** Tailwind CSS v4 + Radix UI
-- **IA:** Gemini 2.5 Pro + OpenAI GPT-4
+- **IA:** Gemini 3.0 Pro + OpenAI GPT-4
 - **Dev Server:** http://localhost:8200
 
 ---
@@ -107,7 +107,61 @@ curl -s http://localhost:8200/ | head -5  # Testar servidor
 
 ---
 
-## Funcionalidades Recentes (Nov 2025)
+## Funcionalidades Recentes (Dez 2025)
+
+### Doppler Carótidas - ESVS 2023 / IAC 2021 (09/12/2025)
+- **Arquivo:** `src/data/carotidOrgans.ts`
+- **Conformidade:** 90% → 96% (excelente)
+- **Novas constantes:**
+  - `PATIENT_SYMPTOMS` - Status sintomático (ESVS 2023)
+  - `PLAQUE_GSM` - Gray Scale Median (vulnerabilidade de placa)
+  - `VULNERABLE_PLAQUE_FEATURES` - JBA, IPN, DWA, ulceração
+  - `HIGH_RISK_FEATURES_ASYMPTOMATIC` - Features de alto risco
+  - `IAC_2021_CRITERIA` - Atualização dos critérios SRU 2003
+  - `INTERVENTION_INDICATION` - Indicações ESVS 2023
+- **Nova função:** `calculateStenosisGrade()` - Calcula grau NASCET e recomendação
+- **Novos campos em placas:** GSM, Features de Vulnerabilidade
+- **Novos campos em estenose:** Status sintomático, Indicação de intervenção
+
+### Auditoria de Diretrizes e Slash Command (09/12/2025)
+- **Relatório:** `docs/auditoria-diretrizes.md` - Conformidade por exame
+- **Slash Command:** `/audit-guidelines` - Auditor de guidelines reutilizável
+- **Conformidade geral:** 89%
+
+### Conformidade CBR - Abdome Total
+- **Normatização:** Seguindo diretrizes do Colégio Brasileiro de Radiologia
+- **Código CBHPM:** 4.09.01.12-2 (abdome superior, rins, bexiga, aorta, VCI, adrenais)
+- **Removidos:** Próstata, Útero, Ovários (escopo de US Pélvica/Próstata separados)
+- **Órgãos mantidos:** Fígado, Vesícula, Pâncreas, Rins, Baço, Bexiga, Aorta
+
+### FindingDetailsEnhanced - Suporte a extraFields
+- **Arquivo:** `components/original/FindingDetailsEnhanced.tsx`
+- **Antes:** Só renderizava campos de medidas (`hasMeasurement`, `hasLocation`)
+- **Agora:** Suporta `extraFields` completos (select, text, textarea)
+- **Auto-save:** Campos salvam automaticamente no `onBlur`
+- **Benefício:** Componente unificado para qualquer tipo de achado
+
+### Seções de Observações em Todos os Exames
+Adicionada seção "Observações" padronizada em todos os arquivos de dados:
+- `organs.ts` (abdome) → `observacoes-abdome`
+- `thyroidOrgans.ts` → `observacoes-tireoide`
+- `carotidOrgans.ts` → `observacoes-carotidas`
+- `breastUltrasoundOrgans.ts` → `observacoes-mama`
+- `arterialOrgans.ts` → `observacoes-arterial` (já existia)
+- `venousOrgans.ts` → `observacoes-venoso` (já existia)
+- `abdominalWallOrgans.ts` → `observacoes` (já existia)
+
+### SelectedFindingsPanel - Campos Dinâmicos
+- **Arquivo:** `components/original/SelectedFindingsPanel.tsx`
+- **Antes:** Campos hardcoded (só `size`, `location`, `vps`, etc.)
+- **Agora:** Renderiza qualquer campo de `measurements` dinamicamente
+- **Labels:** Dicionário com traduções para campos conhecidos
+- **Fallback:** Campos desconhecidos formatados automaticamente
+- **Benefício:** Novos campos aparecem sem modificar o componente
+
+---
+
+## Funcionalidades Anteriores (Nov 2025)
 
 ### Persistência de Estado em Painéis Flutuantes
 - **Problema:** Dados perdidos ao minimizar/trocar órgão
@@ -296,7 +350,7 @@ await unifiedAIService.generateReport(data, {
 **Local:** Santa Cruz do Sul, RS, Brasil  
 
 ### Exames Implementados:
-1. **Abdome Total** - Fígado, vesícula, rins, pâncreas, baço
+1. **Abdome Total** - Fígado, vesícula, pâncreas, rins, baço, bexiga, aorta (CBR)
 2. **Doppler Carótidas** - NASCET, placas, EMI
 3. **Ecodoppler Tireóide** - TI-RADS, nódulos
 4. **Ultrassom Mama** - BI-RADS 5ª edição completo
@@ -316,4 +370,4 @@ await unifiedAIService.generateReport(data, {
 
 ---
 
-*Última atualização: 25 de Novembro de 2025*
+*Última atualização: 09 de Dezembro de 2025*

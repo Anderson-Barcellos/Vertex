@@ -99,13 +99,19 @@
   transition: all 0.3s ease;
 }
 
-/* Report content area with comfortable padding */
+/* Report content area - A4 paper style */
 .report-content {
-  padding: var(--spacing-4) var(--spacing-6) var(--spacing-6);
-  min-height: 400px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+  background: white;
+  width: 794px;
+  max-width: 100%;
+  min-height: 297mm; /* A4 height */
+  margin: 0 auto;
+  padding: 48px 40px;
+  border-radius: 4px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
 }
 
 /* Custom scrollbar for webkit browsers */
@@ -314,7 +320,7 @@
   }
 
   .report-content {
-    padding: var(--spacing-5) var(--spacing-8) var(--spacing-7);
+    padding: 56px 48px;
   }
 }
 
@@ -322,6 +328,10 @@
   .fluid-container {
     padding-left: var(--spacing-6);
     padding-right: var(--spacing-6);
+  }
+
+  .report-content {
+    padding: 64px 56px;
   }
 }
 

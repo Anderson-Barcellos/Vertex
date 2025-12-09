@@ -57,6 +57,76 @@ export const CEAP_CLINICAL = [
   'C6 - Úlcera ativa'
 ];
 
+export const VCSS_PAIN = [
+  '0 - Ausente',
+  '1 - Ocasional (não limitante)',
+  '2 - Diária (limitante, s/ analgésicos)',
+  '3 - Diária (requer analgésicos)'
+];
+
+export const VCSS_VARICOSE_VEINS = [
+  '0 - Ausentes',
+  '1 - Poucas, dispersas',
+  '2 - Múltiplas (coxa ou perna)',
+  '3 - Extensas (coxa e perna)'
+];
+
+export const VCSS_EDEMA = [
+  '0 - Ausente',
+  '1 - Noturno/leve',
+  '2 - Tarde (acima tornozelo)',
+  '3 - Matinal (requer elevação)'
+];
+
+export const VCSS_PIGMENTATION = [
+  '0 - Ausente',
+  '1 - Limitada (perimaléolar)',
+  '2 - Difusa (terço inferior)',
+  '3 - Ampla (acima terço inferior)'
+];
+
+export const VCSS_INFLAMMATION = [
+  '0 - Ausente',
+  '1 - Celulite leve',
+  '2 - Celulite moderada',
+  '3 - Celulite grave/eczema'
+];
+
+export const VCSS_INDURATION = [
+  '0 - Ausente',
+  '1 - Limitada (perimaléolar)',
+  '2 - Menos de terço inferior',
+  '3 - Terço inferior ou mais'
+];
+
+export const VCSS_ULCER_NUMBER = [
+  '0 - Ausente',
+  '1 - Uma',
+  '2 - Duas',
+  '3 - Múltiplas'
+];
+
+export const VCSS_ULCER_DURATION = [
+  '0 - N/A (s/ úlcera)',
+  '1 - <3 meses',
+  '2 - 3-12 meses',
+  '3 - >12 meses'
+];
+
+export const VCSS_ULCER_SIZE = [
+  '0 - N/A (s/ úlcera)',
+  '1 - <2 cm diâmetro',
+  '2 - 2-6 cm',
+  '3 - >6 cm'
+];
+
+export const VCSS_COMPRESSION = [
+  '0 - Não usa',
+  '1 - Uso intermitente',
+  '2 - Uso maioria dos dias',
+  '3 - Uso diário completo'
+];
+
 export const DEEP_VEINS = [
   'Femoral Comum',
   'Femoral Superficial (proximal)',
@@ -485,6 +555,60 @@ export const venousOrgans: Organ[] = [
               { id: 'veia', label: 'Veia', type: 'select', options: ['Tibiais Posteriores', 'Tibiais Anteriores', 'Fibulares'] },
               { id: 'tipo', label: 'Tipo', type: 'select', options: THROMBUS_TYPE },
               { id: 'ecogenicidade', label: 'Ecogenicidade', type: 'select', options: THROMBUS_ECHOGENICITY }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'avaliacao-clinica',
+    name: 'Avaliação Clínica (VCSS/CEAP)',
+    icon: 'clinical',
+    normalDescription: '',
+    categories: [
+      {
+        id: 'vcss-score',
+        name: 'VCSS - Venous Clinical Severity Score',
+        findings: [
+          {
+            id: 'vcss-avaliacao',
+            name: 'Avaliação VCSS',
+            description: 'Score de gravidade clínica venosa (0-30 pontos)',
+            hasDetails: true,
+            extraFields: [
+              { id: 'vcss-lado', label: 'Lado Avaliado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral'] },
+              { id: 'vcss-dor', label: 'Dor', type: 'select', options: VCSS_PAIN },
+              { id: 'vcss-varizes', label: 'Varizes', type: 'select', options: VCSS_VARICOSE_VEINS },
+              { id: 'vcss-edema', label: 'Edema', type: 'select', options: VCSS_EDEMA },
+              { id: 'vcss-pigmentacao', label: 'Pigmentação', type: 'select', options: VCSS_PIGMENTATION },
+              { id: 'vcss-inflamacao', label: 'Inflamação', type: 'select', options: VCSS_INFLAMMATION },
+              { id: 'vcss-induracao', label: 'Endurecimento', type: 'select', options: VCSS_INDURATION },
+              { id: 'vcss-ulcera-n', label: 'N° de Úlceras', type: 'select', options: VCSS_ULCER_NUMBER },
+              { id: 'vcss-ulcera-dur', label: 'Duração da Úlcera', type: 'select', options: VCSS_ULCER_DURATION },
+              { id: 'vcss-ulcera-tam', label: 'Tamanho da Úlcera', type: 'select', options: VCSS_ULCER_SIZE },
+              { id: 'vcss-meias', label: 'Uso de Meias', type: 'select', options: VCSS_COMPRESSION },
+              { id: 'vcss-total', label: 'Score Total (0-30)', type: 'text', placeholder: 'Soma dos itens' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'ceap-completo',
+        name: 'Classificação CEAP Completa',
+        findings: [
+          {
+            id: 'ceap-avaliacao',
+            name: 'Classificação CEAP',
+            description: 'Clinical-Etiology-Anatomy-Pathophysiology',
+            hasDetails: true,
+            extraFields: [
+              { id: 'ceap-lado', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo'] },
+              { id: 'ceap-c', label: 'C - Clínico', type: 'select', options: CEAP_CLINICAL },
+              { id: 'ceap-e', label: 'E - Etiologia', type: 'select', options: ['Ec - Congênita', 'Ep - Primária', 'Es - Secundária (pós-trombótica)', 'En - Não identificada'] },
+              { id: 'ceap-a', label: 'A - Anatomia', type: 'select', options: ['As - Superficial', 'Ap - Perfurante', 'Ad - Profundo', 'An - Não identificada'] },
+              { id: 'ceap-p', label: 'P - Fisiopatologia', type: 'select', options: ['Pr - Refluxo', 'Po - Obstrução', 'Pr,o - Refluxo + Obstrução', 'Pn - Não identificada'] },
+              { id: 'ceap-resumo', label: 'CEAP Resumido', type: 'text', placeholder: 'ex: C4aEpAsPr' }
             ]
           }
         ]

@@ -647,5 +647,154 @@ export const thyroidOrgans: Organ[] = [
         ]
       }
     ]
+  },
+  {
+    id: 'paratireoides',
+    name: 'Paratireoides',
+    icon: 'parathyroid',
+    normalDescription: 'paratireoides não visualizadas em suas topografias habituais, o que é compatível com a normalidade.',
+    categories: [
+      {
+        id: 'lesoes-paratireoides',
+        name: 'Lesões das Paratireoides',
+        findings: [
+          {
+            id: 'adenoma-paratireoide',
+            name: 'Adenoma de Paratireoide',
+            description: 'Nódulo hipoecoico posterior à tireoide',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              {
+                id: 'localizacao-para',
+                label: 'Localização',
+                type: 'select',
+                options: [
+                  'Superior direita',
+                  'Superior esquerda',
+                  'Inferior direita',
+                  'Inferior esquerda',
+                  'Ectópica - mediastino',
+                  'Ectópica - retroesofágica',
+                  'Ectópica - intratiroidiana'
+                ]
+              },
+              {
+                id: 'ecogenicidade-para',
+                label: 'Ecogenicidade',
+                type: 'select',
+                options: [
+                  'Hipoecóico homogêneo',
+                  'Hipoecóico heterogêneo',
+                  'Isoecóico',
+                  'Cístico'
+                ]
+              },
+              {
+                id: 'vascularizacao-para',
+                label: 'Vascularização',
+                type: 'select',
+                options: [
+                  'Ausente',
+                  'Periférica (arco vascular)',
+                  'Central',
+                  'Mista'
+                ]
+              },
+              {
+                id: 'polo-feeding',
+                label: 'Polo vascular (feeding vessel)',
+                type: 'select',
+                options: [
+                  'Presente',
+                  'Ausente',
+                  'Não avaliável'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'hiperplasia-paratireoide',
+            name: 'Hiperplasia de Paratireoides',
+            description: 'Aumento difuso de múltiplas paratireoides',
+            hasDetails: true,
+            hasMeasurement: true,
+            extraFields: [
+              {
+                id: 'numero-glandulas',
+                label: 'Número de glândulas visíveis',
+                type: 'select',
+                options: ['1', '2', '3', '4']
+              },
+              {
+                id: 'localizacao-hiperplasia',
+                label: 'Localização',
+                type: 'select',
+                options: [
+                  'Bilateral simétrica',
+                  'Bilateral assimétrica',
+                  'Unilateral'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'cisto-paratireoide',
+            name: 'Cisto de Paratireoide',
+            description: 'Lesão cística em topografia de paratireoide',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasLocation: true,
+            extraFields: [
+              {
+                id: 'localizacao-cisto-para',
+                label: 'Localização',
+                type: 'select',
+                options: [
+                  'Superior direita',
+                  'Superior esquerda',
+                  'Inferior direita',
+                  'Inferior esquerda'
+                ]
+              },
+              {
+                id: 'conteudo-cisto-para',
+                label: 'Conteúdo',
+                type: 'select',
+                options: [
+                  'Anecóico (simples)',
+                  'Ecos finos (proteináceo)',
+                  'Hemorrágico'
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'observacoes-tireoide',
+    name: 'Observações',
+    icon: 'notes',
+    normalDescription: '',
+    categories: [
+      {
+        id: 'obs-tireoide',
+        name: 'Observações Gerais',
+        findings: [
+          {
+            id: 'obs-tireoide-texto',
+            name: 'Observação Adicional',
+            description: 'Informações complementares ao exame',
+            hasDetails: true,
+            extraFields: [
+              { id: 'texto', label: 'Observações', type: 'textarea', placeholder: 'Digite observações adicionais...' }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ];

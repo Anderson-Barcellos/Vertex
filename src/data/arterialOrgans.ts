@@ -43,6 +43,43 @@ export const ITB_CLASSIFICATION = [
   'Incompressível (>1.30)'
 ];
 
+export const IDB_CLASSIFICATION = [
+  'Normal (>0.70)',
+  'Doença leve (0.50-0.69)',
+  'Doença moderada (0.30-0.49)',
+  'Doença grave (<0.30)',
+  'Não mensurável (amputação)'
+];
+
+export const WIFI_WOUND = [
+  '0 - Sem úlcera',
+  '1 - Úlcera pequena/superficial',
+  '2 - Úlcera profunda (tendão/osso exposto)',
+  '3 - Úlcera extensa/gangrena'
+];
+
+export const WIFI_ISCHEMIA = [
+  '0 - ITB ≥0.80 / Pressão tornozelo ≥100 / Pressão dedo ≥60',
+  '1 - ITB 0.60-0.79 / Pressão tornozelo 70-99 / Pressão dedo 40-59',
+  '2 - ITB 0.40-0.59 / Pressão tornozelo 50-69 / Pressão dedo 30-39',
+  '3 - ITB <0.40 / Pressão tornozelo <50 / Pressão dedo <30'
+];
+
+export const WIFI_FOOT_INFECTION = [
+  '0 - Sem infecção',
+  '1 - Infecção leve (local, <2cm celulite)',
+  '2 - Infecção moderada (>2cm celulite, abscesso profundo)',
+  '3 - SIRS / Sepse'
+];
+
+export const CLAUDICATION_DISTANCE = [
+  '>500m (leve)',
+  '200-500m (moderada)',
+  '50-200m (grave)',
+  '<50m (muito grave)',
+  'Dor em repouso'
+];
+
 export const arterialOrgans: Organ[] = [
   {
     id: 'itb',
@@ -77,6 +114,50 @@ export const arterialOrgans: Organ[] = [
               { id: 'itb-exerc-e', label: 'ITB Pós-Exercício E', type: 'text', placeholder: 'ex: 0.70' },
               { id: 'queda', label: 'Queda significativa (>20%)', type: 'select', options: ['Não', 'Sim - MID', 'Sim - MIE', 'Sim - Bilateral'] },
               { id: 'tempo-recuperacao', label: 'Tempo de Recuperação', type: 'select', options: ['<2 min', '2-5 min', '5-10 min', '>10 min'] }
+            ]
+          },
+          {
+            id: 'idb-valores',
+            name: 'Índice Dedo-Braquial (IDB)',
+            description: 'Pressão do hálux/PAS braquial - útil em diabéticos com artérias incompressíveis',
+            hasMeasurement: true,
+            extraFields: [
+              { id: 'pressao-halux-d', label: 'Pressão Hálux D (mmHg)', type: 'text', placeholder: 'ex: 75' },
+              { id: 'pressao-halux-e', label: 'Pressão Hálux E (mmHg)', type: 'text', placeholder: 'ex: 80' },
+              { id: 'idb-direito', label: 'IDB Direito', type: 'text', placeholder: 'ex: 0.65' },
+              { id: 'idb-esquerdo', label: 'IDB Esquerdo', type: 'text', placeholder: 'ex: 0.70' },
+              { id: 'classificacao-idb-d', label: 'Classificação MID', type: 'select', options: IDB_CLASSIFICATION },
+              { id: 'classificacao-idb-e', label: 'Classificação MIE', type: 'select', options: IDB_CLASSIFICATION }
+            ]
+          },
+          {
+            id: 'claudicacao',
+            name: 'Distância de Claudicação',
+            description: 'Distância percorrida até início da dor (Fontaine)',
+            hasMeasurement: true,
+            extraFields: [
+              { id: 'distancia-claud', label: 'Distância', type: 'select', options: CLAUDICATION_DISTANCE },
+              { id: 'lado-claud', label: 'Lado sintomático', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral', 'Não informado'] },
+              { id: 'fontaine', label: 'Classificação de Fontaine', type: 'select', options: ['I - Assintomático', 'IIa - Claudicação >200m', 'IIb - Claudicação <200m', 'III - Dor em repouso', 'IV - Lesão trófica/gangrena'] }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'wifi-classification',
+        name: 'Classificação WIfI (Pé Diabético)',
+        findings: [
+          {
+            id: 'wifi-avaliacao',
+            name: 'Avaliação WIfI',
+            description: 'Wound, Ischemia, foot Infection - estratificação de risco de amputação',
+            hasDetails: true,
+            extraFields: [
+              { id: 'wifi-w', label: 'W - Wound (Ferida)', type: 'select', options: WIFI_WOUND },
+              { id: 'wifi-i', label: 'I - Ischemia (Isquemia)', type: 'select', options: WIFI_ISCHEMIA },
+              { id: 'wifi-fi', label: 'fI - foot Infection (Infecção)', type: 'select', options: WIFI_FOOT_INFECTION },
+              { id: 'lado-wifi', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral'] },
+              { id: 'risco-amputacao', label: 'Risco de Amputação', type: 'select', options: ['Muito baixo', 'Baixo', 'Moderado', 'Alto'] }
             ]
           }
         ]

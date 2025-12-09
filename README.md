@@ -82,7 +82,7 @@ O **Vertex V2** é uma aplicação web moderna desenvolvida para médicos ultras
 
 ### IA e Automação
 
-- 🧠 **Dois Provedores**: Gemini 2.5 Pro e OpenAI GPT-4
+- 🧠 **Dois Provedores**: Gemini 3.0 Pro e OpenAI GPT-4
 - 📊 **Métricas Detalhadas**: Tokens, custo estimado, tempo de execução
 - 🎛️ **Auto-geração**: Modo automático com debounce inteligente
 - 🚫 **Cancelamento**: Possibilidade de cancelar operações em andamento
@@ -219,7 +219,7 @@ Crie um arquivo `.env` na raiz do projeto:
 
 # Google Gemini
 VITE_GEMINI_API_URL=https://ultrassom.ai:8177/geminiCall
-VITE_GEMINI_MODEL=gemini-2.5-pro
+VITE_GEMINI_MODEL=gemini-3-pro-preview
 VITE_GEMINI_API_KEY=your_gemini_key_here
 
 # OpenAI
@@ -684,7 +684,7 @@ import '@/styles/modern-design.css';
 
 #### Google Gemini
 
-- **Modelo Padrão**: `gemini-2.5-pro`
+- **Modelo Padrão**: `gemini-3-pro-preview`
 - **Configurado**: Sim, via proxy backend
 - **Custo Estimado**: ~$0.007 input / $0.021 output (por 1k tokens)
 - **Características**: Streaming, timeout 60s, fallback local
@@ -809,7 +809,7 @@ O modelo selecionado é salvo em `sessionStorage`:
 
 ```typescript
 // Salvar
-sessionStorage.setItem('selectedAIModel', 'gemini-2.5-pro');
+sessionStorage.setItem('selectedAIModel', 'gemini-3-pro-preview');
 
 // Recuperar
 const model = sessionStorage.getItem('selectedAIModel');
