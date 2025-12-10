@@ -12,6 +12,7 @@ import { ArrowLeft } from '@phosphor-icons/react';
 import Sidebar from '@/components/original/Sidebar';
 import ReportCanvas from '@/components/original/ReportCanvas';
 import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
+import QuickActionsPanel from '@/components/original/QuickActionsPanel';
 import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
 import FindingDetailsGeneric from '@/components/original/FindingDetailsGeneric';
 
@@ -28,6 +29,7 @@ import { openaiStreamService, OPENAI_MODEL } from '@/services/openaiStreamServic
 import { unifiedAIService } from '@/services/unifiedAIService';
 import { buildSpecializedPrompt } from '@/services/promptBuilder';
 import { estimateCostUsd, estimateTokensFromText } from '@/utils/aiMetrics';
+import { useAutoSave } from '@/hooks/useAutoSave';
 
 // Layout moderno compartilhado
 import '@/styles/modern-design.css';
@@ -58,6 +60,25 @@ function VenousExamModern() {
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
   const statusUnsubscribeRef = useRef<(() => void) | null>(null);
 
+  // Estado temporário para detalhes dos findings (persiste ao minimizar/trocar órgão)
+  const [tempFindingDetails, setTempFindingDetails] = useState<
+    Record<string, Record<string, { severity?: string; instances?: FindingInstance[] }>>
+  >({});
+
+  // Auto-save hook
+  useAutoSave(
+    'venous-exam-modern',
+    selectedFindings,
+    normalOrgans,
+    tempFindingDetails,
+    (savedState) => {
+      setSelectedFindings(savedState.selectedFindings);
+      setNormalOrgans(savedState.normalOrgans);
+      setTempFindingDetails(savedState.tempFindingDetails);
+      toast.info('Rascunho recuperado automaticamente');
+    }
+  );
+
   // Estado para observações extras por órgão
   const [observations, setObservations] = useState<Record<string, string[]>>({});
 
@@ -77,6 +98,21 @@ function VenousExamModern() {
       ...prev,
       [organId]: (prev[organId] || []).filter((_, i) => i !== index)
     }));
+  };
+
+  const handleSetAllNormal = () => {
+    const organIds = venousOrgans.map(o => o.id);
+    setNormalOrgans(organIds);
+    setSelectedFindings([]);
+  };
+
+  const handleResetExam = () => {
+    setSelectedFindings([]);
+    setNormalOrgans([]);
+    setGeneratedReport('');
+    setAiImpression('');
+    setAiGenerationStats(null);
+    setTempFindingDetails({});
   };
 
   const handleOrganSelect = (organId: string) => {
@@ -487,6 +523,18 @@ function VenousExamModern() {
               onGenerateReport={handleGenerateReport}
               isGenerating={isGenerating}
               expandToContent
+            />
+            <QuickActionsPanel
+              className="glass-panel"
+              organsList={venousOrgans}
+              selectedFindingsCount={selectedFindings.length}
+              normalOrgansCount={normalOrgans.length}
+              generatedReport={generatedReport}
+              isGenerating={isGenerating}
+              currentAiModel={currentAiModel}
+              currentModelId={currentModelId}
+              onSetAllNormal={handleSetAllNormal}
+              onResetExam={handleResetExam}
             />
             <ExamStatisticsPanel
               className="glass-panel"

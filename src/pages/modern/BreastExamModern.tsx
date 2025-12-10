@@ -20,6 +20,7 @@ import Sidebar from '@/components/original/Sidebar';
 import ReportCanvas from '@/components/original/ReportCanvas';
 import type { AIStatus } from '@/components/original/ReportCanvas';
 import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
+import QuickActionsPanel from '@/components/original/QuickActionsPanel';
 import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
 import BreastUltrasoundFindingDetails from '@/components/original/BreastUltrasoundFindingDetails';
 
@@ -39,6 +40,7 @@ import { openaiStreamService, OPENAI_MODEL } from '@/services/openaiStreamServic
 import { unifiedAIService } from '@/services/unifiedAIService';
 import { buildSpecializedPrompt } from '@/services/promptBuilder';
 import { estimateCostUsd, estimateTokensFromText } from '@/utils/aiMetrics';
+import { useAutoSave } from '@/hooks/useAutoSave';
 
 export default function BreastExamModern() {
   const navigate = useNavigate();
@@ -69,10 +71,39 @@ export default function BreastExamModern() {
     Record<string, Record<string, { severity?: string; instances?: FindingInstance[] }>>
   >({});
 
+  // Auto-save hook
+  useAutoSave(
+    'breast-exam-modern',
+    selectedFindings,
+    normalOrgans,
+    tempFindingDetails,
+    (savedState) => {
+      setSelectedFindings(savedState.selectedFindings);
+      setNormalOrgans(savedState.normalOrgans);
+      setTempFindingDetails(savedState.tempFindingDetails);
+      toast.info('Rascunho recuperado automaticamente');
+    }
+  );
+
   // Estado para observações extras por órgão
   const [observations, setObservations] = useState<Record<string, string[]>>({});
 
   const EXAM_TYPE = 'Ultrassonografia de Mamas';
+
+  const handleSetAllNormal = () => {
+    const organIds = breastUltrasoundOrgans.map(o => o.id);
+    setNormalOrgans(organIds);
+    setSelectedFindings([]);
+  };
+
+  const handleResetExam = () => {
+    setSelectedFindings([]);
+    setNormalOrgans([]);
+    setGeneratedReport('');
+    setAiImpression('');
+    setAiGenerationStats(null);
+    setTempFindingDetails({});
+  };
 
   const handleOrganSelect = (organId: string) => {
     if (selectedOrgan === organId) {
@@ -538,6 +569,18 @@ export default function BreastExamModern() {
               onGenerateReport={handleGenerateReport}
               isGenerating={isGenerating}
               expandToContent
+            />
+            <QuickActionsPanel
+              className="glass-panel"
+              organsList={breastUltrasoundOrgans}
+              selectedFindingsCount={selectedFindings.length}
+              normalOrgansCount={normalOrgans.length}
+              generatedReport={generatedReport}
+              isGenerating={isGenerating}
+              currentAiModel={currentAiModel}
+              currentModelId={currentModelId}
+              onSetAllNormal={handleSetAllNormal}
+              onResetExam={handleResetExam}
             />
             <ExamStatisticsPanel
               className="glass-panel"

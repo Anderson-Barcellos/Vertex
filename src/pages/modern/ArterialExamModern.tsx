@@ -12,6 +12,7 @@ import { ArrowLeft } from '@phosphor-icons/react';
 import Sidebar from '@/components/original/Sidebar';
 import ReportCanvas from '@/components/original/ReportCanvas';
 import SelectedFindingsPanel from '@/components/original/SelectedFindingsPanel';
+import QuickActionsPanel from '@/components/original/QuickActionsPanel';
 import ExamStatisticsPanel from '@/components/original/ExamStatisticsPanel';
 import FindingDetailsGeneric from '@/components/original/FindingDetailsGeneric';
 
@@ -84,6 +85,21 @@ function ArterialExamModern() {
       }
     }
   );
+
+  const handleSetAllNormal = () => {
+    const organIds = arterialOrgans.map(o => o.id);
+    setNormalOrgans(organIds);
+    setSelectedFindings([]);
+  };
+
+  const handleResetExam = () => {
+    setSelectedFindings([]);
+    setNormalOrgans([]);
+    setGeneratedReport('');
+    setAiImpression('');
+    setAiGenerationStats(null);
+    setTempFindingDetails({});
+  };
 
   const handleOrganSelect = (organId: string) => {
     if (selectedOrgan === organId) {
@@ -530,6 +546,18 @@ function ArterialExamModern() {
               onGenerateReport={handleGenerateReport}
               isGenerating={isGenerating}
               expandToContent
+            />
+            <QuickActionsPanel
+              className="glass-panel"
+              organsList={arterialOrgans}
+              selectedFindingsCount={selectedFindings.length}
+              normalOrgansCount={normalOrgans.length}
+              generatedReport={generatedReport}
+              isGenerating={isGenerating}
+              currentAiModel={currentAiModel}
+              currentModelId={currentModelId}
+              onSetAllNormal={handleSetAllNormal}
+              onResetExam={handleResetExam}
             />
             <ExamStatisticsPanel
               className="glass-panel"
