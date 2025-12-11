@@ -69,11 +69,10 @@ src/
 │   ├── shared/           # Componentes compartilhados
 │   │   └── FloatingOrganPanelModern.tsx  # Painel flutuante
 │   └── ui/              # Componentes UI base (Radix)
-├── services/
-│   ├── geminiStreamService.ts    # Streaming Gemini (backend)
-│   ├── openaiStreamService.ts    # Streaming OpenAI
-│   ├── unifiedAIService.ts      # Interface unificada
-│   └── promptBuilder.ts         # Construção de prompts
+├── components/shared/
+│   ├── FloatingOrganPanelModern.tsx  # Painel flutuante
+│   ├── TiradsCalculatorPanel.tsx     # UI TI-RADS automático
+│   └── AIModelSelector.tsx           # Seletor de modelo IA
 ├── data/
 │   ├── organs.ts                 # Abdome total
 │   ├── carotidOrgans.ts         # Carótidas
@@ -82,9 +81,16 @@ src/
 │   ├── arterialOrgans.ts        # Doppler arterial (5 seções)
 │   ├── venousOrgans.ts          # Doppler venoso (5 seções)
 │   └── abdominalWallOrgans.ts   # Parede abdominal/hérnias
-└── hooks/
-    ├── useDropdownGuard.ts       # Previne fechar painel em dropdown
-    └── useOutsidePointerDismiss.ts # Click-outside com proteção input
+├── hooks/
+│   ├── useAutoSave.ts            # Persistência automática de rascunhos
+│   ├── useDropdownGuard.ts       # Previne fechar painel em dropdown
+│   └── useOutsidePointerDismiss.ts # Click-outside com proteção input
+└── services/
+    ├── tiradsCalculator.ts       # Cálculo TI-RADS ACR 2017
+    ├── geminiStreamService.ts    # Streaming Gemini
+    ├── openaiStreamService.ts    # Streaming OpenAI
+    ├── unifiedAIService.ts       # Interface unificada IA
+    └── promptBuilder.ts          # Construção de prompts
 ```
 
 ---
@@ -108,6 +114,49 @@ curl -s http://localhost:8200/ | head -5  # Testar servidor
 ---
 
 ## Funcionalidades Recentes (Dez 2025)
+
+### TI-RADS Calculator - ACR 2017 (11/12/2025)
+- **Service:** `src/services/tiradsCalculator.ts`
+- **Componente:** `src/components/shared/TiradsCalculatorPanel.tsx`
+- **Padrão:** ACR TI-RADS 2017 (American College of Radiology)
+- **Funcionalidades:**
+  - Cálculo automático de pontuação (0-14+ pts)
+  - Categorização TR1-TR5 com labels descritivos
+  - Conduta baseada em tamanho (PAAF vs seguimento)
+  - Limiares ACR: TR3 ≥ 2.5cm, TR4 ≥ 1.5cm, TR5 ≥ 1.0cm
+  - Breakdown visual da pontuação por categoria
+  - Cores e ícones indicativos de risco
+- **Integração:** `FindingDetailsGeneric.tsx` detecta nódulos de tireóide automaticamente
+- **Campos avaliados:** composition, echogenicity, shape, margins, echogenic_foci, size
+
+### useAutoSave em Todos os Exames (11/12/2025)
+- **Hook:** `src/hooks/useAutoSave.ts`
+- **Cobertura:** 100% dos exames modernos
+- **Comportamento:**
+  - Debounce de 1s para evitar writes excessivos
+  - Expiração de 1 hora (evita dados obsoletos)
+  - Toast "Rascunho recuperado automaticamente" ao restaurar
+- **Exames cobertos:**
+  - AbdomeTotalExamModern
+  - CarotidExamModern
+  - ThyroidEchodopplerModern
+  - BreastExamModern
+  - ArterialExamModern
+  - VenousExamModern
+  - AbdominalWallExamModern
+  - AbdominalVesselsExamModern
+
+### AIModelSelector Component (11/12/2025)
+- **Arquivo:** `src/components/shared/AIModelSelector.tsx`
+- **Função:** Dropdown reutilizável para seleção Gemini/OpenAI
+- **Status:** Criado mas não integrado (já existe seleção no SelectedFindingsPanel)
+
+### Campos TI-RADS no FindingMeasurement (11/12/2025)
+- **Arquivo:** `src/types/report.ts`
+- **Novos campos:**
+  - `thyroidComposition`, `thyroidEchogenicity`, `thyroidShape`, `thyroidMargins`
+  - `echogenicFoci`, `vascularityPattern`, `elastography`
+  - `tiradsScore`, `tiradsCategory`, `tiradsRecommendation`
 
 ### Doppler Carótidas - ESVS 2023 / IAC 2021 (09/12/2025)
 - **Arquivo:** `src/data/carotidOrgans.ts`
@@ -328,10 +377,12 @@ await unifiedAIService.generateReport(data, {
 - Aneurisma: morfologia + trombo mural + extensão
 - Novos achados: hepatopatia crônica, vesícula porcelana, Murphy US+, pancreatite aguda/crônica, Bosniak, nefropatia parenquimatosa
 
-### Tireóide - TI-RADS Automático
-- Função `calculateTIRADS()` exportada
-- Campo de TI-RADS calculado nos nódulos
-- Recomendações automáticas (PAAF/seguimento)
+### Tireóide - TI-RADS Automático (Atualizado 11/12/2025)
+- **Service:** `tiradsCalculator.ts` com `calculateTirads()`, `getTiradsColor()`, `formatTiradsBreakdown()`
+- **Componente:** `TiradsCalculatorPanel.tsx` integrado ao `FindingDetailsGeneric`
+- **Pontuação:** Composition (0-2), Echogenicity (0-3), Shape (0-3), Margins (0-3), Foci (0-3)
+- **Condutas:** TR1-2 (sem PAAF), TR3-5 (PAAF baseada em tamanho)
+- **Detecção automática:** Se finding tem campos composition+echogenicity+shape, mostra calculadora
 
 ### Doppler Venoso
 - Manobras provocativas (Valsalva, compressão, ortostatismo)
@@ -370,4 +421,4 @@ await unifiedAIService.generateReport(data, {
 
 ---
 
-*Última atualização: 09 de Dezembro de 2025*
+*Última atualização: 11 de Dezembro de 2025*

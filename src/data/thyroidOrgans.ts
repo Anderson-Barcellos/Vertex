@@ -208,13 +208,22 @@ export const thyroidOrgans: Organ[] = [
                 id: 'echotexture_pattern',
                 label: 'Padrão de Ecotextura',
                 type: 'select',
-                options: PARENCHYMA_ECHOTEXTURE.map(p => p.label)
+                options: [
+                  'Homogênea',
+                  'Heterogênea difusa',
+                  'Hipoecogênica difusa',
+                  'Grosseiramente heterogênea'
+                ]
               },
               {
                 id: 'vascularity',
                 label: 'Vascularização',
                 type: 'select',
-                options: PARENCHYMA_VASCULARITY.map(v => v.label)
+                options: [
+                  'Vascularização preservada',
+                  'Vascularização aumentada (hiperemia)',
+                  'Vascularização reduzida'
+                ]
               }
             ]
           },
@@ -228,13 +237,22 @@ export const thyroidOrgans: Organ[] = [
                 id: 'echotexture_pattern',
                 label: 'Padrão de Ecotextura',
                 type: 'select',
-                options: PARENCHYMA_ECHOTEXTURE.map(p => p.label)
+                options: [
+                  'Homogênea',
+                  'Heterogênea difusa',
+                  'Hipoecogênica difusa',
+                  'Grosseiramente heterogênea'
+                ]
               },
               {
                 id: 'vascularity',
                 label: 'Vascularização',
                 type: 'select',
-                options: PARENCHYMA_VASCULARITY.map(v => v.label)
+                options: [
+                  'Vascularização preservada',
+                  'Vascularização aumentada (hiperemia)',
+                  'Vascularização reduzida'
+                ]
               }
             ]
           }
@@ -367,13 +385,22 @@ export const thyroidOrgans: Organ[] = [
                 id: 'echotexture_pattern',
                 label: 'Padrão de Ecotextura',
                 type: 'select',
-                options: PARENCHYMA_ECHOTEXTURE.map(p => p.label)
+                options: [
+                  'Homogênea',
+                  'Heterogênea difusa',
+                  'Hipoecogênica difusa',
+                  'Grosseiramente heterogênea'
+                ]
               },
               {
                 id: 'vascularity',
                 label: 'Vascularização',
                 type: 'select',
-                options: PARENCHYMA_VASCULARITY.map(v => v.label)
+                options: [
+                  'Vascularização preservada',
+                  'Vascularização aumentada (hiperemia)',
+                  'Vascularização reduzida'
+                ]
               }
             ]
           },
@@ -387,13 +414,22 @@ export const thyroidOrgans: Organ[] = [
                 id: 'echotexture_pattern',
                 label: 'Padrão de Ecotextura',
                 type: 'select',
-                options: PARENCHYMA_ECHOTEXTURE.map(p => p.label)
+                options: [
+                  'Homogênea',
+                  'Heterogênea difusa',
+                  'Hipoecogênica difusa',
+                  'Grosseiramente heterogênea'
+                ]
               },
               {
                 id: 'vascularity',
                 label: 'Vascularização',
                 type: 'select',
-                options: PARENCHYMA_VASCULARITY.map(v => v.label)
+                options: [
+                  'Vascularização preservada',
+                  'Vascularização aumentada (hiperemia)',
+                  'Vascularização reduzida'
+                ]
               }
             ]
           }

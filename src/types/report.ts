@@ -80,6 +80,18 @@ export interface FindingMeasurement {
   morphology?: string; // Morfologia do linfonodo
   axillaryLevel?: string; // Nível axilar (I, II, III)
 
+  // Thyroid TI-RADS fields (ACR 2017)
+  thyroidComposition?: string; // Composição do nódulo (cístico, espongiforme, misto, sólido)
+  thyroidEchogenicity?: string; // Ecogenicidade (anecóico, hiper/iso, hipo, muito hipo)
+  thyroidShape?: string; // Forma (mais largo que alto, mais alto que largo)
+  thyroidMargins?: string; // Margens (lisas, mal definidas, lobuladas, extensão extratiroidea)
+  echogenicFoci?: string; // Focos ecogênicos (ausentes, macro, periféricos, micro)
+  vascularityPattern?: string; // Padrão vascular Doppler
+  elastography?: string; // Score elastográfico (1-5)
+  tiradsScore?: number; // Pontuação TI-RADS calculada
+  tiradsCategory?: string; // Categoria TI-RADS (TR1-TR5)
+  tiradsRecommendation?: string; // Recomendação (PAAF, seguimento, etc)
+
   // Legacy fields (manter compatibilidade)
   ratio?: string; // Razão VPS ACI/ACC (deprecated, usar ratioICA_CCA)
   nascet?: string; // Grau NASCET de estenose (deprecated)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Finding } from '@/data/organs';
 import { FindingInstance } from '@/types/report';
 import { Save, Check } from 'lucide-react';
+import { TiradsCalculatorPanel } from '@/components/shared/TiradsCalculatorPanel';
 
 interface FindingDetailsGenericProps {
   finding: Finding;
@@ -54,6 +55,11 @@ export default function FindingDetailsGeneric({
   }, [formData, instances, onInstancesChange]);
 
   const extraFields = finding.extraFields || [];
+
+  const isThyroidNodule = useMemo(() => {
+    const fieldIds = extraFields.map(f => typeof f === 'string' ? f : f.id);
+    return fieldIds.includes('composition') && fieldIds.includes('echogenicity') && fieldIds.includes('shape');
+  }, [extraFields]);
 
   if (extraFields.length === 0 && !finding.hasSeverity) {
     return null;
@@ -144,6 +150,18 @@ export default function FindingDetailsGeneric({
           </div>
         );
       })}
+
+      {isThyroidNodule && (
+        <TiradsCalculatorPanel
+          composition={formData['composition']}
+          echogenicity={formData['echogenicity']}
+          shape={formData['shape']}
+          margins={formData['margins']}
+          echogenicFoci={formData['echogenic_foci']}
+          size={formData['size']}
+          className="mt-3"
+        />
+      )}
 
       {extraFields.length > 0 && (
         <div className="flex justify-end pt-2">

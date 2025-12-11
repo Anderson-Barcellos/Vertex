@@ -27,6 +27,7 @@ import { estimateCostUsd, estimateTokensFromText } from '@/utils/aiMetrics';
 import { toast } from 'sonner';
 import ModernExamLayout from '@/layouts/ModernExamLayout';
 import FloatingOrganPanelModern from '@/components/shared/FloatingOrganPanelModern';
+import { useAutoSave } from '@/hooks/useAutoSave';
 
 function AbdomeTotalExamModern() {
   const navigate = useNavigate();
@@ -51,6 +52,18 @@ function AbdomeTotalExamModern() {
     Record<string, Record<string, { severity?: string; instances?: FindingInstance[] }>>
   >({});
 
+  useAutoSave(
+    'abdome-total-exam-modern',
+    selectedFindings,
+    normalOrgans,
+    tempFindingDetails,
+    (savedState) => {
+      setSelectedFindings(savedState.selectedFindings);
+      setNormalOrgans(savedState.normalOrgans);
+      setTempFindingDetails(savedState.tempFindingDetails);
+      toast.info('Rascunho recuperado automaticamente');
+    }
+  );
 
   // Outside click e guardas de dropdown agora são tratados pelo FloatingOrganPanelModern.
 
