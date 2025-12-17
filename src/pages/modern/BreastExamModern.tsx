@@ -603,7 +603,7 @@ export default function BreastExamModern() {
               onNormalChange={handleNormalChange}
               leftCss={'calc(25% + 1.5rem)'}
               widthExpanded={'24rem'}
-              maxHeight={'80vh'}
+              maxHeight={'85vh'}
               FindingDetailsComponent={BreastUltrasoundFindingDetails}
               tempDetails={getTempDetails(currentOrgan.id)}
               onTempDetailsChange={handleTempDetailsChange}
