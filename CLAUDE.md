@@ -9,7 +9,7 @@
 
 - **Frontend:** React 19 + TypeScript 5.9 + Vite 7.2.0
 - **Estilização:** Tailwind CSS v4 + Radix UI
-- **IA:** Gemini 3.0 Pro + OpenAI GPT-4 (streaming)
+- **IA:** Gemini 3.0 Pro + OpenAI GPT-4 + Claude Sonnet (streaming)
 
 ---
 
@@ -17,17 +17,24 @@
 
 ```
 src/
-├── pages/modern/           # Exames: Abdome, Carótidas, Tireóide, Mama, Arterial, Venoso, Parede
-├── components/original/    # Sidebar, ReportCanvas, OrganSection
-│   ├── FindingDetailsGeneric.tsx      # Abdome, Arterial, Venoso, Parede
-│   ├── CarotidFindingDetails.tsx      # Carótidas (NASCET/ESVS)
-│   ├── ThyroidFindingDetails.tsx      # Tireoide (TI-RADS)
-│   └── BreastUltrasoundFindingDetails.tsx  # Mama (BI-RADS)
+├── pages/modern/
+│   ├── BaseExamPage.tsx       # Template base (~300 linhas) - TODA lógica comum
+│   └── exams/                 # Módulos de configuração (~20-30 linhas cada)
+│       ├── AbdomeTotalExam.tsx   # ✅ Migrado
+│       ├── CarotidExam.tsx       # 🔜 Pendente
+│       └── ...                   # Demais exames
+├── types/
+│   └── exam.ts                # ExamConfig interface
+├── utils/
+│   └── findingAdapters.ts     # Funções utilitárias
+├── components/original/    # Sidebar, ReportCanvas, FindingDetails*
 ├── components/shared/      # FloatingOrganPanelModern, TiradsCalculatorPanel
-├── data/                   # organs.ts, carotidOrgans.ts, thyroidOrgans.ts, etc.
-├── hooks/                  # useAutoSave, useDropdownGuard, useOutsidePointerDismiss
-└── services/               # tiradsCalculator, geminiStreamService, unifiedAIService
+├── data/                   # organs.ts, carotidOrgans.ts, etc.
+├── hooks/                  # useAutoSave, useDropdownGuard
+└── services/               # geminiStreamService, openaiStreamService, claudeStreamService
 ```
+
+> **Doc completa:** `docs/MODULAR_EXAM_ARCHITECTURE.md`
 
 ---
 
@@ -56,17 +63,24 @@ git status && git add -A && git commit -m "..." && git push origin master
 
 ## Roadmap
 
-### Fase 1 - Polimento (Curto prazo)
-- [ ] Agrupamento bilateral em Arterial/Venoso (modelo: Carótidas)
-- [ ] Revisar observações/limitações técnicas por modalidade
-- [ ] Testar fluxo completo de cada exame
+### Fase 1 - Arquitetura Modular (Concluída ✅)
+- [x] Criar BaseExamPage.tsx (template compartilhado)
+- [x] Criar ExamConfig interface e findingAdapters
+- [x] Migrar Abdome Total para arquitetura modular
+- [x] Adicionar suporte a Claude como provider
 
-### Fase 2 - Classificadores (Médio prazo)
-- [x] BI-RADS 5ª Edição para Mama (léxico + Doppler + SWE + sugestões diagnósticas)
+### Fase 2 - Migração de Exames
+- [ ] Migrar Carótidas (componente customizado)
+- [ ] Migrar Tireoide (TI-RADS calculator)
+- [ ] Migrar Mama (BI-RADS calculator)
+- [ ] Migrar Arterial, Venoso, Parede
+
+### Fase 3 - Classificadores
+- [x] BI-RADS 5ª Edição para Mama
 - [ ] CEAP/VCSS para Venoso
 - [ ] Fontaine/ITB para Arterial
 
-### Fase 3 - Expansão
+### Fase 4 - Expansão
 - [ ] Novos exames conforme demanda clínica
 
 **Workflow:** `docs/panorama-{modalidade}.md` → Anders fornece schema → Implementar → Build
