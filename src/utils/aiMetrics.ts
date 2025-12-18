@@ -13,6 +13,10 @@ const COST_TABLE: Record<AIProvider, { inputPer1K: number; outputPer1K: number }
   gemini: {
     inputPer1K: parseCost(import.meta.env.VITE_GEMINI_INPUT_COST_PER_1K, 0.007),
     outputPer1K: parseCost(import.meta.env.VITE_GEMINI_OUTPUT_COST_PER_1K, 0.021)
+  },
+  claude: {
+    inputPer1K: parseCost(import.meta.env.VITE_CLAUDE_INPUT_COST_PER_1K, 0.003),
+    outputPer1K: parseCost(import.meta.env.VITE_CLAUDE_OUTPUT_COST_PER_1K, 0.015)
   }
 };
 
