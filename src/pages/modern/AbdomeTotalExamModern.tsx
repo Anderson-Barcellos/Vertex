@@ -21,6 +21,7 @@ import FindingDetailsGeneric from '@/components/original/FindingDetailsGeneric';
 import { generateReport } from '@/services/reportGenerator';
 import { geminiStreamService, GEMINI_MODEL } from '@/services/geminiStreamService';
 import { openaiStreamService, OPENAI_MODEL } from '@/services/openaiStreamService';
+import { claudeStreamService, CLAUDE_MODEL } from '@/services/claudeStreamService';
 import { unifiedAIService } from '@/services/unifiedAIService';
 import { buildSpecializedPrompt } from '@/services/promptBuilder';
 import { estimateCostUsd, estimateTokensFromText } from '@/utils/aiMetrics';

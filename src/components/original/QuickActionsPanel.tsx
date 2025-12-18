@@ -19,7 +19,8 @@ interface QuickActionsPanelProps {
 
 const providerConfig: Record<AIProvider, { label: string; color: string }> = {
   gemini: { label: 'Gemini', color: 'text-blue-400' },
-  openai: { label: 'OpenAI', color: 'text-emerald-400' }
+  openai: { label: 'OpenAI', color: 'text-emerald-400' },
+  claude: { label: 'Claude', color: 'text-orange-400' }
 };
 
 export default function QuickActionsPanel({

@@ -8,12 +8,20 @@ import { cn } from '@/lib/utils';
 
 // Model configurations
 const GEMINI_MODELS = [
-  { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro', description: 'Mais avançado' }
+  { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro', description: 'Preview, reasoning adaptativo' },
+  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', description: 'Estável, 1M ctx' },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'Rápido e capaz' }
 ];
 
 const OPENAI_MODELS = [
-  { id: 'gpt-4o', name: 'GPT-4o', description: 'Modelo otimizado' },
-  { id: 'gpt-5.1-chat-latest', name: 'GPT-5.1 Chat Latest', description: 'Último modelo' }
+  { id: 'gpt-5', name: 'GPT-5', description: 'Flagship (reasoning: none)' },
+  { id: 'gpt-4.1', name: 'GPT-4.1', description: 'Coding otimizado, 1M ctx' },
+  { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', description: 'Rápido e econômico' }
+];
+
+const CLAUDE_MODELS = [
+  { id: 'claude-sonnet-4-5', name: 'Claude Sonnet 4.5', description: 'Melhor relação custo-benefício' },
+  { id: 'claude-opus-4-5', name: 'Claude Opus 4.5', description: 'Máximo desempenho' }
 ];
 
 interface SelectedFindingsPanelProps {
@@ -40,24 +48,31 @@ export default function SelectedFindingsPanel({
   const [selectedModel, setSelectedModel] = useState<AIProvider>('gemini');
   const [selectedGeminiModel, setSelectedGeminiModel] = useState(GEMINI_MODELS[0].id);
   const [selectedOpenAIModel, setSelectedOpenAIModel] = useState(OPENAI_MODELS[0].id);
+  const [selectedClaudeModel, setSelectedClaudeModel] = useState(CLAUDE_MODELS[0].id);
 
   useEffect(() => {
-    const specificModel = selectedModel === 'gemini' ? selectedGeminiModel : selectedOpenAIModel;
+    const specificModel = selectedModel === 'gemini' 
+      ? selectedGeminiModel 
+      : selectedModel === 'openai' 
+        ? selectedOpenAIModel 
+        : selectedClaudeModel;
     onModelChange?.(selectedModel, specificModel);
   }, [selectedModel, selectedGeminiModel, selectedOpenAIModel, onModelChange]);
-  const [activeMenu, setActiveMenu] = useState<'gemini' | 'openai' | null>(null);
+  const [activeMenu, setActiveMenu] = useState<'gemini' | 'openai' | 'claude' | null>(null);
   const [isShaking, setIsShaking] = useState(false);
 
   const geminiMenuRef = useRef<HTMLDivElement>(null);
   const openaiMenuRef = useRef<HTMLDivElement>(null);
+  const claudeMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
       const target = event.target as Node | null;
       const isInsideGemini = geminiMenuRef.current?.contains(target as Node) ?? false;
       const isInsideOpenAI = openaiMenuRef.current?.contains(target as Node) ?? false;
+      const isInsideClaude = claudeMenuRef.current?.contains(target as Node) ?? false;
 
-      if (!isInsideGemini && !isInsideOpenAI) {
+      if (!isInsideGemini && !isInsideOpenAI && !isInsideClaude) {
         setActiveMenu(null);
       }
     };
@@ -112,7 +127,11 @@ export default function SelectedFindingsPanel({
       additionalNotes: ''
     };
 
-    const specificModel = selectedModel === 'gemini' ? selectedGeminiModel : selectedOpenAIModel;
+    const specificModel = selectedModel === 'gemini' 
+      ? selectedGeminiModel 
+      : selectedModel === 'openai' 
+        ? selectedOpenAIModel 
+        : selectedClaudeModel;
 
     onGenerateReport(reportData, {
       model: selectedModel,
@@ -328,7 +347,7 @@ export default function SelectedFindingsPanel({
           <h3 className="text-xs font-medium mb-2 text-sidebar-foreground opacity-70">
             Modelo de IA:
           </h3>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-1.5">
             {/* Gemini Button with Dropdown */}
             <div className="flex-1 relative z-[55]" ref={geminiMenuRef}>
               <button
@@ -415,6 +434,54 @@ export default function SelectedFindingsPanel({
                       className={cn(
                         "w-full px-3 py-2 text-left text-xs hover:bg-sidebar-muted transition-colors",
                         selectedOpenAIModel === model.id && "bg-accent/10"
+                      )}
+                    >
+                      <div className="font-medium text-sidebar-foreground">{model.name}</div>
+                      <div className="text-[10px] text-sidebar-foreground opacity-60">{model.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Claude Button with Dropdown */}
+            <div className="flex-1 relative z-[55]" ref={claudeMenuRef}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedModel('claude');
+                  setActiveMenu('claude');
+                }}
+                className={cn(
+                  "w-full px-3 py-1.5 text-xs rounded-md font-medium transition-all flex items-center justify-between gap-1",
+                  selectedModel === 'claude'
+                    ? "bg-accent text-accent-foreground shadow-sm"
+                    : "bg-sidebar-muted text-sidebar-foreground opacity-70 border border-white/10 hover:opacity-100"
+                )}
+              >
+                <span className="truncate">
+                  {CLAUDE_MODELS.find(m => m.id === selectedClaudeModel)?.name || 'Claude'}
+                </span>
+                <CaretDown size={12} className={cn("transition-transform", activeMenu === 'claude' && "rotate-180")} />
+              </button>
+
+              {/* Claude Dropdown */}
+              {activeMenu === 'claude' && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute bottom-full left-0 right-0 mb-1 bg-sidebar-background border border-border/20 rounded-md shadow-lg overflow-hidden z-[60]"
+                  data-custom-dropdown="open">
+                  {CLAUDE_MODELS.map((model) => (
+                    <button
+                      key={model.id}
+                      onClick={() => {
+                        setSelectedClaudeModel(model.id);
+                        setSelectedModel('claude');
+                        setActiveMenu(null);
+                      }}
+                      className={cn(
+                        "w-full px-3 py-2 text-left text-xs hover:bg-sidebar-muted transition-colors",
+                        selectedClaudeModel === model.id && "bg-accent/10"
                       )}
                     >
                       <div className="font-medium text-sidebar-foreground">{model.name}</div>

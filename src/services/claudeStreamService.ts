@@ -1,34 +1,31 @@
-// Gemini AI Streaming Integration via backend proxy
 import type { SelectedFinding } from '@/types/report';
 import { buildReportPrompt } from './promptBuilder';
 
-// Types for streaming
 export interface StreamCallbacks {
   onChunk?: (text: string) => void;
   onComplete?: (fullText: string) => void;
   onError?: (error: Error) => void;
 }
 
-// Use proxy local para evitar CORS
-const GEMINI_API_ENDPOINT =
-  import.meta.env.VITE_GEMINI_API_URL || '/api/gemini';
-export const GEMINI_MODEL =
-  import.meta.env.VITE_GEMINI_MODEL || 'gemini-3-pro-preview';
+const CLAUDE_API_ENDPOINT =
+  import.meta.env.VITE_CLAUDE_API_URL || '/api/claude';
+export const CLAUDE_MODEL =
+  import.meta.env.VITE_CLAUDE_MODEL || 'claude-sonnet-4-5';
 
-/**
- * Classe para gerenciar streaming do Gemini via backend
- */
-export class GeminiStreamService {
-  /**
-   * Verifica se a API está configurada
-   */
+function getSelectedClaudeModel(): string {
+  try {
+    const fromSession = typeof window !== 'undefined' ? sessionStorage.getItem('selectedAIModel') : null;
+    return fromSession || CLAUDE_MODEL;
+  } catch {
+    return CLAUDE_MODEL;
+  }
+}
+
+export class ClaudeStreamService {
   isConfigured(): boolean {
-    return Boolean(GEMINI_API_ENDPOINT);
+    return Boolean(CLAUDE_API_ENDPOINT);
   }
 
-  /**
-   * Gera impressão clínica com streaming
-   */
   async generateClinicalImpressionStream(
     data: {
       examType?: string;
@@ -42,19 +39,13 @@ export class GeminiStreamService {
       const prompt = buildReportPrompt(data);
       await this.streamFromBackend(prompt, callbacks);
     } catch (error) {
-      console.error('Erro no streaming Gemini:', error);
+      console.error('Erro no streaming Claude:', error);
       callbacks.onError?.(error as Error);
     }
   }
 
-  /**
-   * Gera relatório completo com streaming
-   */
   async generateFullReportStream(
     data: {
-      patientName?: string;
-      patientAge?: string;
-      examDate?: string;
       examType?: string;
       selectedFindings: SelectedFinding[];
       normalOrgans: string[];
@@ -63,21 +54,7 @@ export class GeminiStreamService {
     callbacks: StreamCallbacks
   ): Promise<void> {
     try {
-      let prompt = `Gere um LAUDO COMPLETO de ${data.examType || 'Ultrassonografia'} com os seguintes dados:\n\n`;
-
-      if (data.patientName) {
-        prompt += `PACIENTE: ${data.patientName}\n`;
-      }
-      if (data.patientAge) {
-        prompt += `IDADE: ${data.patientAge}\n`;
-      }
-      if (data.examDate) {
-        prompt += `DATA: ${data.examDate}\n`;
-      }
-
-      prompt += '\n' + buildReportPrompt(data);
-      prompt += '\nGere um laudo completo e detalhado, incluindo técnica do exame, todos os achados e impressão diagnóstica.';
-
+      const prompt = buildReportPrompt(data);
       await this.streamFromBackend(prompt, callbacks);
     } catch (error) {
       console.error('Erro ao gerar relatório completo:', error);
@@ -89,41 +66,53 @@ export class GeminiStreamService {
     prompt: string,
     callbacks: StreamCallbacks
   ): Promise<void> {
-    const requestUrl = createRequestUrl('');
+    const requestUrl = createRequestUrl();
+    const selectedModel = getSelectedClaudeModel();
 
-    // Obter modelo selecionado do sessionStorage
-    const selectedModel = sessionStorage.getItem('selectedAIModel') || GEMINI_MODEL;
+    const payload = {
+      model: selectedModel,
+      messages: [
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      max_tokens: 2000
+    };
 
-    console.log('[GeminiStreamService] Usando modelo:', selectedModel);
+    console.log('[ClaudeStreamService] Usando modelo:', selectedModel);
+    console.log('[ClaudeStreamService] Request URL:', requestUrl);
 
     const response = await fetch(requestUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: prompt,
-        model: selectedModel
-        // NÃO enviar 'prompt' - deixar backend usar seu system_prompt padrão
-      })
+      body: JSON.stringify(payload)
     });
+
     if (!response.ok) {
       const message = await response.text().catch(() => '');
-      throw new Error(`Gemini backend error: ${response.status} ${message}`);
+      console.error('[ClaudeStreamService] Error response:', message);
+      throw new Error(`Claude backend error: ${response.status} ${message}`);
     }
 
     const fullText = await readStream(response, callbacks);
     callbacks.onComplete?.(fullText);
   }
 
-  /**
-   * Teste de conexão
-   */
   async testConnection(): Promise<boolean> {
     try {
       const url = createRequestUrl();
+      const selectedModel = getSelectedClaudeModel();
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: 'Teste de conexão. Responda apenas: OK' })
+        body: JSON.stringify({
+          model: selectedModel,
+          messages: [
+            { role: 'user', content: 'Teste de conexão. Responda apenas: OK' }
+          ],
+          max_tokens: 10
+        })
       });
       return response.ok;
     } catch (error) {
@@ -133,18 +122,17 @@ export class GeminiStreamService {
   }
 }
 
-// Singleton instance
-export const geminiStreamService = new GeminiStreamService();
+export const claudeStreamService = new ClaudeStreamService();
 
-function createRequestUrl(_unused?: string): string {
+function createRequestUrl(): string {
   try {
-    if (GEMINI_API_ENDPOINT.startsWith('http')) {
-      return GEMINI_API_ENDPOINT;
+    if (CLAUDE_API_ENDPOINT.startsWith('http')) {
+      return CLAUDE_API_ENDPOINT;
     }
     const base = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
-    return new URL(GEMINI_API_ENDPOINT, base).toString();
+    return new URL(CLAUDE_API_ENDPOINT, base).toString();
   } catch (error) {
-    throw new Error(`Endpoint do Gemini inválido (${GEMINI_API_ENDPOINT}): ${String(error)}`);
+    throw new Error(`Endpoint do Claude inválido (${CLAUDE_API_ENDPOINT}): ${String(error)}`);
   }
 }
 
@@ -153,7 +141,8 @@ async function readStream(
   callbacks: StreamCallbacks
 ): Promise<string> {
   if (!response.body) {
-    return (await response.text()).trim();
+    const text = await response.text();
+    return text.trim();
   }
 
   const reader = response.body.getReader();
@@ -167,7 +156,6 @@ async function readStream(
       const chunk = decoder.decode(value, { stream: true });
       if (chunk) {
         fullText += chunk;
-        // Passa o texto ACUMULADO, não apenas o chunk
         callbacks.onChunk?.(fullText);
       }
     }
@@ -177,3 +165,6 @@ async function readStream(
   return fullText.trim();
 }
 
+if (import.meta.env.DEV) {
+  console.log('✅ Claude Stream Service configurado para:', CLAUDE_API_ENDPOINT);
+}

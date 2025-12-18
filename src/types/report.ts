@@ -130,7 +130,7 @@ export interface ReportData {
   additionalNotes?: string;
 }
 
-export type AIProvider = 'gemini' | 'openai';
+export type AIProvider = 'gemini' | 'openai' | 'claude';
 
 export interface AIGenerationStats {
   provider: AIProvider;

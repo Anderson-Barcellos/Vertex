@@ -5,10 +5,11 @@
 
 import { geminiStreamService } from './geminiStreamService';
 import { openaiStreamService } from './openaiStreamService';
+import { claudeStreamService } from './claudeStreamService';
 import type { SelectedFinding } from '@/types/report';
 import type { AIStatus } from '@/components/original/ReportCanvas';
 
-type AIProvider = 'gemini' | 'openai';
+type AIProvider = 'gemini' | 'openai' | 'claude';
 
 interface StreamCallbacks {
   onChunk?: (text: string) => void;
@@ -100,6 +101,11 @@ class UnifiedAIService {
           throw new Error('OpenAI não está configurado. Configure VITE_OPENAI_API_KEY.');
         }
         await openaiStreamService.generateClinicalImpressionStream(data, wrappedCallbacks);
+      } else if (this.currentProvider === 'claude') {
+        if (!claudeStreamService.isConfigured()) {
+          throw new Error('Claude não está configurado. Configure VITE_CLAUDE_API_URL.');
+        }
+        await claudeStreamService.generateClinicalImpressionStream(data, wrappedCallbacks);
       } else {
         if (!geminiStreamService.isConfigured()) {
           throw new Error('Gemini não está configurado. Configure VITE_GEMINI_API_URL.');
@@ -146,6 +152,9 @@ class UnifiedAIService {
     if (this.currentProvider === 'openai') {
       return openaiStreamService.isConfigured();
     }
+    if (this.currentProvider === 'claude') {
+      return claudeStreamService.isConfigured();
+    }
     return geminiStreamService.isConfigured();
   }
 
@@ -156,6 +165,9 @@ class UnifiedAIService {
     try {
       if (this.currentProvider === 'openai') {
         return await openaiStreamService.testConnection();
+      }
+      if (this.currentProvider === 'claude') {
+        return await claudeStreamService.testConnection();
       }
       return await geminiStreamService.testConnection();
     } catch (error) {

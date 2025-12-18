@@ -7,16 +7,19 @@ interface ModelConfig {
   id: string;
   name: string;
   description: string;
+  reasoning?: 'none' | 'low' | 'medium' | 'high';
 }
 
 const AI_MODELS: Record<AIProvider, ModelConfig[]> = {
   gemini: [
-    { id: 'gemini-2.5-pro-preview-06-05', name: 'Gemini 2.5 Pro', description: 'Mais avançado' },
-    { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Rápido e eficiente' }
+    { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro', description: 'Preview, reasoning adaptativo' },
+    { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', description: 'Estável, 1M ctx' },
+    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'Rápido e capaz' }
   ],
   openai: [
-    { id: 'gpt-4o', name: 'GPT-4o', description: 'Multimodal otimizado' },
-    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'Rápido e econômico' }
+    { id: 'gpt-5', name: 'GPT-5', description: 'Flagship (reasoning: none)', reasoning: 'none' },
+    { id: 'gpt-4.1', name: 'GPT-4.1', description: 'Coding otimizado, 1M ctx' },
+    { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', description: 'Rápido e econômico' }
   ]
 };
 
