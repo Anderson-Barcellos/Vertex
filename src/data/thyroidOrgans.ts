@@ -120,6 +120,65 @@ export const calculateThyroidVolume = (length: number, ap: number, transverse: n
   return length * ap * transverse * 0.52 / 1000; // resultado em ml
 };
 
+// ============================================================================
+// VALORES DE REFERÊNCIA PARA VOLUME (Gutekunst et al.)
+// ============================================================================
+
+export const THYROID_VOLUME_REFERENCE = {
+  lobe: {
+    min: 4,      // mL - abaixo = atrofia
+    normal: 10,  // mL - limite superior normal por lobo
+    label: 'Volume por lobo'
+  },
+  total: {
+    female: {
+      min: 6,    // mL - abaixo = atrofia
+      max: 18,   // mL - acima = bócio
+      label: 'Volume total (mulher)'
+    },
+    male: {
+      min: 6,    // mL - abaixo = atrofia  
+      max: 25,   // mL - acima = bócio
+      label: 'Volume total (homem)'
+    },
+    default: {
+      min: 6,
+      max: 20,   // mL - valor médio conservador
+      label: 'Volume total'
+    }
+  }
+};
+
+export type VolumeStatus = 'reduced' | 'normal' | 'increased';
+
+export interface VolumeClassification {
+  status: VolumeStatus;
+  label: string;
+  color: 'yellow' | 'green' | 'red';
+}
+
+export const classifyLobeVolume = (volumeMl: number): VolumeClassification => {
+  const ref = THYROID_VOLUME_REFERENCE.lobe;
+  if (volumeMl < ref.min) {
+    return { status: 'reduced', label: 'Reduzido (atrofia)', color: 'yellow' };
+  }
+  if (volumeMl > ref.normal) {
+    return { status: 'increased', label: 'Aumentado', color: 'red' };
+  }
+  return { status: 'normal', label: 'Normal', color: 'green' };
+};
+
+export const classifyTotalVolume = (volumeMl: number, sex?: 'male' | 'female'): VolumeClassification => {
+  const ref = sex ? THYROID_VOLUME_REFERENCE.total[sex] : THYROID_VOLUME_REFERENCE.total.default;
+  if (volumeMl < ref.min) {
+    return { status: 'reduced', label: 'Reduzido (atrofia)', color: 'yellow' };
+  }
+  if (volumeMl > ref.max) {
+    return { status: 'increased', label: 'Aumentado (bócio)', color: 'red' };
+  }
+  return { status: 'normal', label: 'Normal', color: 'green' };
+};
+
 // Função para calcular TI-RADS baseado nas características selecionadas
 export const calculateTIRADS = (characteristics: {
   composition?: string;
@@ -332,12 +391,12 @@ export const thyroidOrgans: Organ[] = [
       },
       {
         id: 'dimensoes-ltd',
-        name: 'Dimensões / Volume',
+        name: 'Volumetria',
         findings: [
           {
-            id: 'aumento-volumetrico-ltd',
-            name: 'Aumento volumétrico',
-            description: 'Lobo aumentado de volume',
+            id: 'volume-ltd',
+            name: 'Volume do Lobo Direito',
+            description: 'Registro das dimensões e cálculo do volume',
             hasDetails: true,
             hasMeasurement: true,
             extraFields: [
@@ -345,19 +404,19 @@ export const thyroidOrgans: Organ[] = [
                 id: 'comprimento',
                 label: 'Comprimento (mm)',
                 type: 'text',
-                placeholder: 'Ex: 55'
+                placeholder: 'Ex: 45'
               },
               {
                 id: 'ap',
                 label: 'AP - Anteroposterior (mm)',
                 type: 'text',
-                placeholder: 'Ex: 22'
+                placeholder: 'Ex: 15'
               },
               {
                 id: 'transverso',
                 label: 'Transverso (mm)',
                 type: 'text',
-                placeholder: 'Ex: 28'
+                placeholder: 'Ex: 18'
               }
             ]
           }
@@ -509,12 +568,12 @@ export const thyroidOrgans: Organ[] = [
       },
       {
         id: 'dimensoes-lte',
-        name: 'Dimensões / Volume',
+        name: 'Volumetria',
         findings: [
           {
-            id: 'aumento-volumetrico-lte',
-            name: 'Aumento volumétrico',
-            description: 'Lobo aumentado de volume',
+            id: 'volume-lte',
+            name: 'Volume do Lobo Esquerdo',
+            description: 'Registro das dimensões e cálculo do volume',
             hasDetails: true,
             hasMeasurement: true,
             extraFields: [
@@ -522,19 +581,19 @@ export const thyroidOrgans: Organ[] = [
                 id: 'comprimento',
                 label: 'Comprimento (mm)',
                 type: 'text',
-                placeholder: 'Ex: 55'
+                placeholder: 'Ex: 45'
               },
               {
                 id: 'ap',
                 label: 'AP - Anteroposterior (mm)',
                 type: 'text',
-                placeholder: 'Ex: 22'
+                placeholder: 'Ex: 15'
               },
               {
                 id: 'transverso',
                 label: 'Transverso (mm)',
                 type: 'text',
-                placeholder: 'Ex: 28'
+                placeholder: 'Ex: 18'
               }
             ]
           }

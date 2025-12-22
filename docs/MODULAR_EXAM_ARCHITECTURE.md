@@ -1,7 +1,8 @@
 # Arquitetura Modular de Exames - Vertex V2
 
 **Implementado em:** 2025-12-18  
-**Status:** Produção (Abdome Total migrado)
+**Atualizado em:** 2025-12-22  
+**Status:** Produção (Abdome, Carótidas, Tireoide migrados)
 
 ---
 
@@ -33,8 +34,8 @@ src/
 │   └── exams/
 │       ├── index.ts               # Re-exports
 │       ├── AbdomeTotalExam.tsx    # ✅ Migrado
-│       ├── CarotidExam.tsx        # 🔜 Pendente
-│       ├── ThyroidExam.tsx        # 🔜 Pendente
+│       ├── CarotidExam.tsx        # ✅ Migrado
+│       ├── ThyroidExam.tsx        # ✅ Migrado
 │       ├── BreastExam.tsx         # 🔜 Pendente
 │       ├── ArterialExam.tsx       # 🔜 Pendente
 │       ├── VenousExam.tsx         # 🔜 Pendente
@@ -120,7 +121,7 @@ const config: ExamConfig = {
 |-------|------------|-------------------|
 | Abdome | `FindingDetailsGeneric` | Básico |
 | Carótidas | `CarotidFindingDetails` | VPS, VDF, NASCET, placas |
-| Tireoide | `ThyroidFindingDetails` | TI-RADS ACR 2017 |
+| Tireoide | `ThyroidFindingDetails` | TI-RADS ACR 2017, Volume Gutekunst |
 | Mama | `BreastUltrasoundFindingDetails` | BI-RADS 5ª Ed |
 
 ---
@@ -151,8 +152,8 @@ getMarkableOrgans(config): Organ[]
 - [x] Remover arquivo legado
 
 ### Fase 2 - Exames com Componentes Customizados
-- [ ] Carótidas (`CarotidFindingDetails`)
-- [ ] Tireoide (`ThyroidFindingDetails`)
+- [x] Carótidas (`CarotidFindingDetails`)
+- [x] Tireoide (`ThyroidFindingDetails`)
 - [ ] Mama (`BreastUltrasoundFindingDetails`)
 
 ### Fase 3 - Exames Genéricos

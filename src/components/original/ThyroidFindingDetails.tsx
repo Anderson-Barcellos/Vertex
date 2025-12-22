@@ -18,7 +18,9 @@ import {
   PARENCHYMA_ECHOTEXTURE,
   PARENCHYMA_VASCULARITY,
   LYMPH_NODE_SUSPICIOUS_CRITERIA,
-  TIRADS_CATEGORIES
+  TIRADS_CATEGORIES,
+  classifyLobeVolume,
+  THYROID_VOLUME_REFERENCE
 } from '@/data/thyroidOrgans';
 
 interface ThyroidFindingDetailsProps {
@@ -104,8 +106,17 @@ function ThyroidFindingDetailsComponent({
   const isEchotexture = finding.id.includes('ecotextura') || finding.id.includes('tireopatia');
   const isIsthmusThickening = finding.id.includes('espessamento-istmo');
   const isLymphNode = finding.id.includes('linfonodo');
-  const isVolumeIncrease = finding.id.includes('aumento-volumetrico');
+  const isVolume = finding.id.includes('volume-lt');
   const isCyst = finding.id.includes('cisto');
+
+  const directVolumeClassification = useMemo(() => {
+    if (!isVolume) return null;
+    const vol = parseFloat(currentMeasurement.volumeDirect || '0');
+    if (vol > 0) {
+      return classifyLobeVolume(vol);
+    }
+    return null;
+  }, [isVolume, currentMeasurement.volumeDirect]);
 
   // Calcular TI-RADS em tempo real para o formulário atual
   const currentTIRADSScore = useMemo(() => {
@@ -131,21 +142,25 @@ function ThyroidFindingDetailsComponent({
         currentMeasurement.echotexturePattern ||
         currentMeasurement.vascularity ||
         currentMeasurement.thickness ||
-        currentMeasurement.comprimento ||
-        currentMeasurement.ap ||
-        currentMeasurement.transverso ||
+        currentMeasurement.volumeDirect ||
         currentMeasurement.suspiciousFeatures ||
         currentMeasurement.level ||
         currentMeasurement.description) {
 
-      // Calcular e adicionar TI-RADS para nódulos
       let enrichedMeasurement = { ...currentMeasurement };
+      
       if (isNodule && !isCyst) {
         const score = calculateTIRADSScore(currentMeasurement);
         const category = getTIRADSCategory(score);
         enrichedMeasurement.tiradsScore = score;
         enrichedMeasurement.tiradsCategory = category.label;
         enrichedMeasurement.tiradsRecommendation = category.recommendation;
+      }
+      
+      if (isVolume && currentMeasurement.volumeDirect) {
+        enrichedMeasurement.volumeCalculated = currentMeasurement.volumeDirect;
+        enrichedMeasurement.volumeStatus = directVolumeClassification?.status;
+        enrichedMeasurement.volumeLabel = directVolumeClassification?.label;
       }
 
       const newInstance: FindingInstance = {
@@ -266,6 +281,19 @@ function ThyroidFindingDetailsComponent({
                       )}
                       {(instance.measurements.comprimento || instance.measurements.ap || instance.measurements.transverso) && (
                         <p><span className="text-muted-foreground">Dimensões:</span> {instance.measurements.comprimento} × {instance.measurements.ap} × {instance.measurements.transverso} mm</p>
+                      )}
+                      {instance.measurements.volumeCalculated && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-muted-foreground">Volume:</span>
+                          <span className="font-medium">{instance.measurements.volumeCalculated} mL</span>
+                          <Badge className={`text-xs ${
+                            instance.measurements.volumeStatus === 'normal' ? 'bg-green-500/20 text-green-300 border-green-500/30' :
+                            instance.measurements.volumeStatus === 'increased' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
+                            'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                          }`}>
+                            {instance.measurements.volumeLabel}
+                          </Badge>
+                        </div>
                       )}
                       {instance.measurements.level && (
                         <p><span className="text-muted-foreground">Nível:</span> {instance.measurements.level}</p>
@@ -596,45 +624,42 @@ function ThyroidFindingDetailsComponent({
                 </div>
               )}
 
-              {/* Campos específicos para AUMENTO VOLUMÉTRICO */}
-              {isVolumeIncrease && (
+              {/* Campos específicos para VOLUME DO LOBO */}
+              {isVolume && (
                 <>
                   <div className="flex items-center gap-2">
-                    <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
-                      Comprimento:
+                    <label className="text-xs font-medium text-muted-foreground min-w-[80px] flex items-center gap-1">
+                      <Activity size={12} />
+                      Volume:
                     </label>
                     <Input
                       type="text"
-                      placeholder="mm"
-                      value={currentMeasurement.comprimento || ''}
-                      onChange={(e) => setCurrentMeasurement({...currentMeasurement, comprimento: e.target.value})}
+                      placeholder="Ex: 6.5"
+                      value={currentMeasurement.volumeDirect || ''}
+                      onChange={(e) => setCurrentMeasurement({...currentMeasurement, volumeDirect: e.target.value})}
                       className="h-7 text-xs flex-1"
                     />
+                    <span className="text-xs text-muted-foreground">mL</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
-                      AP:
-                    </label>
-                    <Input
-                      type="text"
-                      placeholder="mm"
-                      value={currentMeasurement.ap || ''}
-                      onChange={(e) => setCurrentMeasurement({...currentMeasurement, ap: e.target.value})}
-                      className="h-7 text-xs flex-1"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
-                      Transverso:
-                    </label>
-                    <Input
-                      type="text"
-                      placeholder="mm"
-                      value={currentMeasurement.transverso || ''}
-                      onChange={(e) => setCurrentMeasurement({...currentMeasurement, transverso: e.target.value})}
-                      className="h-7 text-xs flex-1"
-                    />
-                  </div>
+
+                  {/* Classificação em tempo real */}
+                  {directVolumeClassification && (
+                    <div className="p-2 bg-background/50 rounded-md border border-accent/30">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Classificação:</span>
+                        <Badge className={`text-xs ${
+                          directVolumeClassification.color === 'green' ? 'bg-green-500/20 text-green-300 border-green-500/30' :
+                          directVolumeClassification.color === 'red' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
+                          'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                        }`}>
+                          {directVolumeClassification.label}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Ref: Normal ≤ {THYROID_VOLUME_REFERENCE.lobe.normal} mL por lobo
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
 
@@ -682,7 +707,7 @@ function ThyroidFindingDetailsComponent({
               )}
 
               {/* ExtraFields genéricos (para Paratireoides e outros) */}
-              {finding.extraFields && finding.extraFields.length > 0 && !isNodule && !isEchotexture && !isLymphNode && !isIsthmusThickening && !isVolumeIncrease && !isCyst && (
+              {finding.extraFields && finding.extraFields.length > 0 && !isNodule && !isEchotexture && !isLymphNode && !isIsthmusThickening && !isVolume && !isCyst && (
                 <>
                   {finding.extraFields.map((field) => {
                     if (typeof field === 'string') return null;
@@ -790,9 +815,7 @@ function ThyroidFindingDetailsComponent({
                     !currentMeasurement.echotexturePattern &&
                     !currentMeasurement.vascularity &&
                     !currentMeasurement.thickness &&
-                    !currentMeasurement.comprimento &&
-                    !currentMeasurement.ap &&
-                    !currentMeasurement.transverso &&
+                    !currentMeasurement.volumeDirect &&
                     !currentMeasurement.level &&
                     !currentMeasurement.suspiciousFeatures &&
                     !currentMeasurement.description

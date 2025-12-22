@@ -92,6 +92,17 @@ export interface FindingMeasurement {
   tiradsCategory?: string; // Categoria TI-RADS (TR1-TR5)
   tiradsRecommendation?: string; // Recomendação (PAAF, seguimento, etc)
 
+  // Thyroid Volume fields (Gutekunst reference)
+  volumeDirect?: string; // Volume inserido diretamente pelo usuário em mL
+  volumeCalculated?: string; // Volume (direto ou calculado) em mL
+  volumeStatus?: string; // Status do volume (normal, increased, reduced)
+  volumeLabel?: string; // Label descritivo do status
+  thickness?: string; // Espessura (istmo) em mm
+
+  // Thyroid Parenchyma fields
+  echotexturePattern?: string; // Padrão de ecotextura do parênquima
+  vascularity?: string; // Vascularização do parênquima
+
   // Legacy fields (manter compatibilidade)
   ratio?: string; // Razão VPS ACI/ACC (deprecated, usar ratioICA_CCA)
   nascet?: string; // Grau NASCET de estenose (deprecated)

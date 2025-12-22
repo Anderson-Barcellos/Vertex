@@ -21,7 +21,8 @@ src/
 │   ├── BaseExamPage.tsx       # Template base (~300 linhas) - TODA lógica comum
 │   └── exams/                 # Módulos de configuração (~20-30 linhas cada)
 │       ├── AbdomeTotalExam.tsx   # ✅ Migrado
-│       ├── CarotidExam.tsx       # 🔜 Pendente
+│       ├── CarotidExam.tsx       # ✅ Migrado
+│       ├── ThyroidExam.tsx       # ✅ Migrado
 │       └── ...                   # Demais exames
 ├── types/
 │   └── exam.ts                # ExamConfig interface
@@ -70,8 +71,8 @@ git status && git add -A && git commit -m "..." && git push origin master
 - [x] Adicionar suporte a Claude como provider
 
 ### Fase 2 - Migração de Exames
-- [ ] Migrar Carótidas (componente customizado)
-- [ ] Migrar Tireoide (TI-RADS calculator)
+- [x] Migrar Carótidas (componente customizado)
+- [x] Migrar Tireoide (TI-RADS calculator)
 - [ ] Migrar Mama (BI-RADS calculator)
 - [ ] Migrar Arterial, Venoso, Parede
 
