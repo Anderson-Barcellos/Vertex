@@ -1,3 +1,8 @@
 export { default as AbdomeTotalExam } from './AbdomeTotalExam';
 export { default as CarotidExam } from './CarotidExam';
 export { default as ThyroidExam } from './ThyroidExam';
+export { default as ArterialExam } from './ArterialExam';
+export { default as VenousExam } from './VenousExam';
+export { default as AbdominalWallExam } from './AbdominalWallExam';
+export { default as AbdominalVesselsExam } from './AbdominalVesselsExam';
+export { default as BreastExam } from './BreastExam';

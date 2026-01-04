@@ -5,12 +5,16 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import LandingPageModern from './pages/v2/LandingPageModern';
 import Home from './pages/Home';
-import { AbdomeTotalExam, CarotidExam, ThyroidExam } from './pages/modern/exams';
-import BreastExamModern from './pages/modern/BreastExamModern';
-import VenousExamModern from './pages/modern/VenousExamModern';
-import ArterialExamModern from './pages/modern/ArterialExamModern';
-import AbdominalVesselsExamModern from './pages/modern/AbdominalVesselsExamModern';
-import AbdominalWallExamModern from './pages/modern/AbdominalWallExamModern';
+import {
+  AbdomeTotalExam,
+  CarotidExam,
+  ThyroidExam,
+  ArterialExam,
+  VenousExam,
+  AbdominalWallExam,
+  AbdominalVesselsExam,
+  BreastExam
+} from './pages/modern/exams';
 import ResolutionGuard from './components/ResolutionGuard';
 
 function App() {
@@ -25,11 +29,11 @@ function App() {
             <Route path="/abdome-modern" element={<ProtectedRoute><AbdomeTotalExam /></ProtectedRoute>} />
             <Route path="/carotid-modern" element={<ProtectedRoute><CarotidExam /></ProtectedRoute>} />
             <Route path="/thyroid-modern" element={<ProtectedRoute><ThyroidExam /></ProtectedRoute>} />
-            <Route path="/breast-exam" element={<ProtectedRoute><BreastExamModern /></ProtectedRoute>} />
-            <Route path="/venous-modern" element={<ProtectedRoute><VenousExamModern /></ProtectedRoute>} />
-            <Route path="/arterial-modern" element={<ProtectedRoute><ArterialExamModern /></ProtectedRoute>} />
-            <Route path="/abdominal-vessels-modern" element={<ProtectedRoute><AbdominalVesselsExamModern /></ProtectedRoute>} />
-            <Route path="/abdominal-wall-modern" element={<ProtectedRoute><AbdominalWallExamModern /></ProtectedRoute>} />
+            <Route path="/breast-exam" element={<ProtectedRoute><BreastExam /></ProtectedRoute>} />
+            <Route path="/venous-modern" element={<ProtectedRoute><VenousExam /></ProtectedRoute>} />
+            <Route path="/arterial-modern" element={<ProtectedRoute><ArterialExam /></ProtectedRoute>} />
+            <Route path="/abdominal-vessels-modern" element={<ProtectedRoute><AbdominalVesselsExam /></ProtectedRoute>} />
+            <Route path="/abdominal-wall-modern" element={<ProtectedRoute><AbdominalWallExam /></ProtectedRoute>} />
           </Routes>
         </Router>
       </ResolutionGuard>
