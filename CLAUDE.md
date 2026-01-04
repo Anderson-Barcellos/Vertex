@@ -70,18 +70,60 @@ git status && git add -A && git commit -m "..." && git push origin master
 - [x] Migrar Abdome Total para arquitetura modular
 - [x] Adicionar suporte a Claude como provider
 
-### Fase 2 - Migração de Exames
-- [x] Migrar Carótidas (componente customizado)
-- [x] Migrar Tireoide (TI-RADS calculator)
-- [ ] Migrar Mama (BI-RADS calculator)
-- [ ] Migrar Arterial, Venoso, Parede
+### Fase 2 - Migração de Exames Customizados (Concluída ✅)
+- [x] Migrar Carótidas (CarotidFindingDetails)
+- [x] Migrar Tireoide (ThyroidFindingDetails)
 
-### Fase 3 - Classificadores
+### Fase 3 - Migração de Exames Restantes (Pendente 🔜)
+
+**5 exames legados (~600 linhas cada) → módulos (~25 linhas cada)**
+
+| # | Exame | Legado | Novo | Dados | FindingDetails |
+|---|-------|--------|------|-------|----------------|
+| 1 | Mama | `BreastExamModern.tsx` | `exams/BreastExam.tsx` | `breastUltrasoundOrgans.ts` | `BreastUltrasoundFindingDetails` |
+| 2 | Arterial | `ArterialExamModern.tsx` | `exams/ArterialExam.tsx` | `arterialOrgans.ts` | Generic |
+| 3 | Venoso | `VenousExamModern.tsx` | `exams/VenousExam.tsx` | `venousOrgans.ts` | Generic |
+| 4 | Parede | `AbdominalWallExamModern.tsx` | `exams/AbdominalWallExam.tsx` | `abdominalWallOrgans.ts` | Generic |
+| 5 | Vasos Abd | `AbdominalVesselsExamModern.tsx` | `exams/AbdominalVesselsExam.tsx` | `abdominalVesselsOrgans.ts` | Generic |
+
+**Passos de implementação:**
+1. Criar arquivo em `src/pages/modern/exams/NomeExam.tsx` (template abaixo)
+2. Adicionar export em `src/pages/modern/exams/index.ts`
+3. Atualizar import em `src/App.tsx`
+4. Testar no browser
+5. Remover arquivo legado após validação
+
+**Template padrão (~25 linhas):**
+```typescript
+import BaseExamPage from '../BaseExamPage';
+import { nomeOrgans } from '@/data/nomeOrgans';
+import type { ExamConfig } from '@/types/exam';
+
+const config: ExamConfig = {
+  id: 'nome-exam',
+  title: 'Nome do Exame',
+  subtitle: 'Ultrassonografia de Nome',
+  examType: 'Ultrassonografia de Nome',
+  organsCatalog: nomeOrgans,
+  autoSaveKey: 'nome-exam-modern',
+  excludeFromNormalAll: ['observacoes']
+};
+
+export default function NomeExam() {
+  return <BaseExamPage config={config} />;
+}
+```
+
+**Limpeza final:**
+- [ ] Remover `ExamTemplateModern.example.tsx`
+- [ ] Remover 5 arquivos `*ExamModern.tsx` legados
+
+### Fase 4 - Classificadores
 - [x] BI-RADS 5ª Edição para Mama
 - [ ] CEAP/VCSS para Venoso
 - [ ] Fontaine/ITB para Arterial
 
-### Fase 4 - Expansão
+### Fase 5 - Expansão
 - [ ] Novos exames conforme demanda clínica
 
 **Workflow:** `docs/panorama-{modalidade}.md` → Anders fornece schema → Implementar → Build
