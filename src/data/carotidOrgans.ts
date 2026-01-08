@@ -104,6 +104,7 @@ export const STENOSIS_RATIO = {
 };
 
 export const NASCET_CRITERIA = [
+  'Normal (sem estenose)',
   '<50% (leve)',
   '50-69% (moderada)',
   '70-89% (grave)',
@@ -197,6 +198,17 @@ export const SUBCLAVIAN_STEAL = [
   'Roubo oculto (sístole variável)',
   'Roubo parcial (fluxo bidirecional)',
   'Roubo completo (fluxo reverso total)'
+];
+
+// ============================================================================
+// AGRUPAMENTO PARA SIDEBAR (ACCORDION)
+// ============================================================================
+
+export const carotidOrganGroups = [
+  { id: 'carotida-comum', name: 'Carótida Comum', organIds: ['ccd', 'cce'] },
+  { id: 'carotida-interna', name: 'Carótida Interna', organIds: ['cid', 'cie'] },
+  { id: 'carotida-externa', name: 'Carótida Externa', organIds: ['ced', 'cee'] },
+  { id: 'vertebral', name: 'Vertebral', organIds: ['vd', 've'] },
 ];
 
 // ============================================================================
@@ -1215,6 +1227,7 @@ export const carotidOrgans: Organ[] = [
     name: 'Observações',
     icon: 'notes',
     normalDescription: '',
+    hideNormalOption: true,
     categories: [
       {
         id: 'obs-gerais',
@@ -1271,6 +1284,7 @@ export const VERTEBRAL_LOCATIONS = [
 
 // Graus de estenose (critérios NASCET/ECST)
 export const STENOSIS_GRADES = [
+  { value: 'normal', label: 'Normal (sem estenose)' },
   { value: '<50', label: 'Leve (<50%)' },
   { value: '50-69', label: 'Moderada (50-69%)' },
   { value: '70-89', label: 'Severa (70-89%)' },

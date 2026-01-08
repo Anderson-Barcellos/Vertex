@@ -33,7 +33,7 @@ interface BaseExamPageProps {
 
 export default function BaseExamPage({ config }: BaseExamPageProps) {
   const navigate = useNavigate();
-  const { organsCatalog, autoSaveKey, examType, title, subtitle } = config;
+  const { organsCatalog, autoSaveKey, examType, title, subtitle, organGroups } = config;
   const FindingDetails = config.FindingDetailsComponent ?? FindingDetailsGeneric;
 
   const [selectedOrgan, setSelectedOrgan] = useState('');
@@ -125,7 +125,9 @@ export default function BaseExamPage({ config }: BaseExamPageProps) {
   ) => {
     setSelectedFindings(currentFindings => {
       if (checked) {
-        const existingIndex = currentFindings.findIndex(f => f.findingId === findingId);
+        const existingIndex = currentFindings.findIndex(
+          f => f.findingId === findingId && f.organId === organId
+        );
         if (existingIndex >= 0) {
           const updated = [...currentFindings];
           updated[existingIndex] = {
@@ -144,7 +146,9 @@ export default function BaseExamPage({ config }: BaseExamPageProps) {
           instances
         }];
       }
-      return currentFindings.filter(f => f.findingId !== findingId);
+      return currentFindings.filter(
+        f => !(f.findingId === findingId && f.organId === organId)
+      );
     });
 
     if (checked) {
@@ -376,6 +380,7 @@ export default function BaseExamPage({ config }: BaseExamPageProps) {
             selectedFindings={selectedFindings}
             normalOrgans={normalOrgans}
             organsList={organsCatalog}
+            organGroups={organGroups}
             showSummary={false}
           />
         )}

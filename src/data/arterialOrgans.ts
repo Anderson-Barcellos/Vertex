@@ -1,39 +1,15 @@
 import { Organ } from './organs';
+import {
+  LATERALITY,
+  STENOSIS_GRADE,
+  WAVEFORM_PATTERNS,
+  OCCLUSION_TYPE,
+  COLLATERAL_STATUS,
+  PLAQUE_TYPE,
+  createObservacoesOrgan
+} from './shared';
 
-export const LATERALITY = ['Direito', 'Esquerdo', 'Bilateral'];
-
-export const STENOSIS_GRADE = [
-  'Leve (<50%)',
-  'Moderada (50-75%)',
-  'Grave (>75%)'
-];
-
-export const WAVEFORM_PATTERNS = [
-  'Trifásico',
-  'Bifásico',
-  'Monofásico',
-  'Ausente'
-];
-
-export const OCCLUSION_TYPE = [
-  'Aguda (<14 dias)',
-  'Subaguda (14d - 3m)',
-  'Crônica (>3 meses)'
-];
-
-export const COLLATERAL_STATUS = [
-  'Ausente',
-  'Escassa',
-  'Moderada',
-  'Abundante'
-];
-
-export const PLAQUE_TYPE = [
-  'Calcificada',
-  'Fibro-calcificada',
-  'Fibrolipídica',
-  'Lipídica'
-];
+export { LATERALITY, STENOSIS_GRADE, WAVEFORM_PATTERNS, OCCLUSION_TYPE, COLLATERAL_STATUS, PLAQUE_TYPE };
 
 export const ITB_CLASSIFICATION = [
   'Normal (0.91-1.30)',
@@ -373,27 +349,5 @@ export const arterialOrgans: Organ[] = [
       }
     ]
   },
-  {
-    id: 'observacoes-arterial',
-    name: 'Observações',
-    icon: 'notes',
-    normalDescription: '',
-    categories: [
-      {
-        id: 'obs-arterial',
-        name: 'Observações Gerais',
-        findings: [
-          {
-            id: 'obs-arterial-texto',
-            name: 'Observação Adicional',
-            description: 'Informações complementares',
-            hasDetails: true,
-            extraFields: [
-              { id: 'texto', label: 'Observações', type: 'textarea', placeholder: 'Digite observações adicionais...' }
-            ]
-          }
-        ]
-      }
-    ]
-  }
+  createObservacoesOrgan('arterial')
 ];

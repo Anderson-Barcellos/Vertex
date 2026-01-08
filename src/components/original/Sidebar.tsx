@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { organs as defaultOrgans, type Organ } from '@/data/organs';
 import { cn } from '@/lib/utils';
@@ -10,8 +10,16 @@ import {
   Heart,
   DropHalfBottom,
   Circle,
-  CheckCircle
+  CheckCircle,
+  CaretDown,
+  CaretRight
 } from '@phosphor-icons/react';
+
+export interface OrganGroup {
+  id: string;
+  name: string;
+  organIds: string[];
+}
 
 interface SidebarProps {
   selectedOrgan: string;
@@ -21,6 +29,7 @@ interface SidebarProps {
   normalOrgans: string[];
   organsList?: Organ[];
   showSummary?: boolean;
+  organGroups?: OrganGroup[];
 }
 
 const iconMap = {
@@ -41,14 +50,51 @@ export default function Sidebar({
   selectedFindings,
   normalOrgans,
   organsList = defaultOrgans,
-  showSummary = true
+  showSummary = true,
+  organGroups
 }: SidebarProps) {
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    if (!organGroups) return new Set();
+    return new Set(organGroups.map(g => g.id));
+  });
 
   const uniqueOrgansWithFindings = useMemo(() => {
     return new Set(selectedFindings.map(f => f.organId));
   }, [selectedFindings]);
 
   const uniqueNormalOrgans = useMemo(() => new Set(normalOrgans), [normalOrgans]);
+
+  const groupedOrganIds = useMemo(() => {
+    if (!organGroups) return new Set<string>();
+    return new Set(organGroups.flatMap(g => g.organIds));
+  }, [organGroups]);
+
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(groupId)) {
+        next.delete(groupId);
+      } else {
+        next.add(groupId);
+      }
+      return next;
+    });
+  };
+
+  const getGroupStatus = (group: OrganGroup) => {
+    const groupOrgans = organsList.filter(o => group.organIds.includes(o.id));
+    const hasFindings = groupOrgans.some(o => uniqueOrgansWithFindings.has(o.id));
+    const allNormal = groupOrgans.every(o => uniqueNormalOrgans.has(o.id));
+    const someNormal = groupOrgans.some(o => uniqueNormalOrgans.has(o.id));
+    return { hasFindings, allNormal, someNormal };
+  };
+
+  const formatOrganLabel = (organ: Organ, group: OrganGroup) => {
+    const name = organ.name.toLowerCase();
+    if (name.includes('direita') || name.includes('direito')) return 'Direita';
+    if (name.includes('esquerda') || name.includes('esquerdo')) return 'Esquerda';
+    return organ.name.replace(group.name, '').trim() || organ.name;
+  };
 
   const totalOrgans = organsList.length;
   const coveredOrgans = uniqueOrgansWithFindings.size + uniqueNormalOrgans.size;
@@ -126,7 +172,91 @@ export default function Sidebar({
         </h2>
 
         <ul className="space-y-1">
-          {organsList.map((organ) => {
+          {organGroups?.map((group) => {
+            const isExpanded = expandedGroups.has(group.id);
+            const { hasFindings, allNormal, someNormal } = getGroupStatus(group);
+            const groupOrgans = organsList.filter(o => group.organIds.includes(o.id));
+            const CaretIcon = isExpanded ? CaretDown : CaretRight;
+
+            return (
+              <li key={group.id} className="mb-1">
+                <button
+                  onClick={() => toggleGroup(group.id)}
+                  className={cn(
+                    "w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-all",
+                    "hover:bg-white/5",
+                    (hasFindings || someNormal) && "bg-white/[0.02]"
+                  )}
+                  style={{ color: 'var(--sidebar-foreground)' }}
+                >
+                  <CaretIcon size={14} className="flex-shrink-0 opacity-50" />
+                  <span className="font-medium flex-1 text-left">{group.name}</span>
+                  {hasFindings && (
+                    <div className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0" />
+                  )}
+                  {allNormal && (
+                    <CheckCircle size={16} weight="fill" className="text-green-500 flex-shrink-0" />
+                  )}
+                </button>
+
+                {isExpanded && (
+                  <ul className="ml-4 mt-1 space-y-0.5 border-l border-white/10 pl-2">
+                    {groupOrgans.map((organ) => {
+                      const isSelected = selectedOrgan === organ.id;
+                      const organHasFindings = uniqueOrgansWithFindings.has(organ.id);
+                      const isNormal = uniqueNormalOrgans.has(organ.id);
+                      const label = formatOrganLabel(organ, group);
+
+                      return (
+                        <li key={organ.id}>
+                          <div className="flex items-center gap-1">
+                            {onNormalChange && !organ.hideNormalOption && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const newState = !isNormal;
+                                  onNormalChange(organ.id, newState);
+                                  if (newState) {
+                                    toast.success(`${organ.name} marcado como normal`, { duration: 2000 });
+                                  }
+                                }}
+                                className={cn(
+                                  "p-1 rounded-md transition-all",
+                                  isNormal
+                                    ? "text-green-500 hover:bg-green-500/10"
+                                    : "text-sidebar-foreground/30 hover:text-green-500 hover:bg-white/5"
+                                )}
+                                title={isNormal ? "Remover normal" : "Marcar como normal"}
+                              >
+                                <CheckCircle size={16} weight={isNormal ? "fill" : "regular"} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => onOrganSelect(organ.id)}
+                              className={cn(
+                                "flex-1 flex items-center gap-2 px-2 py-1.5 text-xs rounded-md transition-all",
+                                isSelected
+                                  ? "bg-accent text-accent-foreground shadow-sm"
+                                  : "hover:bg-white/5"
+                              )}
+                              style={!isSelected ? { color: 'var(--sidebar-foreground)' } : {}}
+                            >
+                              <span className="flex-1 text-left">{label}</span>
+                              {organHasFindings && (
+                                <div className="w-1.5 h-1.5 bg-amber-500 rounded-full flex-shrink-0" />
+                              )}
+                            </button>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+
+          {organsList.filter(o => !groupedOrganIds.has(o.id)).map((organ) => {
             const IconComponent = iconMap[organ.icon as keyof typeof iconMap] || Stethoscope;
             const isSelected = selectedOrgan === organ.id;
             const organFindings = selectedFindings.filter(f => f.organId === organ.id);
@@ -136,8 +266,7 @@ export default function Sidebar({
             return (
               <li key={organ.id}>
                 <div className="flex items-center gap-1">
-                  {/* Quick Normal Button */}
-                  {onNormalChange && (
+                  {onNormalChange && !organ.hideNormalOption && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -186,7 +315,6 @@ export default function Sidebar({
                     )}
                   </button>
                 </div>
-
               </li>
             );
           })}

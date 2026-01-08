@@ -1,6 +1,7 @@
 import { Organ } from './organs';
+import { LATERALITY_NO_BILATERAL } from './shared';
 
-export const LATERALITY = ['Direito', 'Esquerdo'];
+export const LATERALITY = [...LATERALITY_NO_BILATERAL];
 
 export const COMPRESSIBILITY = [
   'Totalmente compressível',
@@ -620,6 +621,7 @@ export const venousOrgans: Organ[] = [
     name: 'Observações',
     icon: 'notes',
     normalDescription: '',
+    hideNormalOption: true,
     categories: [
       {
         id: 'obs-venoso',

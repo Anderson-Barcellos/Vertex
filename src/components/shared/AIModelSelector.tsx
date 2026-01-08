@@ -13,13 +13,17 @@ interface ModelConfig {
 const AI_MODELS: Record<AIProvider, ModelConfig[]> = {
   gemini: [
     { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro', description: 'Preview, reasoning adaptativo' },
+    { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash', description: 'Preview, rápido' },
     { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', description: 'Estável, 1M ctx' },
-    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'Rápido e capaz' }
+    { id: 'gemini-flash-lite-latest', name: 'Gemini Flash 2.5', description: 'Ultra-rápido, econômico' }
   ],
   openai: [
-    { id: 'gpt-5', name: 'GPT-5', description: 'Flagship (reasoning: none)', reasoning: 'none' },
+    { id: 'gpt-5.2-instant', name: 'GPT 5.2 Instant', description: 'Flagship (reasoning: none)', reasoning: 'none' },
+    { id: 'gpt-5.2-medium', name: 'GPT 5.2', description: 'Flagship (reasoning: medium)', reasoning: 'medium' },
+    { id: 'gpt-5-mini', name: 'GPT-5 Mini', description: 'Rápido e econômico' },
+    { id: 'o3', name: 'o3', description: 'Reasoning avançado' },
     { id: 'gpt-4.1', name: 'GPT-4.1', description: 'Coding otimizado, 1M ctx' },
-    { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', description: 'Rápido e econômico' }
+    { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', description: 'Compacto e eficiente' }
   ]
 };
 

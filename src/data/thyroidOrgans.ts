@@ -874,6 +874,7 @@ export const thyroidOrgans: Organ[] = [
     name: 'Observações',
     icon: 'notes',
     normalDescription: '',
+    hideNormalOption: true,
     categories: [
       {
         id: 'obs-tireoide',

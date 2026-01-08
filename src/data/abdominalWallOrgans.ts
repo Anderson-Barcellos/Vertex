@@ -396,6 +396,7 @@ export const abdominalWallOrgans: Organ[] = [
     name: 'Observações',
     icon: 'notes',
     normalDescription: '',
+    hideNormalOption: true,
     categories: [
       {
         id: 'obs-gerais',

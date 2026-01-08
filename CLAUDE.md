@@ -1,7 +1,7 @@
 # Vertex V2 - Documentação Claude
 
 **Sistema de Geração de Laudos Ultrassonográficos com IA**  
-**Versão:** 2.0.0 | **Dev Server:** http://localhost:8200
+**Versão:** 2.1.0 | **Dev Server:** http://localhost:8200
 
 ---
 
@@ -18,167 +18,96 @@
 ```
 src/
 ├── pages/modern/
-│   ├── BaseExamPage.tsx       # Template base (~300 linhas) - TODA lógica comum
-│   └── exams/                 # Módulos de configuração (~20-30 linhas cada)
-│       ├── AbdomeTotalExam.tsx   # ✅ Migrado
-│       ├── CarotidExam.tsx       # ✅ Migrado
-│       ├── ThyroidExam.tsx       # ✅ Migrado
-│       └── ...                   # Demais exames
-├── types/
-│   └── exam.ts                # ExamConfig interface
-├── utils/
-│   └── findingAdapters.ts     # Funções utilitárias
-├── components/original/    # Sidebar, ReportCanvas, FindingDetails*
-├── components/shared/      # FloatingOrganPanelModern, TiradsCalculatorPanel
-├── data/                   # organs.ts, carotidOrgans.ts, etc.
-├── hooks/                  # useAutoSave, useDropdownGuard
-└── services/               # geminiStreamService, openaiStreamService, claudeStreamService
-```
-
-> **Doc completa:** `docs/MODULAR_EXAM_ARCHITECTURE.md`
-
----
-
-## Comandos
-
-```bash
-npm run dev                 # Dev server (porta 8200)
-git status && git add -A && git commit -m "..." && git push origin master
+│   ├── BaseExamPage.tsx       # Template base - TODA lógica comum
+│   └── exams/                 # Módulos de configuração (~6 linhas cada)
+│       └── [8 exames migrados]
+├── data/
+│   ├── examConfigs.ts         # ⭐ CONFIGS CENTRALIZADAS
+│   ├── shared/                # Dados compartilhados
+│   │   ├── commonFields.ts    # LATERALITY, STENOSIS_GRADE, etc
+│   │   └── commonOrgans.ts    # createObservacoesOrgan()
+│   └── *Organs.ts             # Dados específicos de cada exame
+├── components/
+│   ├── original/              # Sidebar, ReportCanvas, FindingDetails*
+│   └── shared/                # Calculadoras e painéis reutilizáveis
+│       ├── TiradsCalculatorPanel.tsx      # TI-RADS automático
+│       ├── PlaqueRiskCalculatorPanel.tsx  # Risco de placa (Gray-Weale)
+│       └── FloatingOrganPanelModern.tsx
+├── hooks/                     # useAutoSave, useDropdownGuard
+└── services/                  # unifiedAIService, streamers
 ```
 
 ---
 
 ## Estado das Modalidades
 
-| Modalidade | Dados | FindingDetails | Classificador | Agrupamento |
-|------------|-------|----------------|---------------|-------------|
-| **Abdome** | ✅ Completo | Generic | - | - |
-| **Carótidas** | ✅ Completo | Específico | ✅ NASCET/ESVS | ✅ Bilateral |
-| **Tireoide** | ✅ Completo | Específico | ✅ TI-RADS ACR | - |
-| **Mama** | ✅ Completo | Específico | ✅ BI-RADS 5ª Ed | ✅ Bilateral |
-| **Arterial** | ✅ Básico | Generic | - | - |
-| **Venoso** | ✅ Básico | Generic | - | - |
-| **Parede** | ✅ Básico | Generic | - | - |
+| Modalidade | FindingDetails | Classificador | Múltiplas Lesões |
+|------------|----------------|---------------|------------------|
+| **Abdome** | Generic | - | ✅ |
+| **Carótidas** | Específico | ✅ NASCET + Risco Placa | ✅ |
+| **Tireoide** | Específico | ✅ TI-RADS ACR | ✅ |
+| **Mama** | Específico | ✅ BI-RADS 5ª Ed | ✅ |
+| **Arterial** | Generic | - | ✅ |
+| **Venoso** | Generic | - | ✅ |
+| **Vasos Abd** | Generic | - | ✅ |
+| **Parede** | Generic | - | ✅ |
 
 ---
 
 ## Roadmap
 
-### Fase 1 - Arquitetura Modular (Concluída ✅)
-- [x] Criar BaseExamPage.tsx (template compartilhado)
-- [x] Criar ExamConfig interface e findingAdapters
-- [x] Migrar Abdome Total para arquitetura modular
-- [x] Adicionar suporte a Claude como provider
+### Concluído ✅
+- [x] Arquitetura modular (BaseExamPage + ExamConfig)
+- [x] Migração de todos os 8 exames
+- [x] Sistema de múltiplas lesões por achado
+- [x] Configs centralizadas (examConfigs.ts)
+- [x] Dados compartilhados (shared/)
+- [x] hideNormalOption para Observações
+- [x] TI-RADS Calculator (Tireoide)
+- [x] BI-RADS Calculator (Mama)
+- [x] NASCET/ESVS Calculator (Carótidas)
+- [x] Plaque Risk Calculator (Carótidas - Gray-Weale)
+- [x] Home.tsx com todas as rotas modernas
 
-### Fase 2 - Migração de Exames Customizados (Concluída ✅)
-- [x] Migrar Carótidas (CarotidFindingDetails)
-- [x] Migrar Tireoide (ThyroidFindingDetails)
-
-### Fase 3 - Migração de Exames Restantes (Pendente 🔜)
-
-**5 exames legados (~600 linhas cada) → módulos (~25 linhas cada)**
-
-| # | Exame | Legado | Novo | Dados | FindingDetails |
-|---|-------|--------|------|-------|----------------|
-| 1 | Mama | `BreastExamModern.tsx` | `exams/BreastExam.tsx` | `breastUltrasoundOrgans.ts` | `BreastUltrasoundFindingDetails` |
-| 2 | Arterial | `ArterialExamModern.tsx` | `exams/ArterialExam.tsx` | `arterialOrgans.ts` | Generic |
-| 3 | Venoso | `VenousExamModern.tsx` | `exams/VenousExam.tsx` | `venousOrgans.ts` | Generic |
-| 4 | Parede | `AbdominalWallExamModern.tsx` | `exams/AbdominalWallExam.tsx` | `abdominalWallOrgans.ts` | Generic |
-| 5 | Vasos Abd | `AbdominalVesselsExamModern.tsx` | `exams/AbdominalVesselsExam.tsx` | `abdominalVesselsOrgans.ts` | Generic |
-
-**Passos de implementação:**
-1. Criar arquivo em `src/pages/modern/exams/NomeExam.tsx` (template abaixo)
-2. Adicionar export em `src/pages/modern/exams/index.ts`
-3. Atualizar import em `src/App.tsx`
-4. Testar no browser
-5. Remover arquivo legado após validação
-
-**Template padrão (~25 linhas):**
-```typescript
-import BaseExamPage from '../BaseExamPage';
-import { nomeOrgans } from '@/data/nomeOrgans';
-import type { ExamConfig } from '@/types/exam';
-
-const config: ExamConfig = {
-  id: 'nome-exam',
-  title: 'Nome do Exame',
-  subtitle: 'Ultrassonografia de Nome',
-  examType: 'Ultrassonografia de Nome',
-  organsCatalog: nomeOrgans,
-  autoSaveKey: 'nome-exam-modern',
-  excludeFromNormalAll: ['observacoes']
-};
-
-export default function NomeExam() {
-  return <BaseExamPage config={config} />;
-}
-```
-
-**Limpeza final:**
-- [ ] Remover `ExamTemplateModern.example.tsx`
-- [ ] Remover 5 arquivos `*ExamModern.tsx` legados
-
-### Fase 4 - Classificadores
-- [x] BI-RADS 5ª Edição para Mama
-- [ ] CEAP/VCSS para Venoso
-- [ ] Fontaine/ITB para Arterial
-
-### Fase 5 - Expansão
+### Próximos Passos 🔜
+- [ ] CEAP/VCSS Calculator (Venoso)
+- [ ] WIfI/Fontaine Calculator (Arterial)
+- [ ] Conectar findingFormatter e promptCustomizer no BaseExamPage
+- [ ] Sidebar com agrupamento bilateral (como Carótidas)
 - [ ] Novos exames conforme demanda clínica
 
-**Workflow:** `docs/panorama-{modalidade}.md` → Anders fornece schema → Implementar → Build
+### Futuro 🔮
+- [ ] Exportação PDF com formatação customizada
+- [ ] Integração com PACS/RIS
+- [ ] Templates de laudo por patologia
 
 ---
 
 ## Padrões de Código
 
-### Agrupamento no Sidebar (Exames Bilaterais)
+### Template de Exame
 ```typescript
-// Em organs.ts - Interface Organ
-group?: string;      // Nome do grupo (ex: "Carótidas Comuns")
-groupOrder?: number; // Ordem de exibição (1, 2, 3...)
+import BaseExamPage from '../BaseExamPage';
+import { arterialConfig } from '@/data/examConfigs';
 
-// Exemplo em carotidOrgans.ts
-{
-  id: 'acc-d',
-  name: 'Carótida Comum Direita',
-  group: 'Carótidas Comuns',
-  groupOrder: 1,
-  // ...
+export default function ArterialExam() {
+  return <BaseExamPage config={arterialConfig} />;
 }
 ```
-O Sidebar detecta automaticamente e renderiza grupos colapsáveis com "Direita/Esquerda".
 
-### Exames Modernos
+### hideNormalOption
 ```typescript
-const [selectedFindings, setSelectedFindings] = useState<SelectedFinding[]>([]);
-const [normalOrgans, setNormalOrgans] = useState<string[]>([]);
-const [tempFindingDetails, setTempFindingDetails] = useState<...>({});
-
-// Props do FloatingOrganPanelModern
-tempDetails={getTempDetails(currentOrgan.id)}
-onTempDetailsChange={handleTempDetailsChange}
+{ id: 'observacoes', hideNormalOption: true, ... }
 ```
 
-### IA Streaming
+### Múltiplas Lesões
+Achados com campo `lado` nos extraFields ativam automaticamente o modo multi-instância.
+
+### Calculadoras
 ```typescript
-import { unifiedAIService } from '@/services/unifiedAIService';
-await unifiedAIService.generateReport(data, { model: 'gemini', onChunk, onComplete });
+<TiradsCalculatorPanel composition={...} echogenicity={...} />
+<PlaqueRiskCalculatorPanel echogenicity={...} composition={...} surface={...} />
 ```
-
----
-
-## Diretrizes
-
-**Sempre:**
-- Preservar estado ao minimizar/trocar componentes
-- Usar streaming para geração de laudos
-- Seguir padrões dos exames modernos existentes
-
-**Nunca:**
-- Criar exames sem seguir estrutura moderna
-- Usar estado local quando deveria ser elevado
-- Esquecer persistência em novos exames
 
 ---
 
@@ -186,34 +115,38 @@ await unifiedAIService.generateReport(data, { model: 'gemini', onChunk, onComple
 
 | Problema | Solução |
 |----------|---------|
-| Painel fecha ao selecionar dropdown | `useDropdownGuard` + `useOutsidePointerDismiss` |
-| Estado perdido ao minimizar | `tempFindingDetails` nos componentes pais |
-| CORS na API | Usar proxy `/api/gemini` |
+| Painel fecha ao selecionar dropdown | `useDropdownGuard` |
+| Observações com checkbox "Normal" | `hideNormalOption: true` |
+| Não adiciona múltiplas lesões | Precisa campo `lado` |
 
 ---
 
 ## Autenticação
 
 - **Login:** anders / vertex2025
-- **Arquivos:** `AuthContext.tsx`, `LoginPage.tsx`, `ProtectedRoute.tsx`
 
 ---
 
 ## Contexto
 
-**Desenvolvido por:** Dr. Anderson (Anders) - Neuropsiquiatria e Ultrassonografia  
-**Local:** Santa Cruz do Sul, RS, Brasil  
-**Branch:** master | **Histórico:** `docs/changelog-vertex.md`
+**Dev:** Dr. Anderson (Anders) - Santa Cruz do Sul, RS  
+**Branch:** master
 
 ---
 
-## Sistema de Memória
+## Memória
 
 ```bash
 /memorypack                  # Indexa conversas
 search "termo"               # Busca semântica
-/memlist vertex --limit 5    # Ver recentes
 ```
+
+---
+
+## Documentação Detalhada
+
+Para informações completas sobre arquitetura, layout system, regras médicas e troubleshooting:
+→ **docs/VERTEX_V2_COMPLETE_MANUAL.md**
 
 ---
 

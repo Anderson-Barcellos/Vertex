@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Finding } from '@/data/organs';
 import { FindingMeasurement, FindingInstance } from '@/types/report';
 import { Ruler, MapPin, Activity, Plus, X, Save, TrendingUp, Waves, ShieldAlert } from 'lucide-react';
+import { PlaqueRiskCalculatorPanel } from '@/components/shared/PlaqueRiskCalculatorPanel';
 import {
   COMMON_CAROTID_LOCATIONS,
   INTERNAL_CAROTID_LOCATIONS,
@@ -970,6 +971,13 @@ function CarotidFindingDetailsComponent({
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <PlaqueRiskCalculatorPanel
+                    echogenicity={currentMeasurement.echogenicity || currentMeasurement.plaqueEchogenicity}
+                    composition={currentMeasurement.composition || currentMeasurement.plaqueComposition}
+                    surface={currentMeasurement.surface || currentMeasurement.plaqueSurface}
+                    className="mt-2"
+                  />
                 </>
               )}
 
@@ -1195,13 +1203,13 @@ function CarotidFindingDetailsComponent({
             </>
           ) : (
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => setIsEditing(true)}
-              className="w-full h-7 text-xs"
+              className="w-full h-9 text-xs border-2 border-dashed border-primary/40 hover:border-primary hover:bg-primary/10 font-medium"
             >
-              <Plus size={12} className="mr-1" />
-              Adicionar outro achado
+              <Plus size={14} className="mr-2" />
+              Adicionar outra lesão
             </Button>
           )}
         </div>

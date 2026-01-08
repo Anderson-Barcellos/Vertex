@@ -42,6 +42,7 @@ export interface Organ {
   icon: string;
   categories: OrganCategory[];
   normalDescription: string;
+  hideNormalOption?: boolean;
 }
 
 export const organs: Organ[] = [

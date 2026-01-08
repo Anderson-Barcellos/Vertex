@@ -130,6 +130,11 @@ function ThyroidFindingDetailsComponent({
   }, [currentTIRADSScore]);
 
   const handleAddInstance = () => {
+    const hasExtraFieldData = finding.extraFields?.some(field => {
+      if (typeof field === 'string') return false;
+      return !!(currentMeasurement as Record<string, string>)[field.id];
+    });
+    
     if (currentMeasurement.size ||
         currentMeasurement.location ||
         currentMeasurement.composition ||
@@ -145,7 +150,8 @@ function ThyroidFindingDetailsComponent({
         currentMeasurement.volumeDirect ||
         currentMeasurement.suspiciousFeatures ||
         currentMeasurement.level ||
-        currentMeasurement.description) {
+        currentMeasurement.description ||
+        hasExtraFieldData) {
 
       let enrichedMeasurement = { ...currentMeasurement };
       
@@ -331,7 +337,7 @@ function ThyroidFindingDetailsComponent({
       )}
 
       {/* New Instance Form */}
-      {(finding.hasMeasurement || finding.hasLocation) && (
+      {(finding.hasMeasurement || finding.hasLocation || (finding.extraFields && finding.extraFields.length > 0)) && (
         <div className="space-y-2">
           {!isEditing && instances.length === 0 ? (
             <Button
@@ -818,7 +824,11 @@ function ThyroidFindingDetailsComponent({
                     !currentMeasurement.volumeDirect &&
                     !currentMeasurement.level &&
                     !currentMeasurement.suspiciousFeatures &&
-                    !currentMeasurement.description
+                    !currentMeasurement.description &&
+                    !finding.extraFields?.some(field => {
+                      if (typeof field === 'string') return false;
+                      return !!(currentMeasurement as Record<string, string>)[field.id];
+                    })
                   }
                   className="h-7 text-xs"
                 >

@@ -156,22 +156,24 @@ export default function OrganSection({
 
       {/* Conteúdo scrollável */}
       <div className="flex-1 p-4 overflow-y-auto min-h-0">
-        <div className="flex items-center space-x-3 mb-4 p-3 bg-muted/30 rounded-lg">
-          <Checkbox
-            id={`${organ.id}-normal`}
-            checked={isNormal && !hasAnyFindingSelected}
-            onCheckedChange={(checked) => onNormalChange(organ.id, checked as boolean)}
-            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-          />
-          <label
-            htmlFor={`${organ.id}-normal`}
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-          >
-            Dentro da normalidade
-          </label>
-        </div>
+        {!organ.hideNormalOption && (
+          <div className="flex items-center space-x-3 mb-4 p-3 bg-muted/30 rounded-lg">
+            <Checkbox
+              id={`${organ.id}-normal`}
+              checked={isNormal && !hasAnyFindingSelected}
+              onCheckedChange={(checked) => onNormalChange(organ.id, checked as boolean)}
+              className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            />
+            <label
+              htmlFor={`${organ.id}-normal`}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              Dentro da normalidade
+            </label>
+          </div>
+        )}
 
-        {!isNormal && (
+        {(!isNormal || organ.hideNormalOption) && (
           <div className="space-y-4">
             {organ.categories.map((category) => (
               <div key={category.id} className="space-y-3">

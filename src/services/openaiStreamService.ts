@@ -1,6 +1,7 @@
 // OpenAI Streaming Integration via backend proxy
 import type { SelectedFinding } from '@/types/report';
 import { buildReportPrompt } from './promptBuilder';
+import { AI_MODELS } from '@/components/shared/AIModelSelector';
 
 // Types for streaming
 export interface StreamCallbacks {
@@ -13,14 +14,31 @@ export interface StreamCallbacks {
 const OPENAI_API_ENDPOINT =
   import.meta.env.VITE_OPENAI_API_URL || '/api/openai';
 export const OPENAI_MODEL =
-  import.meta.env.VITE_OPENAI_MODEL || 'gpt-5';
+  import.meta.env.VITE_OPENAI_MODEL || 'gpt-5.2';
 
-function getSelectedOpenAIModel(): string {
+interface ModelInfo {
+  modelId: string;
+  reasoning?: 'none' | 'low' | 'medium' | 'high';
+}
+
+function getSelectedOpenAIModel(): ModelInfo {
   try {
     const fromSession = typeof window !== 'undefined' ? sessionStorage.getItem('selectedAIModel') : null;
-    return fromSession || OPENAI_MODEL;
+    const selectedId = fromSession || OPENAI_MODEL;
+    
+    const modelConfig = AI_MODELS.openai.find(m => m.id === selectedId);
+    
+    let actualModelId = selectedId;
+    if (selectedId === 'gpt-5.2-instant' || selectedId === 'gpt-5.2-medium') {
+      actualModelId = 'gpt-5.2';
+    }
+    
+    return {
+      modelId: actualModelId,
+      reasoning: modelConfig?.reasoning
+    };
   } catch {
-    return OPENAI_MODEL;
+    return { modelId: OPENAI_MODEL };
   }
 }
 
@@ -85,10 +103,10 @@ export class OpenAIStreamService {
     callbacks: StreamCallbacks
   ): Promise<void> {
     const requestUrl = createRequestUrl();
-    const selectedModel = getSelectedOpenAIModel();
+    const { modelId, reasoning } = getSelectedOpenAIModel();
 
-    const payload = {
-      model: selectedModel,
+    const payload: Record<string, unknown> = {
+      model: modelId,
       input: [
         {
           role: 'user',
@@ -96,8 +114,12 @@ export class OpenAIStreamService {
         }
       ]
     };
+    
+    if (reasoning) {
+      payload.reasoning = reasoning;
+    }
 
-    console.log('[OpenAIStreamService] Usando modelo:', selectedModel);
+    console.log('[OpenAIStreamService] Usando modelo:', modelId, 'reasoning:', reasoning);
     console.log('[OpenAIStreamService] Request URL:', requestUrl);
     console.log('[OpenAIStreamService] Payload:', JSON.stringify(payload, null, 2));
 
@@ -152,12 +174,12 @@ export class OpenAIStreamService {
   async testConnection(): Promise<boolean> {
     try {
       const url = createRequestUrl();
-      const selectedModel = getSelectedOpenAIModel();
+      const { modelId } = getSelectedOpenAIModel();
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: selectedModel,
+          model: modelId,
           messages: [
             { role: 'user', content: 'Teste de conexão. Responda apenas: OK' }
           ],

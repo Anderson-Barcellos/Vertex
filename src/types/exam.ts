@@ -2,6 +2,12 @@ import type { ComponentType } from 'react';
 import type { Organ, Finding } from '@/data/organs';
 import type { SelectedFinding, FindingInstance } from './report';
 
+export interface OrganGroup {
+  id: string;
+  name: string;
+  organIds: string[];
+}
+
 export interface NormalizedFinding {
   id: string;
   organId: string;
@@ -33,6 +39,7 @@ export interface ExamConfig {
   organsCatalog: Organ[];
   autoSaveKey: string;
   excludeFromNormalAll?: string[];
+  organGroups?: OrganGroup[];
   FindingDetailsComponent?: ComponentType<FindingDetailsProps>;
   findingFormatter?: (finding: SelectedFinding, organ: Organ) => string;
   promptCustomizer?: (basePrompt: string, findings: SelectedFinding[]) => string;
