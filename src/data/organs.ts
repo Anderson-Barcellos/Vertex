@@ -333,8 +333,13 @@ export const organs: Organ[] = [
             description: 'Presença de cálculos renais',
             hasDetails: true,
             hasMeasurement: true,
-            hasLocation: true,  // Cálice, pelve, ureter proximal
-            hasQuantity: true
+            hasLocation: true,
+            hasQuantity: true,
+            extraFields: [
+              { id: 'lado-calculo', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral'] },
+              { id: 'localizacao-calculo', label: 'Localização', type: 'select', options: ['Cálice superior', 'Cálice médio', 'Cálice inferior', 'Pelve renal', 'JUP', 'Ureter proximal'] },
+              { id: 'sombra-acustica', label: 'Sombra acústica', type: 'select', options: ['Presente', 'Ausente'] }
+            ]
           },
           {
             id: 'hidronefrose',
