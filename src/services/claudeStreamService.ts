@@ -26,6 +26,10 @@ export class ClaudeStreamService {
     return Boolean(CLAUDE_API_ENDPOINT);
   }
 
+  hasExplicitConfig(): boolean {
+    return Boolean(import.meta.env.VITE_CLAUDE_API_URL);
+  }
+
   async generateClinicalImpressionStream(
     data: {
       examType?: string;
@@ -80,8 +84,9 @@ export class ClaudeStreamService {
       max_tokens: 2000
     };
 
-    console.log('[ClaudeStreamService] Usando modelo:', selectedModel);
-    console.log('[ClaudeStreamService] Request URL:', requestUrl);
+    if (import.meta.env.DEV) {
+      console.log('[Claude] modelo:', selectedModel);
+    }
 
     const response = await fetch(requestUrl, {
       method: 'POST',

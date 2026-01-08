@@ -19,11 +19,12 @@ export const GEMINI_MODEL =
  * Classe para gerenciar streaming do Gemini via backend
  */
 export class GeminiStreamService {
-  /**
-   * Verifica se a API está configurada
-   */
   isConfigured(): boolean {
     return Boolean(GEMINI_API_ENDPOINT);
+  }
+
+  hasExplicitConfig(): boolean {
+    return Boolean(import.meta.env.VITE_GEMINI_API_URL);
   }
 
   /**
@@ -94,7 +95,9 @@ export class GeminiStreamService {
     // Obter modelo selecionado do sessionStorage
     const selectedModel = sessionStorage.getItem('selectedAIModel') || GEMINI_MODEL;
 
-    console.log('[GeminiStreamService] Usando modelo:', selectedModel);
+    if (import.meta.env.DEV) {
+      console.log('[Gemini] modelo:', selectedModel);
+    }
 
     const response = await fetch(requestUrl, {
       method: 'POST',

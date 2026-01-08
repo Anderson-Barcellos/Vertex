@@ -20,7 +20,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const USERS: Record<string, { password: string; name: string }> = {
-  anders: { password: 'vertex2025', name: 'Dr. Anderson' }
+  [import.meta.env.VITE_AUTH_USER || 'demo']: { 
+    password: import.meta.env.VITE_AUTH_PASS || 'demo', 
+    name: import.meta.env.VITE_AUTH_NAME || 'Demo User' 
+  }
 };
 
 const AUTH_STORAGE_KEY = 'vertex_auth';

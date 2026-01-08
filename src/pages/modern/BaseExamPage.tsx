@@ -298,13 +298,11 @@ export default function BaseExamPage({ config }: BaseExamPageProps) {
       setAiError(status === 'error' ? 'Erro ao consultar a IA' : null);
     });
 
-    let accumulatedText = '';
     unifiedAIService.generateClinicalImpression(
       { examType, selectedFindings, normalOrgans, organsCatalog },
       {
         onChunk: (text) => {
-          accumulatedText += text;
-          setAiImpression(accumulatedText);
+          setAiImpression(text);
         },
         onComplete: (finalText) => {
           setAiImpression(finalText);

@@ -46,11 +46,12 @@ function getSelectedOpenAIModel(): ModelInfo {
  * Classe para gerenciar streaming do OpenAI via backend
  */
 export class OpenAIStreamService {
-  /**
-   * Verifica se a API está configurada
-   */
   isConfigured(): boolean {
     return Boolean(OPENAI_API_ENDPOINT);
+  }
+
+  hasExplicitConfig(): boolean {
+    return Boolean(import.meta.env.VITE_OPENAI_API_URL);
   }
 
   /**
@@ -119,9 +120,9 @@ export class OpenAIStreamService {
       payload.reasoning = reasoning;
     }
 
-    console.log('[OpenAIStreamService] Usando modelo:', modelId, 'reasoning:', reasoning);
-    console.log('[OpenAIStreamService] Request URL:', requestUrl);
-    console.log('[OpenAIStreamService] Payload:', JSON.stringify(payload, null, 2));
+    if (import.meta.env.DEV) {
+      console.log('[OpenAI] modelo:', modelId, reasoning ? `(reasoning: ${reasoning})` : '');
+    }
 
     const response = await fetch(requestUrl, {
       method: 'POST',
@@ -129,11 +130,6 @@ export class OpenAIStreamService {
       body: JSON.stringify(payload)
     });
 
-    console.log('[OpenAIStreamService] Response status:', response.status);
-    console.log('[OpenAIStreamService] Response OK?:', response.ok);
-    console.log('[OpenAIStreamService] Response headers:', Object.fromEntries(response.headers.entries()));
-    console.log('[OpenAIStreamService] Response body exists?:', !!response.body);
-    console.log('[OpenAIStreamService] Response bodyUsed?:', response.bodyUsed);
 
     if (!response.ok) {
       const message = await response.text().catch(() => '');
@@ -141,30 +137,8 @@ export class OpenAIStreamService {
       throw new Error(`OpenAI backend error: ${response.status} ${message}`);
     }
 
-    // Clone response pra debug sem consumir o body
-    const clonedResponse = response.clone();
-    
-    // Tentar ler os primeiros bytes pra debug
-    try {
-      const reader = clonedResponse.body?.getReader();
-      if (reader) {
-        const { value, done } = await reader.read();
-        if (!done && value) {
-          const decoder = new TextDecoder();
-          const preview = decoder.decode(value.slice(0, 200));
-          console.log('[OpenAIStreamService] Preview dos primeiros bytes:', preview);
-        } else {
-          console.log('[OpenAIStreamService] Stream vazio ou já concluído');
-        }
-        reader.releaseLock();
-      }
-    } catch (e) {
-      console.error('[OpenAIStreamService] Erro ao ler preview:', e);
-    }
 
     const fullText = await readStream(response, callbacks);
-    console.log('[OpenAIStreamService] fullText recebido, length:', fullText.length);
-    console.log('[OpenAIStreamService] fullText preview:', fullText.substring(0, 200));
     callbacks.onComplete?.(fullText);
   }
 
@@ -214,41 +188,27 @@ async function readStream(
   response: Response,
   callbacks: StreamCallbacks
 ): Promise<string> {
-  console.log('[OpenAI readStream] Iniciando leitura do stream');
-  console.log('[OpenAI readStream] Content-Type:', response.headers.get('content-type'));
-  
   if (!response.body) {
-    console.log('[OpenAI readStream] Sem body, lendo como texto');
-    const text = await response.text();
-    console.log('[OpenAI readStream] Texto recebido:', text.substring(0, 100));
-    return text.trim();
+    return (await response.text()).trim();
   }
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let fullText = '';
-  let chunkCount = 0;
 
   while (true) {
     const { done, value } = await reader.read();
-    if (done) {
-      console.log('[OpenAI readStream] Stream concluído. Total chunks:', chunkCount, 'Total chars:', fullText.length);
-      break;
-    }
+    if (done) break;
     if (value) {
-      chunkCount++;
       const chunk = decoder.decode(value, { stream: true });
-      console.log(`[OpenAI readStream] Chunk ${chunkCount}:`, chunk.substring(0, 50));
       if (chunk) {
         fullText += chunk;
-        // Passa o texto ACUMULADO, não apenas o chunk
         callbacks.onChunk?.(fullText);
       }
     }
   }
 
   fullText += decoder.decode();
-  console.log('[OpenAI readStream] Texto final length:', fullText.length);
   return fullText.trim();
 }
 
