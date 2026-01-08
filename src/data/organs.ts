@@ -1,3 +1,22 @@
+import {
+  LATERALITY,
+  STEATOSIS_DISTRIBUTION,
+  STEATOSIS_ATTENUATION,
+  ASCITES_GRADE,
+  GALLSTONE_TYPE,
+  GALLSTONE_MOBILITY,
+  ACOUSTIC_SHADOW,
+  BOSNIAK_CLASSIFICATION,
+  RENAL_CALCULUS_LOCATION,
+  HYDRONEPHROSIS_CAUSE,
+  NEPHROPATHY_ECHOGENICITY,
+  CORTICOMEDULLARY_DIFF,
+  AORTA_ANEURYSM_MORPHOLOGY,
+  AORTA_ANEURYSM_EXTENSION,
+  MURAL_THROMBUS,
+  SEVERITY_GRADES
+} from './shared/commonFields';
+
 export interface Finding {
   id: string;
   name: string;
@@ -83,8 +102,8 @@ export const organs: Organ[] = [
             hasDetails: true,
             hasSeverity: true,
             extraFields: [
-              { id: 'distribuicao', label: 'Distribuição', type: 'select', options: ['Difusa', 'Focal', 'Multifocal', 'Periportal'] },
-              { id: 'atenuacao', label: 'Atenuação hepática', type: 'select', options: ['Maior que baço', 'Igual ao baço', 'Menor que baço'] }
+              { id: 'distribuicao', label: 'Distribuição', type: 'select', options: [...STEATOSIS_DISTRIBUTION] },
+              { id: 'atenuacao', label: 'Atenuação hepática', type: 'select', options: [...STEATOSIS_ATTENUATION] }
             ]
           },
           {
@@ -106,7 +125,7 @@ export const organs: Organ[] = [
             hasDetails: true,
             extraFields: [
               { id: 'sinais', label: 'Sinais', type: 'select', options: ['Heterogeneidade', 'Nodularidade', 'Hipertrofia lobo caudado', 'Esplenomegalia associada'] },
-              { id: 'ascite', label: 'Ascite', type: 'select', options: ['Ausente', 'Mínima', 'Moderada', 'Volumosa'] }
+              { id: 'ascite', label: 'Ascite', type: 'select', options: [...ASCITES_GRADE] }
             ]
           }
         ]
@@ -163,9 +182,9 @@ export const organs: Organ[] = [
             hasMeasurement: true,
             hasQuantity: true,
             extraFields: [
-              { id: 'tipo-calculo', label: 'Tipo', type: 'select', options: ['Único', 'Múltiplos', 'Microlitíase'] },
-              { id: 'mobilidade', label: 'Mobilidade', type: 'select', options: ['Móvel', 'Impactado no infundíbulo', 'Impactado no colo'] },
-              { id: 'sombra', label: 'Sombra acústica', type: 'select', options: ['Presente', 'Ausente'] }
+              { id: 'tipo-calculo', label: 'Tipo', type: 'select', options: [...GALLSTONE_TYPE] },
+              { id: 'mobilidade', label: 'Mobilidade', type: 'select', options: [...GALLSTONE_MOBILITY] },
+              { id: 'sombra', label: 'Sombra acústica', type: 'select', options: [...ACOUSTIC_SHADOW] }
             ]
           },
           {
@@ -336,9 +355,9 @@ export const organs: Organ[] = [
             hasLocation: true,
             hasQuantity: true,
             extraFields: [
-              { id: 'lado-calculo', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral'] },
-              { id: 'localizacao-calculo', label: 'Localização', type: 'select', options: ['Cálice superior', 'Cálice médio', 'Cálice inferior', 'Pelve renal', 'JUP', 'Ureter proximal'] },
-              { id: 'sombra-acustica', label: 'Sombra acústica', type: 'select', options: ['Presente', 'Ausente'] }
+              { id: 'lado-calculo', label: 'Lado', type: 'select', options: [...LATERALITY] },
+              { id: 'localizacao-calculo', label: 'Localização', type: 'select', options: [...RENAL_CALCULUS_LOCATION] },
+              { id: 'sombra-acustica', label: 'Sombra acústica', type: 'select', options: [...ACOUSTIC_SHADOW] }
             ]
           },
           {
@@ -349,8 +368,8 @@ export const organs: Organ[] = [
             hasDetails: true,
             hasSeverity: true,
             extraFields: [
-              { id: 'lado-hidro', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral'] },
-              { id: 'causa-provavel', label: 'Causa provável', type: 'select', options: ['Obstrutiva', 'Não obstrutiva', 'Indeterminada'] },
+              { id: 'lado-hidro', label: 'Lado', type: 'select', options: [...LATERALITY] },
+              { id: 'causa-provavel', label: 'Causa provável', type: 'select', options: [...HYDRONEPHROSIS_CAUSE] },
               { id: 'pelve', label: 'Pelve renal (mm)', type: 'text', placeholder: 'ex: 15' }
             ]
           }
@@ -369,8 +388,8 @@ export const organs: Organ[] = [
             hasLocation: true,
             hasQuantity: true,
             extraFields: [
-              { id: 'classificacao-bosniak', label: 'Bosniak', type: 'select', options: ['I (simples)', 'II', 'IIF', 'III', 'IV'] },
-              { id: 'lado-cisto', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral'] }
+              { id: 'classificacao-bosniak', label: 'Bosniak', type: 'select', options: [...BOSNIAK_CLASSIFICATION] },
+              { id: 'lado-cisto', label: 'Lado', type: 'select', options: [...LATERALITY] }
             ]
           },
           {
@@ -389,9 +408,9 @@ export const organs: Organ[] = [
             description: 'Alterações difusas do parênquima renal',
             hasDetails: true,
             extraFields: [
-              { id: 'lado-nefro', label: 'Lado', type: 'select', options: ['Direito', 'Esquerdo', 'Bilateral'] },
-              { id: 'ecogenicidade-renal', label: 'Ecogenicidade', type: 'select', options: ['Aumentada (grau I)', 'Aumentada (grau II)', 'Aumentada (grau III)'] },
-              { id: 'diferenciacao', label: 'Diferenciação córtico-medular', type: 'select', options: ['Preservada', 'Reduzida', 'Ausente'] }
+              { id: 'lado-nefro', label: 'Lado', type: 'select', options: [...LATERALITY] },
+              { id: 'ecogenicidade-renal', label: 'Ecogenicidade', type: 'select', options: [...NEPHROPATHY_ECHOGENICITY] },
+              { id: 'diferenciacao', label: 'Diferenciação córtico-medular', type: 'select', options: [...CORTICOMEDULLARY_DIFF] }
             ]
           }
         ]
@@ -546,9 +565,9 @@ export const organs: Organ[] = [
             hasMeasurement: true,
             hasLocation: true,
             extraFields: [
-              { id: 'morfologia-aneu', label: 'Morfologia', type: 'select', options: ['Fusiforme', 'Sacular'] },
-              { id: 'trombo-mural', label: 'Trombo mural', type: 'select', options: ['Ausente', 'Parcial', 'Circunferencial'] },
-              { id: 'extensao-aneu', label: 'Extensão', type: 'select', options: ['Infrarrenal', 'Pararrenal', 'Suprarrenal', 'Aorto-ilíaco'] }
+              { id: 'morfologia-aneu', label: 'Morfologia', type: 'select', options: [...AORTA_ANEURYSM_MORPHOLOGY] },
+              { id: 'trombo-mural', label: 'Trombo mural', type: 'select', options: [...MURAL_THROMBUS] },
+              { id: 'extensao-aneu', label: 'Extensão', type: 'select', options: [...AORTA_ANEURYSM_EXTENSION] }
             ]
           }
         ]
