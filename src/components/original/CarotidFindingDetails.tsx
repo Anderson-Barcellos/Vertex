@@ -18,6 +18,7 @@ import {
   FLOW_PATTERN,
   SPECTRAL_BROADENING,
   getGrayWealeType,
+  GRAY_WEALE_DESCRIPTIONS,
   calculateStenosisGrade,
   type StenosisAnalysis
 } from '@/data/carotidOrgans';
@@ -519,9 +520,9 @@ function CarotidFindingDetailsComponent({
                         <div className="flex items-center gap-2">
                           <span className="text-muted-foreground">Ecogenicidade:</span>
                           <span>{instance.measurements.echogenicity}</span>
-                          {getGrayWealeType(instance.measurements.echogenicity) && (
-                            <Badge variant="outline" className="text-xs">
-                              Tipo {getGrayWealeType(instance.measurements.echogenicity)}
+                          {getGrayWealeType(instance.measurements.echogenicity, instance.measurements.composition) && (
+                            <Badge variant="outline" className="text-xs bg-slate-800 border-slate-600">
+                              Gray-Weale {getGrayWealeType(instance.measurements.echogenicity, instance.measurements.composition)}
                             </Badge>
                           )}
                         </div>
@@ -883,10 +884,15 @@ function CarotidFindingDetailsComponent({
                         ))}
                       </SelectContent>
                     </Select>
-                    {currentMeasurement.echogenicity && getGrayWealeType(currentMeasurement.echogenicity) && (
-                      <Badge variant="outline" className="text-xs shrink-0">
-                        Tipo {getGrayWealeType(currentMeasurement.echogenicity)}
-                      </Badge>
+                    {currentMeasurement.echogenicity && getGrayWealeType(currentMeasurement.echogenicity, currentMeasurement.composition) && (
+                      <div className="flex flex-col gap-0.5 shrink-0">
+                        <Badge variant="outline" className="text-xs bg-slate-800 border-slate-600">
+                          Gray-Weale {getGrayWealeType(currentMeasurement.echogenicity, currentMeasurement.composition)}
+                        </Badge>
+                        <span className="text-[9px] text-slate-400">
+                          {GRAY_WEALE_DESCRIPTIONS[getGrayWealeType(currentMeasurement.echogenicity, currentMeasurement.composition)]}
+                        </span>
+                      </div>
                     )}
                   </div>
 

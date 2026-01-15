@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
-import LandingPageModern from './pages/v2/LandingPageModern';
+import LandingPage from './pages/LandingPage';
 import Home from './pages/Home';
 import {
   AbdomeTotalExam,
@@ -13,8 +13,9 @@ import {
   VenousExam,
   AbdominalWallExam,
   AbdominalVesselsExam,
-  BreastExam
-} from './pages/modern/exams';
+  BreastExam,
+  OmbroExam
+} from './pages/exams/modules';
 import ResolutionGuard from './components/ResolutionGuard';
 
 function App() {
@@ -24,7 +25,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<ProtectedRoute><LandingPageModern /></ProtectedRoute>} />
+            <Route path="/" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
             <Route path="/old-home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
             <Route path="/abdome-modern" element={<ProtectedRoute><AbdomeTotalExam /></ProtectedRoute>} />
             <Route path="/carotid-modern" element={<ProtectedRoute><CarotidExam /></ProtectedRoute>} />
@@ -34,6 +35,7 @@ function App() {
             <Route path="/arterial-modern" element={<ProtectedRoute><ArterialExam /></ProtectedRoute>} />
             <Route path="/abdominal-vessels-modern" element={<ProtectedRoute><AbdominalVesselsExam /></ProtectedRoute>} />
             <Route path="/abdominal-wall-modern" element={<ProtectedRoute><AbdominalWallExam /></ProtectedRoute>} />
+            <Route path="/ombro-modern" element={<ProtectedRoute><OmbroExam /></ProtectedRoute>} />
           </Routes>
         </Router>
       </ResolutionGuard>

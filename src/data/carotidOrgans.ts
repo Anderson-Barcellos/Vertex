@@ -1,4 +1,9 @@
 import { Organ, OrganCategory, Finding } from './organs';
+import {
+  PLAQUE_COMPOSITION as COMMON_PLAQUE_COMPOSITION,
+  PLAQUE_SURFACE as COMMON_PLAQUE_SURFACE,
+  PLAQUE_LOCATION
+} from './shared/commonFields';
 
 // ============================================================================
 // CONSTANTES - DIRETRIZES ESVS 2023 / IAC 2021 / SRU 2003
@@ -122,29 +127,47 @@ export const PLAQUE_ECHOGENICITY = [
 ];
 
 // Helper para classificação automática Gray-Weale baseada na ecogenicidade
-export const getGrayWealeType = (ecogenicity: string): string => {
+export const getGrayWealeType = (ecogenicity: string, composition?: string): string => {
   const lower = ecogenicity.toLowerCase();
-  if (lower.includes('tipo i)') || lower.includes('hipoecogênica (tipo i')) return 'I';
-  if (lower.includes('tipo ii)') || lower.includes('hipoecogênica (tipo ii')) return 'II';
-  if (lower.includes('tipo iii)') || lower.includes('hiperecogênica (tipo iii')) return 'III';
-  if (lower.includes('tipo iv)') || lower.includes('hiperecogênica (tipo iv')) return 'IV';
+  const compLower = composition?.toLowerCase() || '';
+  
+  if (lower.includes('tipo i)') || lower.includes('tipo i ')) return 'I';
+  if (lower.includes('tipo ii)') || lower.includes('tipo ii ')) return 'II';
+  if (lower.includes('tipo iii)') || lower.includes('tipo iii ')) return 'III';
+  if (lower.includes('tipo iv)') || lower.includes('tipo iv ')) return 'IV';
+  
+  const isHypoechoic = lower.includes('hipo') || lower.includes('ecolucente') || lower.includes('lipídica') || lower.includes('lipidica');
+  const isHyperechoic = lower.includes('hiper') || lower.includes('ecogênica') || lower.includes('fibrosa');
+  const isCalcified = lower.includes('calcif') || compLower.includes('calcif');
+  const isHeterogeneous = lower.includes('hetero') || compLower.includes('hetero') || compLower.includes('mista');
+  const isHomogeneous = lower.includes('homo') || compLower.includes('homo');
+  
+  if (isCalcified && isHomogeneous) return 'IV';
+  if (isHyperechoic && isHomogeneous) return 'IV';
+  if (isHyperechoic && !isHeterogeneous) return 'IV';
+  
+  if (isHypoechoic && isHomogeneous) return 'I';
+  if (isHypoechoic && !isHeterogeneous) return 'I';
+  
+  if (isHypoechoic && isHeterogeneous) return 'II';
+  if (isHyperechoic && isHeterogeneous) return 'III';
+  
+  if (isHypoechoic) return 'II';
+  if (isHyperechoic) return 'III';
+  
   return '';
 };
 
-export const PLAQUE_COMPOSITION = [
-  'Homogênea',
-  'Heterogênea',
-  'Calcificada',
-  'Lipídica',
-  'Fibrosa',
-  'Mista'
-];
+export const GRAY_WEALE_DESCRIPTIONS: Record<string, string> = {
+  'I': 'Uniformemente ecolucente - ALTO RISCO',
+  'II': 'Predominantemente ecolucente - ALTO RISCO',
+  'III': 'Predominantemente ecogênica - RISCO MODERADO',
+  'IV': 'Uniformemente ecogênica - BAIXO RISCO'
+};
 
-export const PLAQUE_SURFACE_TYPE = [
-  'Regular',
-  'Irregular',
-  'Ulcerada'
-];
+export const PLAQUE_COMPOSITION = COMMON_PLAQUE_COMPOSITION;
+
+export const PLAQUE_SURFACE_TYPE = COMMON_PLAQUE_SURFACE;
 
 export const PLAQUE_RISK = [
   'Baixo risco (homogênea, regular)',
@@ -206,6 +229,7 @@ export const SUBCLAVIAN_STEAL = [
 
 export const carotidOrganGroups = [
   { id: 'carotida-comum', name: 'Carótida Comum', organIds: ['ccd', 'cce'] },
+  { id: 'bulbo', name: 'Bulbo Carotídeo', organIds: ['bd', 'be'] },
   { id: 'carotida-interna', name: 'Carótida Interna', organIds: ['cid', 'cie'] },
   { id: 'carotida-externa', name: 'Carótida Externa', organIds: ['ced', 'cee'] },
   { id: 'vertebral', name: 'Vertebral', organIds: ['vd', 've'] },
@@ -231,9 +255,9 @@ export const carotidOrgans: Organ[] = [
             name: 'Placa aterosclerótica',
             description: 'Depósito de colesterol na parede arterial',
             hasDetails: true,
-            hasMeasurement: true,  // Espessura em mm
-            hasLocation: true,  // Proximal, média, distal
-            hasSeverity: true,  // Leve, moderada, acentuada
+            hasMeasurement: true,
+            hasLocation: true,
+            hasSeverity: true,
             extraFields: [
               {
                 id: 'echogenicity',
@@ -447,6 +471,192 @@ export const carotidOrgans: Organ[] = [
             description: 'Oclusão completa da artéria carótida comum',
             hasDetails: true,
             hasLocation: true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'bd',
+    name: 'Bulbo Carotídeo Direito',
+    icon: 'artery',
+    normalDescription: 'apresenta paredes regulares, sem placas ateroscleróticas ou estenoses significativas.',
+    categories: [
+      {
+        id: 'placas-bd',
+        name: 'Placas Ateroscleróticas',
+        findings: [
+          {
+            id: 'placa-bd',
+            name: 'Placa aterosclerótica',
+            description: 'Depósito de colesterol na parede do bulbo',
+            hasDetails: true,
+            hasMeasurement: true,
+            extraFields: [
+              {
+                id: 'echogenicity',
+                label: 'Ecogenicidade',
+                type: 'select',
+                options: PLAQUE_ECHOGENICITY
+              },
+              {
+                id: 'composition',
+                label: 'Composição',
+                type: 'select',
+                options: PLAQUE_COMPOSITION
+              },
+              {
+                id: 'surface',
+                label: 'Superfície',
+                type: 'select',
+                options: PLAQUE_SURFACE_TYPE
+              },
+              {
+                id: 'extension',
+                label: 'Extensão (mm)',
+                type: 'text',
+                placeholder: 'Ex: 12'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'estenose-bd',
+        name: 'Estenose',
+        findings: [
+          {
+            id: 'estenose-bd',
+            name: 'Estenose',
+            description: 'Redução luminal do bulbo carotídeo',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasSeverity: true,
+            extraFields: [
+              {
+                id: 'symptomatic_status',
+                label: 'Status Sintomático (ESVS 2023)',
+                type: 'select',
+                options: PATIENT_SYMPTOMS
+              },
+              {
+                id: 'stenosis_percent',
+                label: 'Estenose estimada (%)',
+                type: 'text',
+                placeholder: 'Ex: 65%'
+              },
+              {
+                id: 'vps',
+                label: 'VPS (cm/s)',
+                type: 'text',
+                placeholder: 'Ex: 250'
+              },
+              {
+                id: 'vdf',
+                label: 'VDF (cm/s)',
+                type: 'text',
+                placeholder: 'Ex: 120'
+              },
+              {
+                id: 'nascet_grade',
+                label: 'Grau NASCET',
+                type: 'select',
+                options: NASCET_CRITERIA
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'be',
+    name: 'Bulbo Carotídeo Esquerdo',
+    icon: 'artery',
+    normalDescription: 'apresenta paredes regulares, sem placas ateroscleróticas ou estenoses significativas.',
+    categories: [
+      {
+        id: 'placas-be',
+        name: 'Placas Ateroscleróticas',
+        findings: [
+          {
+            id: 'placa-be',
+            name: 'Placa aterosclerótica',
+            description: 'Depósito de colesterol na parede do bulbo',
+            hasDetails: true,
+            hasMeasurement: true,
+            extraFields: [
+              {
+                id: 'echogenicity',
+                label: 'Ecogenicidade',
+                type: 'select',
+                options: PLAQUE_ECHOGENICITY
+              },
+              {
+                id: 'composition',
+                label: 'Composição',
+                type: 'select',
+                options: PLAQUE_COMPOSITION
+              },
+              {
+                id: 'surface',
+                label: 'Superfície',
+                type: 'select',
+                options: PLAQUE_SURFACE_TYPE
+              },
+              {
+                id: 'extension',
+                label: 'Extensão (mm)',
+                type: 'text',
+                placeholder: 'Ex: 12'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'estenose-be',
+        name: 'Estenose',
+        findings: [
+          {
+            id: 'estenose-be',
+            name: 'Estenose',
+            description: 'Redução luminal do bulbo carotídeo',
+            hasDetails: true,
+            hasMeasurement: true,
+            hasSeverity: true,
+            extraFields: [
+              {
+                id: 'symptomatic_status',
+                label: 'Status Sintomático (ESVS 2023)',
+                type: 'select',
+                options: PATIENT_SYMPTOMS
+              },
+              {
+                id: 'stenosis_percent',
+                label: 'Estenose estimada (%)',
+                type: 'text',
+                placeholder: 'Ex: 65%'
+              },
+              {
+                id: 'vps',
+                label: 'VPS (cm/s)',
+                type: 'text',
+                placeholder: 'Ex: 250'
+              },
+              {
+                id: 'vdf',
+                label: 'VDF (cm/s)',
+                type: 'text',
+                placeholder: 'Ex: 120'
+              },
+              {
+                id: 'nascet_grade',
+                label: 'Grau NASCET',
+                type: 'select',
+                options: NASCET_CRITERIA
+              }
+            ]
           }
         ]
       }
@@ -1282,7 +1492,12 @@ export const VERTEBRAL_LOCATIONS = [
   { value: 'v4', label: 'Segmento V4 (intracraniano)' }
 ];
 
-// Graus de estenose (critérios NASCET/ECST)
+// ============================================================================
+// ALIASES DE COMPATIBILIDADE (para componentes que usam nomes antigos)
+// ============================================================================
+export const PLAQUE_SURFACE = PLAQUE_SURFACE_TYPE;
+export const FLOW_PATTERN = FLOW_PATTERN_VERTEBRAL;
+
 export const STENOSIS_GRADES = [
   { value: 'normal', label: 'Normal (sem estenose)' },
   { value: '<50', label: 'Leve (<50%)' },
@@ -1291,56 +1506,6 @@ export const STENOSIS_GRADES = [
   { value: '90-99', label: 'Crítica (90-99%)' },
   { value: 'suboclusiva', label: 'Suboclusiva (99%)' },
   { value: '100', label: 'Oclusão (100%)' }
-];
-
-// Valores de referência para velocidades (VPS - Velocidade de Pico Sistólico)
-export const VPS_REFERENCE = [
-  { stenosis: 'Normal', vps: '<125 cm/s', vpsVdf: '<2.0' },
-  { stenosis: '<50%', vps: '<125 cm/s', vpsVdf: '<2.0' },
-  { stenosis: '50-69%', vps: '125-230 cm/s', vpsVdf: '2.0-4.0' },
-  { stenosis: '≥70%', vps: '>230 cm/s', vpsVdf: '>4.0' },
-  { stenosis: 'Oclusão', vps: 'Sem fluxo', vpsVdf: 'N/A' }
-];
-
-// Características das placas
-export const PLAQUE_CHARACTERISTICS = [
-  { value: 'homogenea', label: 'Homogênea' },
-  { value: 'heterogenea', label: 'Heterogênea' },
-  { value: 'calcificada', label: 'Calcificada' },
-  { value: 'lipidica', label: 'Lipídica (hipoecóica)' },
-  { value: 'fibrosa', label: 'Fibrosa (hiperecóica)' },
-  { value: 'ulcerada', label: 'Ulcerada' },
-  { value: 'mista', label: 'Mista' }
-];
-
-// Superfície das placas
-export const PLAQUE_SURFACE = [
-  { value: 'lisa', label: 'Lisa' },
-  { value: 'irregular', label: 'Irregular' },
-  { value: 'ulcerada', label: 'Ulcerada' }
-];
-
-// Espessamento médio-intimal (EMI)
-export const IMT_VALUES = [
-  { range: '<0.9 mm', interpretation: 'Normal' },
-  { range: '0.9-1.0 mm', interpretation: 'Limítrofe' },
-  { range: '>1.0 mm', interpretation: 'Espessado' },
-  { range: '>1.5 mm', interpretation: 'Placa aterosclerótica' }
-];
-
-// Padrão de fluxo
-export const FLOW_PATTERN = [
-  { value: 'anterogrado', label: 'Anterógrado (normal)' },
-  { value: 'retrogrado', label: 'Retrógrado (reverso)' },
-  { value: 'to-and-fro', label: 'To-and-fro (oscilatório)' },
-  { value: 'ausente', label: 'Ausente (oclusão)' }
-];
-
-// Índice de resistividade (IR)
-export const RESISTIVITY_INDEX = [
-  { range: '0.55-0.75', interpretation: 'Normal' },
-  { range: '<0.55', interpretation: 'Baixa resistência' },
-  { range: '>0.75', interpretation: 'Alta resistência' }
 ];
 
 // ============================================================================

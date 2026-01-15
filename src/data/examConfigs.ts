@@ -8,6 +8,7 @@ import { arterialOrgans } from './arterialOrgans';
 import { venousOrgans } from './venousOrgans';
 import { abdominalVesselsOrgans } from './abdominalVesselsOrgans';
 import { abdominalWallOrgans } from './abdominalWallOrgans';
+import { ombroOrgans } from './ombroOrgans';
 
 import FindingDetailsGeneric from '@/components/original/FindingDetailsGeneric';
 import CarotidFindingDetails from '@/components/original/CarotidFindingDetails';
@@ -103,6 +104,17 @@ export const abdominalWallConfig: ExamConfig = {
   FindingDetailsComponent: FindingDetailsGeneric
 };
 
+export const ombroConfig: ExamConfig = {
+  id: 'ombro-exam',
+  title: 'Ombro',
+  subtitle: 'Ultrassonografia de Ombro',
+  examType: 'Ultrassonografia de Ombro',
+  organsCatalog: ombroOrgans,
+  autoSaveKey: 'ombro-exam-modern',
+  excludeFromNormalAll: ['observacoes-ombro'],
+  FindingDetailsComponent: FindingDetailsGeneric
+};
+
 export const examConfigs = {
   abdome: abdomeConfig,
   carotid: carotidConfig,
@@ -111,7 +123,8 @@ export const examConfigs = {
   arterial: arterialConfig,
   venous: venousConfig,
   abdominalVessels: abdominalVesselsConfig,
-  abdominalWall: abdominalWallConfig
+  abdominalWall: abdominalWallConfig,
+  ombro: ombroConfig
 } as const;
 
 export type ExamType = keyof typeof examConfigs;

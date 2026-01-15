@@ -30,6 +30,7 @@ interface SidebarProps {
   organsList?: Organ[];
   showSummary?: boolean;
   organGroups?: OrganGroup[];
+  disabledOrgans?: string[];
 }
 
 const iconMap = {
@@ -51,8 +52,10 @@ export default function Sidebar({
   normalOrgans,
   organsList = defaultOrgans,
   showSummary = true,
-  organGroups
+  organGroups,
+  disabledOrgans = []
 }: SidebarProps) {
+  const disabledSet = useMemo(() => new Set(disabledOrgans), [disabledOrgans]);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
     if (!organGroups) return new Set();
     return new Set(organGroups.map(g => g.id));
@@ -262,11 +265,20 @@ export default function Sidebar({
             const organFindings = selectedFindings.filter(f => f.organId === organ.id);
             const hasFindings = organFindings.length > 0;
             const isNormal = normalOrgans.includes(organ.id);
+            const isDisabled = disabledSet.has(organ.id);
+
+            const handleOrganClick = () => {
+              if (isDisabled) {
+                toast.info(`${organ.name} não disponível nesta modalidade`, { duration: 2000 });
+                return;
+              }
+              onOrganSelect(organ.id);
+            };
 
             return (
-              <li key={organ.id}>
+              <li key={organ.id} className={cn(isDisabled && "opacity-40")}>
                 <div className="flex items-center gap-1">
-                  {onNormalChange && !organ.hideNormalOption && (
+                  {onNormalChange && !organ.hideNormalOption && !isDisabled && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -294,23 +306,25 @@ export default function Sidebar({
                   )}
 
                   <button
-                    onClick={() => onOrganSelect(organ.id)}
+                    onClick={handleOrganClick}
                     className={cn(
                       "flex-1 flex items-center gap-3 px-3 py-2.5 text-sm rounded-md transition-all duration-200",
-                      isSelected
+                      isDisabled && "cursor-not-allowed",
+                      isSelected && !isDisabled
                         ? "bg-accent text-accent-foreground shadow-sm"
-                        : "hover:bg-white/5"
+                        : !isDisabled && "hover:bg-white/5"
                     )}
                     style={!isSelected ? { color: 'var(--sidebar-foreground)' } : {}}
                     aria-label={`Selecionar ${organ.name} para examinação`}
                     aria-current={isSelected ? 'true' : 'false'}
+                    aria-disabled={isDisabled}
                   >
                     <IconComponent
                       size={18}
                       className="flex-shrink-0"
                     />
                     <span className="font-medium flex-1 text-left">{organ.name}</span>
-                    {hasFindings && (
+                    {hasFindings && !isDisabled && (
                       <div className="w-2 h-2 bg-accent rounded-full flex-shrink-0" />
                     )}
                   </button>

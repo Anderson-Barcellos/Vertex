@@ -1,14 +1,14 @@
-# Vertex V2 - Documentação Claude
+# Vertex V2 - Documentacao Claude
 
-**Sistema de Geração de Laudos Ultrassonográficos com IA**  
-**Versão:** 2.1.0 | **Dev Server:** http://localhost:8200
+**Sistema de Geracao de Laudos Ultrassonograficos com IA**  
+**Versao:** 2.3.0 | **Dev Server:** http://localhost:8200
 
 ---
 
 ## Stack
 
 - **Frontend:** React 19 + TypeScript 5.9 + Vite 7.2.0
-- **Estilização:** Tailwind CSS v4 + Radix UI
+- **Estilizacao:** Tailwind CSS v4 + Radix UI
 - **IA:** Gemini 3.0 Pro + OpenAI GPT-4 + Claude Sonnet (streaming)
 
 ---
@@ -17,77 +17,150 @@
 
 ```
 src/
-├── pages/modern/
-│   ├── BaseExamPage.tsx       # Template base - TODA lógica comum
-│   └── exams/                 # Módulos de configuração (~6 linhas cada)
-│       └── [8 exames migrados]
+├── pages/
+│   ├── LandingPage.tsx           # Landing page principal
+│   ├── LoginPage.tsx
+│   └── exams/
+│       ├── shared/
+│       │   └── BaseExamPage.tsx  # Template base - TODA logica comum
+│       └── modules/              # Modulos de configuracao (~6 linhas cada)
+│           ├── AbdomeTotalExam.tsx
+│           ├── CarotidExam.tsx
+│           ├── ThyroidExam.tsx
+│           ├── BreastExam.tsx
+│           ├── ArterialExam.tsx
+│           ├── VenousExam.tsx
+│           ├── AbdominalVesselsExam.tsx
+│           ├── AbdominalWallExam.tsx
+│           └── OmbroExam.tsx
 ├── data/
-│   ├── examConfigs.ts         # ⭐ CONFIGS CENTRALIZADAS
-│   ├── shared/                # Dados compartilhados
-│   │   ├── commonFields.ts    # LATERALITY, STENOSIS_GRADE, etc
-│   │   └── commonOrgans.ts    # createObservacoesOrgan()
-│   └── *Organs.ts             # Dados específicos de cada exame
+│   ├── examConfigs.ts            # CONFIGS CENTRALIZADAS
+│   ├── shared/
+│   │   ├── commonFields.ts       # Constantes compartilhadas (LATERALITY, PLAQUE_COMPOSITION, etc)
+│   │   └── commonOrgans.ts       # createObservacoesOrgan()
+│   ├── organs.ts                 # Abdome (100% migrado para commonFields)
+│   ├── carotidOrgans.ts          # Carotidas + Bulbos (parcialmente migrado)
+│   ├── ombroOrgans.ts            # Ombro - manguito rotador completo
+│   └── *Organs.ts                # Dados especificos de cada exame
 ├── components/
-│   ├── original/              # Sidebar, ReportCanvas, FindingDetails*
-│   └── shared/                # Calculadoras e painéis reutilizáveis
-│       ├── TiradsCalculatorPanel.tsx      # TI-RADS automático
-│       ├── PlaqueRiskCalculatorPanel.tsx  # Risco de placa (Gray-Weale)
+│   ├── original/
+│   │   ├── Sidebar.tsx
+│   │   ├── ReportCanvas.tsx
+│   │   ├── FindingDetailsGeneric.tsx
+│   │   └── CarotidFindingDetails.tsx  # Especifico com Gray-Weale automatico
+│   └── shared/
+│       ├── TiradsCalculatorPanel.tsx
+│       ├── PlaqueRiskCalculatorPanel.tsx
 │       └── FloatingOrganPanelModern.tsx
-├── hooks/                     # useAutoSave, useDropdownGuard
-└── services/                  # unifiedAIService, streamers
+├── hooks/
+│   └── useAutoSave, useDropdownGuard
+└── services/
+    ├── promptBuilder.ts          # Filtro de campos redundantes
+    ├── reportGenerator.ts
+    └── unifiedAIService.ts
 ```
 
 ---
 
 ## Estado das Modalidades
 
-| Modalidade | FindingDetails | Classificador | Múltiplas Lesões |
-|------------|----------------|---------------|------------------|
-| **Abdome** | Generic | - | ✅ |
-| **Carótidas** | Específico | ✅ NASCET + Risco Placa | ✅ |
-| **Tireoide** | Específico | ✅ TI-RADS ACR | ✅ |
-| **Mama** | Específico | ✅ BI-RADS 5ª Ed | ✅ |
-| **Arterial** | Generic | - | ✅ |
-| **Venoso** | Generic | - | ✅ |
-| **Vasos Abd** | Generic | - | ✅ |
-| **Parede** | Generic | - | ✅ |
+| Modalidade | FindingDetails | Classificador | commonFields | Status |
+|------------|----------------|---------------|--------------|--------|
+| **Abdome** | Generic | - | 100% | Ativo |
+| **Carotidas** | Especifico | NASCET + Gray-Weale | Parcial | Ativo |
+| **Ombro** | Generic | - | 100% | Ativo |
+| **Tireoide** | Especifico | TI-RADS ACR | - | Desativado* |
+| **Mama** | Especifico | BI-RADS 5a Ed | - | Desativado* |
+| **Arterial** | Generic | - | - | Desativado* |
+| **Venoso** | Generic | - | - | Desativado* |
+| **Vasos Abd** | Generic | - | - | Desativado* |
+| **Parede** | Generic | - | - | Desativado* |
+
+*Desativado = removido temporariamente da LandingPage ate migracao completa
 
 ---
 
-## Roadmap
+## Sessao 2026-01-15 - Resumo
 
-### Concluído ✅
-- [x] Arquitetura modular (BaseExamPage + ExamConfig)
-- [x] Migração de todos os 8 exames
-- [x] Sistema de múltiplas lesões por achado
-- [x] Configs centralizadas (examConfigs.ts)
-- [x] Dados compartilhados (shared/)
-- [x] hideNormalOption para Observações
+### Concluido
+- Novo modulo: **Ombro** (manguito rotador completo)
+  - 7 estruturas: Biceps, Supraespinhal, Infraespinhal, Subescapular, Bursa, Art. AC, Derrame
+  - 20+ achados com campos detalhados (face da rotura, extensao %, gap, atrofia)
+- Sub-modalidades do Abdome (Total, Superior, Vias Urinarias, Prostata)
+- Multiplas instancias para Cistos Renais e Massa Renal
+- Campo dimensao em Colelitiase
+- LandingPage: card "Abdome" (hub) + card "Ombro" (cyan)
+
+### Sessao 2026-01-13
+- Migracao 100% do Abdome para commonFields.ts
+- Reorganizacao de pastas: `pages/exams/shared/` e `pages/exams/modules/`
+- Gray-Weale automatico baseado em ecogenicidade + composicao
+- Constantes comuns: PLAQUE_COMPOSITION, PLAQUE_SURFACE
+
+### Funcao getGrayWealeType melhorada
+```typescript
+// Infere automaticamente o tipo Gray-Weale
+getGrayWealeType(ecogenicity, composition) 
+// Retorna: 'I' | 'II' | 'III' | 'IV' | ''
+
+// Descricoes de risco
+GRAY_WEALE_DESCRIPTIONS = {
+  'I': 'Uniformemente ecolucente - ALTO RISCO',
+  'II': 'Predominantemente ecolucente - ALTO RISCO',
+  'III': 'Predominantemente ecogenica - RISCO MODERADO',
+  'IV': 'Uniformemente ecogenica - BAIXO RISCO'
+}
+```
+
+---
+
+## Roadmap Detalhado
+
+### Fase 1: Migracao de Dados (Em andamento)
+- [x] Abdome Total - 100% commonFields + sub-modalidades
+- [x] Carotidas - Bulbos criados, Gray-Weale automatico
+- [x] Ombro - Modulo completo com manguito rotador
+- [ ] Carotidas - Simplificar placas em ACC/ACI/ACE (mesmo padrao dos bulbos)
+- [ ] Tireoide - Migrar constantes para commonFields
+- [ ] Mama - Migrar constantes para commonFields
+- [ ] Arterial MMII - Migrar constantes
+- [ ] Venoso MMII - Migrar constantes
+- [ ] Vasos Abdominais - Migrar constantes
+- [ ] Parede Abdominal - Migrar constantes
+
+### Fase 2: Calculadoras Automaticas
+- [x] NASCET/ESVS Calculator (Carotidas)
+- [x] Gray-Weale automatico (Carotidas)
 - [x] TI-RADS Calculator (Tireoide)
 - [x] BI-RADS Calculator (Mama)
-- [x] NASCET/ESVS Calculator (Carótidas)
-- [x] Plaque Risk Calculator (Carótidas - Gray-Weale)
-- [x] Home.tsx com todas as rotas modernas
-
-### Próximos Passos 🔜
 - [ ] CEAP/VCSS Calculator (Venoso)
 - [ ] WIfI/Fontaine Calculator (Arterial)
-- [ ] Conectar findingFormatter e promptCustomizer no BaseExamPage
-- [ ] Sidebar com agrupamento bilateral (como Carótidas)
-- [ ] Novos exames conforme demanda clínica
+- [ ] Bosniak Calculator (Abdome - cistos renais)
 
-### Futuro 🔮
-- [ ] Exportação PDF com formatação customizada
-- [ ] Integração com PACS/RIS
+### Fase 3: UX/Interface
+- [ ] Sidebar com agrupamento bilateral em todos os exames
+- [ ] FindingDetails especifico para cada modalidade
+- [ ] Preview do laudo em tempo real
+- [ ] Atalhos de teclado para adicionar achados
+
+### Fase 4: Integracao e Export
+- [ ] Exportacao PDF com formatacao customizada
+- [ ] Integracao com PACS/RIS
 - [ ] Templates de laudo por patologia
+- [ ] Historico de laudos por paciente
+
+### Fase 5: IA Avancada
+- [ ] Sugestao automatica de achados baseado em contexto
+- [ ] Correlacao clinico-radiologica
+- [ ] Frases padronizadas por instituicao
 
 ---
 
-## Padrões de Código
+## Padroes de Codigo
 
-### Template de Exame
+### Template de Exame (6 linhas)
 ```typescript
-import BaseExamPage from '../BaseExamPage';
+import BaseExamPage from '../shared/BaseExamPage';
 import { arterialConfig } from '@/data/examConfigs';
 
 export default function ArterialExam() {
@@ -95,33 +168,43 @@ export default function ArterialExam() {
 }
 ```
 
-### hideNormalOption
+### Constantes Compartilhadas
 ```typescript
-{ id: 'observacoes', hideNormalOption: true, ... }
+// Em commonFields.ts
+export const PLAQUE_COMPOSITION = ['Homogenea', 'Heterogenea', 'Calcificada', 'Mista'] as const;
+
+// Em *Organs.ts - importar e usar
+import { PLAQUE_COMPOSITION } from './shared/commonFields';
+options: PLAQUE_COMPOSITION
 ```
 
-### Múltiplas Lesões
-Achados com campo `lado` nos extraFields ativam automaticamente o modo multi-instância.
-
-### Calculadoras
+### Campos Redundantes (promptBuilder.ts)
 ```typescript
-<TiradsCalculatorPanel composition={...} echogenicity={...} />
-<PlaqueRiskCalculatorPanel echogenicity={...} composition={...} surface={...} />
+const REDUNDANT_FIELDS = new Set([
+  'emiValue',      // usa 'emi'
+  'nascet',        // usa 'nascetGrade'
+  'ratio',         // usa 'ratioICA_CCA'
+  'plaqueEchogenicity',  // usa 'echogenicity'
+  // ...
+]);
 ```
 
 ---
 
 ## Troubleshooting
 
-| Problema | Solução |
+| Problema | Solucao |
 |----------|---------|
 | Painel fecha ao selecionar dropdown | `useDropdownGuard` |
-| Observações com checkbox "Normal" | `hideNormalOption: true` |
-| Não adiciona múltiplas lesões | Precisa campo `lado` |
+| Observacoes com checkbox "Normal" | `hideNormalOption: true` |
+| Nao adiciona multiplas lesoes | Precisa campo `lado` como primeiro extraField |
+| EMI duplicando no laudo | Verificar REDUNDANT_FIELDS |
+| organsCatalog.find is not a function | Exportar como array `Organ[]`, nao objeto |
+| Gray-Weale nao aparece | Verificar getGrayWealeType() |
 
 ---
 
-## Autenticação
+## Autenticacao
 
 - **Login:** anders / vertex2025
 
@@ -134,19 +217,19 @@ Achados com campo `lado` nos extraFields ativam automaticamente o modo multi-ins
 
 ---
 
-## Memória
+## Memoria (Memory Layer V2)
 
+### Comandos
 ```bash
-/memorypack                  # Indexa conversas
-search "termo"               # Busca semântica
+/memorypack                    # Indexa conversas pendentes
+/memsearch "query"             # Busca semantica
+/compact                       # Gera resumo da sessao (usar ~60% contexto)
 ```
 
----
-
-## Documentação Detalhada
-
-Para informações completas sobre arquitetura, layout system, regras médicas e troubleshooting:
-→ **docs/VERTEX_V2_COMPLETE_MANUAL.md**
+### CLI Direto
+```bash
+/root/.claude/memory/venv/bin/python /root/.claude/memory/cli_v2.py search "termo" --project vertex
+```
 
 ---
 

@@ -62,6 +62,27 @@ export const PLAQUE_TYPE = [
   'Lipídica'
 ] as const;
 
+export const PLAQUE_COMPOSITION = [
+  'Homogênea',
+  'Heterogênea',
+  'Calcificada',
+  'Lipídica',
+  'Fibrosa',
+  'Mista'
+] as const;
+
+export const PLAQUE_SURFACE = [
+  'Regular',
+  'Irregular',
+  'Ulcerada'
+] as const;
+
+export const PLAQUE_LOCATION = [
+  'Proximal',
+  'Média',
+  'Distal'
+] as const;
+
 export const RESISTIVITY_INDEX = [
   'Normal (0.50-0.70)',
   'Elevado (>0.70)',
@@ -100,6 +121,8 @@ export const RENAL_CALCULUS_LOCATION = [
 ] as const;
 
 export const HYDRONEPHROSIS_CAUSE = ['Obstrutiva', 'Não obstrutiva', 'Indeterminada'] as const;
+
+export const RENAL_POLE = ['Superior', 'Médio', 'Inferior', 'Interpolar'] as const;
 
 export const HEPATIC_SEGMENTS = [
   'Segmento I (caudado)',
@@ -383,6 +406,35 @@ export const createLocationField = (id: string, label: string, options: readonly
   type: 'select' as const,
   options: [...options]
 });
+
+// === CAMPOS GENÉRICOS REUTILIZÁVEIS ===
+
+export const EXTENT_SIMPLE = ['Parcial', 'Completa'] as const;
+
+export const SIZE_GRADE = ['Normal', 'Aumentado', 'Muito aumentado'] as const;
+
+export const DISTRIBUTION_FOCAL = ['Ausentes', 'Focais', 'Difusas'] as const;
+
+export const DUCT_STATUS = ['Normal', 'Dilatado', 'Irregular'] as const;
+
+export const CHRONIC_LIVER_SIGNS = [
+  'Heterogeneidade',
+  'Nodularidade',
+  'Hipertrofia lobo caudado',
+  'Esplenomegalia associada'
+] as const;
+
+export const PANCREATIC_COLLECTIONS = [
+  'Ausentes',
+  'Peripancreáticas',
+  'Retroperitoneais'
+] as const;
+
+export const NECROSIS_STATUS = [
+  'Não visível',
+  'Suspeita',
+  'Evidente'
+] as const;
 
 // === TYPES ===
 export type Laterality = typeof LATERALITY[number];

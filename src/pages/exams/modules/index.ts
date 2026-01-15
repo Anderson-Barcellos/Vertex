@@ -6,3 +6,4 @@ export { default as VenousExam } from './VenousExam';
 export { default as AbdominalWallExam } from './AbdominalWallExam';
 export { default as AbdominalVesselsExam } from './AbdominalVesselsExam';
 export { default as BreastExam } from './BreastExam';
+export { default as OmbroExam } from './OmbroExam';

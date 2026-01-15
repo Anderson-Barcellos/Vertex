@@ -126,6 +126,17 @@ function formatFieldName(key: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+const REDUNDANT_FIELDS = new Set([
+  'emiValue',
+  'nascet',
+  'ratio',
+  'plaqueEchogenicity',
+  'plaqueComposition',
+  'plaqueSurface',
+  'vertebralFlowPattern',
+  'flowPattern',
+]);
+
 export interface ReportPromptPayload {
   examType?: string;
   selectedFindings: SelectedFinding[];
@@ -280,7 +291,7 @@ function buildClinicalFindings(data: ReportPromptPayload): string {
           const segments: string[] = [];
 
           Object.entries(measurements).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
+            if (value !== undefined && value !== null && value !== '' && !REDUNDANT_FIELDS.has(key)) {
               const label = FIELD_LABELS[key] || formatFieldName(key);
               segments.push(`${label}: ${value}`);
             }

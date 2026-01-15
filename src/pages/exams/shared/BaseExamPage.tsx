@@ -29,9 +29,11 @@ import { getMarkableOrgans } from '@/utils/findingAdapters';
 
 interface BaseExamPageProps {
   config: ExamConfig;
+  disabledOrgans?: string[];
+  headerExtra?: React.ReactNode;
 }
 
-export default function BaseExamPage({ config }: BaseExamPageProps) {
+export default function BaseExamPage({ config, disabledOrgans = [], headerExtra }: BaseExamPageProps) {
   const navigate = useNavigate();
   const { organsCatalog, autoSaveKey, examType, title, subtitle, organGroups } = config;
   const FindingDetails = config.FindingDetailsComponent ?? FindingDetailsGeneric;
@@ -367,6 +369,7 @@ export default function BaseExamPage({ config }: BaseExamPageProps) {
                 <h1 className="text-xl font-bold text-white">{title}</h1>
                 <p className="text-xs text-gray-400">{subtitle}</p>
               </div>
+              {headerExtra && <div className="ml-4">{headerExtra}</div>}
             </div>
           </div>
         )}
@@ -380,6 +383,7 @@ export default function BaseExamPage({ config }: BaseExamPageProps) {
             organsList={organsCatalog}
             organGroups={organGroups}
             showSummary={false}
+            disabledOrgans={disabledOrgans}
           />
         )}
         main={(

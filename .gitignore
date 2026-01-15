@@ -9,7 +9,8 @@ coverage/
 # Production
 build/
 dist/
-
+backups/
+.claude/
 # Misc
 .DS_Store
 .env

@@ -1,4 +1,4 @@
-import BaseExamPage from '../BaseExamPage';
+import BaseExamPage from '../shared/BaseExamPage';
 import { abdominalWallConfig } from '@/data/examConfigs';
 
 export default function AbdominalWallExam() {

@@ -1,4 +1,4 @@
-import BaseExamPage from '../BaseExamPage';
+import BaseExamPage from '../shared/BaseExamPage';
 import { carotidConfig } from '@/data/examConfigs';
 
 export default function CarotidExam() {

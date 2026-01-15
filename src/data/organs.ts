@@ -8,13 +8,22 @@ import {
   ACOUSTIC_SHADOW,
   BOSNIAK_CLASSIFICATION,
   RENAL_CALCULUS_LOCATION,
+  RENAL_POLE,
   HYDRONEPHROSIS_CAUSE,
   NEPHROPATHY_ECHOGENICITY,
   CORTICOMEDULLARY_DIFF,
   AORTA_ANEURYSM_MORPHOLOGY,
   AORTA_ANEURYSM_EXTENSION,
   MURAL_THROMBUS,
-  SEVERITY_GRADES
+  SEVERITY_GRADES,
+  PRESENCE,
+  EXTENT_SIMPLE,
+  SIZE_GRADE,
+  DISTRIBUTION_FOCAL,
+  DUCT_STATUS,
+  CHRONIC_LIVER_SIGNS,
+  PANCREATIC_COLLECTIONS,
+  NECROSIS_STATUS
 } from './shared/commonFields';
 
 export interface Finding {
@@ -124,7 +133,7 @@ export const organs: Organ[] = [
             description: 'Sinais de doença hepática crônica',
             hasDetails: true,
             extraFields: [
-              { id: 'sinais', label: 'Sinais', type: 'select', options: ['Heterogeneidade', 'Nodularidade', 'Hipertrofia lobo caudado', 'Esplenomegalia associada'] },
+              { id: 'sinais', label: 'Sinais', type: 'select', options: [...CHRONIC_LIVER_SIGNS] },
               { id: 'ascite', label: 'Ascite', type: 'select', options: [...ASCITES_GRADE] }
             ]
           }
@@ -179,9 +188,9 @@ export const organs: Organ[] = [
             name: 'Colelitíase',
             description: 'Presença de cálculos na vesícula biliar',
             hasDetails: true,
-            hasMeasurement: true,
             hasQuantity: true,
             extraFields: [
+              { id: 'dimensao-calculo', label: 'Maior cálculo (mm)', type: 'text', placeholder: 'ex: 12' },
               { id: 'tipo-calculo', label: 'Tipo', type: 'select', options: [...GALLSTONE_TYPE] },
               { id: 'mobilidade', label: 'Mobilidade', type: 'select', options: [...GALLSTONE_MOBILITY] },
               { id: 'sombra', label: 'Sombra acústica', type: 'select', options: [...ACOUSTIC_SHADOW] }
@@ -227,7 +236,7 @@ export const organs: Organ[] = [
             description: 'Calcificação parietal da vesícula',
             hasDetails: true,
             extraFields: [
-              { id: 'extensao-calc', label: 'Extensão', type: 'select', options: ['Parcial', 'Completa'] }
+              { id: 'extensao-calc', label: 'Extensão', type: 'select', options: [...EXTENT_SIMPLE] }
             ]
           },
           {
@@ -283,8 +292,8 @@ export const organs: Organ[] = [
             description: 'Inflamação aguda do pâncreas',
             hasDetails: true,
             extraFields: [
-              { id: 'colecoes', label: 'Coleções', type: 'select', options: ['Ausentes', 'Peripancreáticas', 'Retroperitoneais'] },
-              { id: 'necrose', label: 'Necrose', type: 'select', options: ['Não visível', 'Suspeita', 'Evidente'] }
+              { id: 'colecoes', label: 'Coleções', type: 'select', options: [...PANCREATIC_COLLECTIONS] },
+              { id: 'necrose', label: 'Necrose', type: 'select', options: [...NECROSIS_STATUS] }
             ]
           },
           {
@@ -293,8 +302,8 @@ export const organs: Organ[] = [
             description: 'Alterações crônicas do parênquima',
             hasDetails: true,
             extraFields: [
-              { id: 'calcificacoes-panc', label: 'Calcificações', type: 'select', options: ['Ausentes', 'Focais', 'Difusas'] },
-              { id: 'wirsung', label: 'Ducto de Wirsung', type: 'select', options: ['Normal', 'Dilatado', 'Irregular'] }
+              { id: 'calcificacoes-panc', label: 'Calcificações', type: 'select', options: [...DISTRIBUTION_FOCAL] },
+              { id: 'wirsung', label: 'Ducto de Wirsung', type: 'select', options: [...DUCT_STATUS] }
             ]
           }
         ]
@@ -381,15 +390,13 @@ export const organs: Organ[] = [
         findings: [
           {
             id: 'cistos-renais',
-            name: 'Cistos Renais',
-            description: 'Lesões císticas no parênquima renal',
+            name: 'Cisto Renal',
+            description: 'Lesão cística no parênquima renal',
             hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            hasQuantity: true,
             extraFields: [
-              { id: 'classificacao-bosniak', label: 'Bosniak', type: 'select', options: [...BOSNIAK_CLASSIFICATION] },
-              { id: 'lado-cisto', label: 'Lado', type: 'select', options: [...LATERALITY] }
+              { id: 'lado', label: 'Lado', type: 'select', options: [...LATERALITY] },
+              { id: 'polo-cisto', label: 'Polo', type: 'select', options: [...RENAL_POLE] },
+              { id: 'dimensao-cisto', label: 'Dimensão (mm)', type: 'text', placeholder: 'ex: 25' }
             ]
           },
           {
@@ -398,8 +405,8 @@ export const organs: Organ[] = [
             description: 'Múltiplos cistos renais bilaterais',
             hasDetails: true,
             extraFields: [
-              { id: 'tamanho-rins', label: 'Tamanho renal', type: 'select', options: ['Normal', 'Aumentado', 'Muito aumentado'] },
-              { id: 'cistos-hepaticos', label: 'Cistos hepáticos', type: 'select', options: ['Ausentes', 'Presentes'] }
+              { id: 'tamanho-rins', label: 'Tamanho renal', type: 'select', options: [...SIZE_GRADE] },
+              { id: 'cistos-hepaticos', label: 'Cistos hepáticos', type: 'select', options: [...PRESENCE].reverse() }
             ]
           },
           {
@@ -424,8 +431,11 @@ export const organs: Organ[] = [
             name: 'Massa Renal',
             description: 'Lesão sólida no parênquima renal',
             hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true
+            extraFields: [
+              { id: 'lado', label: 'Lado', type: 'select', options: [...LATERALITY] },
+              { id: 'polo-massa', label: 'Polo', type: 'select', options: [...RENAL_POLE] },
+              { id: 'dimensao-massa', label: 'Dimensão (mm)', type: 'text', placeholder: 'ex: 30' }
+            ]
           }
         ]
       }
@@ -583,6 +593,108 @@ export const organs: Organ[] = [
             hasDetails: true,
             hasSeverity: true,  // Leve, moderada, acentuada
             hasLocation: true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'prostata',
+    name: 'Próstata',
+    icon: 'oval',
+    normalDescription: 'apresenta dimensões normais, contornos regulares e ecotextura homogênea, sem evidências de nódulos ou calcificações.',
+    categories: [
+      {
+        id: 'dimensoes-prostata',
+        name: 'Dimensões e Volume',
+        findings: [
+          {
+            id: 'aumento-prostatico',
+            name: 'Aumento Prostático',
+            description: 'Hiperplasia prostática benigna',
+            hasDetails: true,
+            hasMeasurement: true,
+            extraFields: [
+              { id: 'volume-prostatico', label: 'Volume (cm³)', type: 'text', placeholder: 'ex: 35' },
+              { id: 'peso-estimado', label: 'Peso estimado (g)', type: 'text', placeholder: 'ex: 40' },
+              { id: 'lobo-medio', label: 'Lobo médio', type: 'select', options: ['Não identificado', 'Presente, sem protrusão', 'Protrusão intravesical'] }
+            ]
+          },
+          {
+            id: 'prostata-normal',
+            name: 'Volume Normal',
+            description: 'Próstata com dimensões preservadas',
+            hasDetails: true,
+            isNormal: true,
+            extraFields: [
+              { id: 'volume-normal', label: 'Volume (cm³)', type: 'text', placeholder: 'ex: 20' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'ecotextura-prostata',
+        name: 'Ecotextura',
+        findings: [
+          {
+            id: 'ecotextura-heterogenea-prostata',
+            name: 'Ecotextura Heterogênea',
+            description: 'Alteração difusa da ecotextura prostática',
+            hasDetails: true
+          },
+          {
+            id: 'calcificacoes-prostaticas',
+            name: 'Calcificações',
+            description: 'Calcificações no parênquima prostático',
+            hasDetails: true,
+            hasSeverity: true,
+            extraFields: [
+              { id: 'distribuicao-calc-prost', label: 'Distribuição', type: 'select', options: ['Periuretrais', 'Difusas', 'Focais'] }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'lesoes-prostata',
+        name: 'Lesões Focais',
+        findings: [
+          {
+            id: 'nodulo-prostatico',
+            name: 'Nódulo Prostático',
+            description: 'Lesão nodular no parênquima prostático',
+            hasDetails: true,
+            hasMeasurement: true,
+            extraFields: [
+              { id: 'localizacao-nodulo-prost', label: 'Localização', type: 'select', options: ['Zona periférica', 'Zona transicional', 'Zona central'] },
+              { id: 'ecogenicidade-nodulo-prost', label: 'Ecogenicidade', type: 'select', options: ['Hipoecogênico', 'Isoecogênico', 'Hiperecogênico'] },
+              { id: 'contornos-nodulo-prost', label: 'Contornos', type: 'select', options: ['Regulares', 'Irregulares', 'Mal definidos'] }
+            ]
+          },
+          {
+            id: 'cisto-prostatico',
+            name: 'Cisto Prostático',
+            description: 'Formação cística prostática',
+            hasDetails: true,
+            hasMeasurement: true,
+            extraFields: [
+              { id: 'localizacao-cisto-prost', label: 'Localização', type: 'select', options: ['Linha média', 'Paramediano', 'Periférico'] }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'residuo-vesical',
+        name: 'Resíduo Pós-Miccional',
+        findings: [
+          {
+            id: 'residuo-pos-miccional',
+            name: 'Resíduo Urinário',
+            description: 'Volume residual pós-miccional',
+            hasDetails: true,
+            extraFields: [
+              { id: 'volume-residual', label: 'Volume (ml)', type: 'text', placeholder: 'ex: 50' },
+              { id: 'classificacao-residuo', label: 'Classificação', type: 'select', options: ['Normal (< 50ml)', 'Leve (50-100ml)', 'Moderado (100-200ml)', 'Acentuado (> 200ml)'] }
+            ]
           }
         ]
       }
