@@ -4,7 +4,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import LandingPage from './pages/LandingPage';
-import Home from './pages/Home';
 import {
   AbdomeTotalExam,
   CarotidExam,
@@ -26,7 +25,6 @@ function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
-            <Route path="/old-home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
             <Route path="/abdome-modern" element={<ProtectedRoute><AbdomeTotalExam /></ProtectedRoute>} />
             <Route path="/carotid-modern" element={<ProtectedRoute><CarotidExam /></ProtectedRoute>} />
             <Route path="/thyroid-modern" element={<ProtectedRoute><ThyroidExam /></ProtectedRoute>} />

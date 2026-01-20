@@ -45,7 +45,7 @@ export default function SelectedFindingsPanel({
   expandToContent = false,
   onModelChange
 }: SelectedFindingsPanelProps) {
-  const [selectedModel, setSelectedModel] = useState<AIProvider>('gemini');
+  const [selectedModel, setSelectedModel] = useState<AIProvider>('claude');
   const [selectedGeminiModel, setSelectedGeminiModel] = useState(GEMINI_MODELS[0].id);
   const [selectedOpenAIModel, setSelectedOpenAIModel] = useState(OPENAI_MODELS[0].id);
   const [selectedClaudeModel, setSelectedClaudeModel] = useState(CLAUDE_MODELS[0].id);
@@ -230,58 +230,33 @@ export default function SelectedFindingsPanel({
                           )}
                         </div>
 
-                        {/* Show instances */}
+                        {/* Show instances - resumo apenas */}
                         {finding.instances && finding.instances.length > 0 && (
                           <div className="pl-3 mt-1 space-y-1">
                             {finding.instances.map((instance, idx) => {
                               const measurements = instance.measurements as Record<string, string | undefined>;
-                              const fieldLabels: Record<string, string> = {
-                                size: 'Tamanho',
-                                location: 'Localização',
-                                segment: 'Segmento',
-                                vps: 'VPS',
-                                vdf: 'VDF',
-                                ratioICA_CCA: 'Razão ICA/CCA',
-                                ratio: 'Razão ICA/CCA',
+                              const summaryFields: Record<string, string> = {
+                                lado: 'Lado',
                                 nascetGrade: 'NASCET',
                                 nascet: 'NASCET',
-                                emi: 'EMI',
-                                emiValue: 'EMI',
-                                plaqueEchogenicity: 'Ecogenicidade',
-                                echogenicity: 'Ecogenicidade',
-                                plaqueComposition: 'Composição',
-                                composition: 'Composição',
-                                plaqueSurface: 'Superfície',
-                                surface: 'Superfície',
-                                plaqueRisk: 'Risco',
-                                risk: 'Risco',
-                                vertebralVelocity: 'Velocidade vertebral',
-                                vertebralIR: 'IR vertebral',
-                                vertebralFlowPattern: 'Padrão de fluxo',
-                                flowPattern: 'Padrão de fluxo',
-                                subclavianSteal: 'Roubo da subclávia',
-                                description: 'Obs',
-                                texto: 'Observação',
-                                visibilidade: 'Visibilidade',
-                                manobra: 'Manobra',
-                                ostio: 'Óstio',
-                                saco: 'Saco herniário',
-                                conteudo: 'Conteúdo',
-                                redutibilidade: 'Redutibilidade',
-                                lado: 'Lado',
-                                lateralidade: 'Lateralidade',
-                                distribuicao: 'Distribuição',
-                                atenuacao: 'Atenuação',
-                                ecogenicidade: 'Ecogenicidade',
-                                vascularizacao: 'Vascularização',
-                                diametro: 'Diâmetro',
-                                extensao: 'Extensão',
-                                morfologia: 'Morfologia'
+                                emi_value: 'EMI',
+                                size: 'Tamanho',
+                                location: 'Localização',
+                                texto: 'Obs'
                               };
+                              const skipFields = new Set([
+                                'vps', 'vdf', 'ratio', 'ratioICA_CCA', 'ratio_aci_acc',
+                                'spectralBroadening', 'calculatedGrade', 'calculatedConfidence',
+                                'emi', 'emiValue', 'emiClassification', 'emi_classification',
+                                'measurement', 'echogenicity', 'plaqueEchogenicity',
+                                'composition', 'plaqueComposition', 'surface', 'plaqueSurface',
+                                'risk', 'plaqueRisk', 'grayWeale'
+                              ]);
                               const renderedKeys = new Set<string>();
                               const entries = Object.entries(measurements).filter(([key, value]) => {
                                 if (!value || value.toString().trim() === '') return false;
                                 if (renderedKeys.has(key)) return false;
+                                if (skipFields.has(key)) return false;
                                 renderedKeys.add(key);
                                 return true;
                               });
@@ -289,16 +264,12 @@ export default function SelectedFindingsPanel({
                               if (entries.length === 0) return null;
 
                               return (
-                                <div key={instance.id} className="bg-sidebar-muted/30 rounded px-2 py-1.5 border border-sidebar-muted/50">
-                                  <div className="text-[11px] font-semibold text-sidebar-accent flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 bg-sidebar-accent rounded-full"></span>
-                                    {entries.length === 1 && entries[0][0] === 'texto' ? 'Detalhes' : `Lesão ${idx + 1}`}
-                                  </div>
-                                  <div className="text-[10px] text-sidebar-foreground opacity-90 space-y-0.5 mt-1 pl-2.5">
+                                <div key={instance.id} className="bg-sidebar-muted/30 rounded px-2 py-1 border border-sidebar-muted/50">
+                                  <div className="text-[10px] text-sidebar-foreground opacity-90 flex flex-wrap gap-x-2">
                                     {entries.map(([key, value]) => {
-                                      const label = fieldLabels[key] || key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+                                      const label = summaryFields[key] || key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
                                       return (
-                                        <div key={key}>• {label}: {value}</div>
+                                        <span key={key}>{label}: {value}</span>
                                       );
                                     })}
                                   </div>

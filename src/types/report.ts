@@ -22,6 +22,7 @@ export interface FindingMeasurement {
   plaqueComposition?: string; // Composição da placa
   plaqueSurface?: string; // Superfície da placa
   plaqueRisk?: string; // Estratificação de risco da placa
+  grayWeale?: string; // Classificação Gray-Weale direta (I-IV)
 
   // Carotid Doppler - EMI e Vertebrais
   emi?: string; // Espessamento Médio-Intimal em mm

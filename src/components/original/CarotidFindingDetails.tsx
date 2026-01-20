@@ -15,6 +15,8 @@ import {
   STENOSIS_GRADES,
   PLAQUE_RISK,
   PLAQUE_SURFACE,
+  PLAQUE_ECHOGENICITY,
+  PLAQUE_COMPOSITION,
   FLOW_PATTERN,
   SPECTRAL_BROADENING,
   getGrayWealeType,
@@ -62,20 +64,12 @@ const NASCET_CRITERIA = [
   { value: '100', label: '100% (Oclusão)', risk: 'critical' }
 ] as const;
 
-// Ecogenicidade das placas
-const PLAQUE_ECHOGENICITY = [
-  { value: 'hipoecogenica', label: 'Hipoecogênica (lipídica)', risk: 'high' },
-  { value: 'isoecogenica', label: 'Isoecogênica', risk: 'medium' },
-  { value: 'hiperecogenica', label: 'Hiperecogênica (fibrosa)', risk: 'low' },
-  { value: 'calcificada', label: 'Calcificada', risk: 'low' }
-] as const;
-
-// Composição das placas
-const PLAQUE_COMPOSITION = [
-  { value: 'homogenea', label: 'Homogênea', risk: 'low' },
-  { value: 'heterogenea', label: 'Heterogênea', risk: 'high' },
-  { value: 'mista', label: 'Mista (fibrocalcificada)', risk: 'medium' },
-  { value: 'lipidica', label: 'Predominantemente lipídica', risk: 'high' }
+// Gray-Weale simplificado - substitui ecogenicidade + composição
+const GRAY_WEALE_OPTIONS = [
+  { value: 'I', label: 'Tipo I - Uniformemente ecolucente', risk: 'high', description: 'Placa lipídica - ALTO RISCO' },
+  { value: 'II', label: 'Tipo II - Predominantemente ecolucente', risk: 'high', description: 'Placa mista com predomínio lipídico - ALTO RISCO' },
+  { value: 'III', label: 'Tipo III - Predominantemente ecogênica', risk: 'medium', description: 'Placa mista com predomínio fibroso - RISCO MODERADO' },
+  { value: 'IV', label: 'Tipo IV - Uniformemente ecogênica', risk: 'low', description: 'Placa fibrosa/calcificada - BAIXO RISCO' }
 ] as const;
 
 // Valores de EMI (Espessamento Médio-Intimal)
@@ -116,19 +110,37 @@ const getEMIClassification = (value: number) => {
   return classification || EMI_VALUES[EMI_VALUES.length - 1];
 };
 
-// Helper para determinar risco de placa
 const getPlaqueRisk = (echogenicity?: string, composition?: string, surface?: string): 'low' | 'medium' | 'high' => {
   const risks: ('low' | 'medium' | 'high')[] = [];
 
-  const echoRisk = PLAQUE_ECHOGENICITY.find(e => e.value === echogenicity || e.label === echogenicity)?.risk;
-  const compRisk = PLAQUE_COMPOSITION.find(c => c.value === composition || c.label === composition)?.risk;
+  if (echogenicity) {
+    const lower = echogenicity.toLowerCase();
+    if (lower.includes('tipo i)') || lower.includes('tipo ii)') || lower.includes('hipo') || lower.includes('ecolucente')) {
+      risks.push('high');
+    } else if (lower.includes('tipo iii)') || lower.includes('hetero')) {
+      risks.push('medium');
+    } else if (lower.includes('tipo iv)') || lower.includes('hiper') || lower.includes('homogên')) {
+      risks.push('low');
+    }
+  }
 
-  if (echoRisk) risks.push(echoRisk as 'low' | 'medium' | 'high');
-  if (compRisk) risks.push(compRisk as 'low' | 'medium' | 'high');
+  if (composition) {
+    const lower = composition.toLowerCase();
+    if (lower.includes('lipídica') || lower.includes('lipidica') || lower.includes('hetero')) {
+      risks.push('high');
+    } else if (lower.includes('mista')) {
+      risks.push('medium');
+    } else if (lower.includes('calcif') || lower.includes('fibrosa') || lower.includes('homogên')) {
+      risks.push('low');
+    }
+  }
+
   if (surface) {
     const surfaceLower = surface.toLowerCase();
     if (surfaceLower.includes('ulcer')) {
       risks.push('high');
+    } else if (surfaceLower.includes('irreg')) {
+      risks.push('medium');
     }
   }
 
@@ -318,15 +330,13 @@ function CarotidFindingDetailsComponent({
         analysis.nascet.includes(n.value) || n.label.includes(analysis.nascet)
       )?.label || analysis.grade;
       
-      if (currentMeasurement.nascet !== nascetLabel && currentMeasurement.nascetGrade !== nascetLabel) {
-        setCurrentMeasurement(prev => ({
-          ...prev,
-          nascet: nascetLabel,
-          nascetGrade: nascetLabel,
-          calculatedGrade: analysis.grade,
-          calculatedConfidence: analysis.confidence
-        }));
-      }
+      setCurrentMeasurement(prev => ({
+        ...prev,
+        nascet: nascetLabel,
+        nascetGrade: nascetLabel,
+        calculatedGrade: analysis.grade,
+        calculatedConfidence: analysis.confidence
+      }));
     }
   }, [
     isStenosis,
@@ -352,10 +362,9 @@ function CarotidFindingDetailsComponent({
         currentMeasurement.nascetGrade ||
         currentMeasurement.emiValue ||
         currentMeasurement.emi ||
+        currentMeasurement.grayWeale ||
         currentMeasurement.echogenicity ||
         currentMeasurement.plaqueEchogenicity ||
-        currentMeasurement.composition ||
-        currentMeasurement.plaqueComposition ||
         currentMeasurement.surface ||
         currentMeasurement.plaqueSurface ||
         currentMeasurement.risk ||
@@ -516,19 +525,25 @@ function CarotidFindingDetailsComponent({
                           )}
                         </div>
                       )}
-                      {instance.measurements.echogenicity && (
+                      {(instance.measurements.grayWeale || instance.measurements.echogenicity) && (
                         <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">Ecogenicidade:</span>
-                          <span>{instance.measurements.echogenicity}</span>
-                          {getGrayWealeType(instance.measurements.echogenicity, instance.measurements.composition) && (
-                            <Badge variant="outline" className="text-xs bg-slate-800 border-slate-600">
-                              Gray-Weale {getGrayWealeType(instance.measurements.echogenicity, instance.measurements.composition)}
-                            </Badge>
-                          )}
+                          <span className="text-muted-foreground">Gray-Weale:</span>
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs ${
+                              instance.measurements.grayWeale === 'I' || instance.measurements.grayWeale === 'II'
+                                ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                                : instance.measurements.grayWeale === 'III'
+                                  ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                                  : 'bg-green-500/20 text-green-300 border-green-500/30'
+                            }`}
+                          >
+                            Tipo {instance.measurements.grayWeale || getGrayWealeType(instance.measurements.echogenicity || '', instance.measurements.composition)}
+                          </Badge>
+                          <span className="text-[10px] text-slate-400">
+                            {instance.measurements.echogenicity}
+                          </span>
                         </div>
-                      )}
-                      {instance.measurements.composition && (
-                        <p><span className="text-muted-foreground">Composição:</span> {instance.measurements.composition}</p>
                       )}
                       {instance.measurements.surface && (
                         <p><span className="text-muted-foreground">Superfície:</span> {instance.measurements.surface}</p>
@@ -861,67 +876,56 @@ function CarotidFindingDetailsComponent({
 
                   <div className="flex items-center gap-2">
                     <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
-                      Ecogenicidade:
+                      Gray-Weale:
                     </label>
                     <Select
-                      value={currentMeasurement.echogenicity || currentMeasurement.plaqueEchogenicity || ''}
-                      onValueChange={(value) =>
+                      value={currentMeasurement.grayWeale || ''}
+                      onValueChange={(value) => {
+                        const selected = GRAY_WEALE_OPTIONS.find(g => g.value === value);
+                        const riskLabel = selected?.risk === 'high' ? 'Alto risco' : selected?.risk === 'medium' ? 'Risco moderado' : 'Baixo risco';
                         setCurrentMeasurement({
                           ...currentMeasurement,
-                          echogenicity: value,
-                          plaqueEchogenicity: value
-                        })
-                      }
+                          grayWeale: value,
+                          echogenicity: selected?.label,
+                          plaqueEchogenicity: selected?.label,
+                          risk: riskLabel,
+                          plaqueRisk: riskLabel
+                        });
+                      }}
                     >
                       <SelectTrigger className="h-7 text-xs flex-1">
-                        <SelectValue placeholder="Selecione..." />
+                        <SelectValue placeholder="Selecione o tipo..." />
                       </SelectTrigger>
                       <SelectContent className="max-h-[200px] overflow-y-auto">
-                        {PLAQUE_ECHOGENICITY.map(e => (
-                          <SelectItem key={e.value} value={e.label}>
-                            {e.label}
+                        {GRAY_WEALE_OPTIONS.map(g => (
+                          <SelectItem key={g.value} value={g.value}>
+                            {g.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {currentMeasurement.echogenicity && getGrayWealeType(currentMeasurement.echogenicity, currentMeasurement.composition) && (
-                      <div className="flex flex-col gap-0.5 shrink-0">
-                        <Badge variant="outline" className="text-xs bg-slate-800 border-slate-600">
-                          Gray-Weale {getGrayWealeType(currentMeasurement.echogenicity, currentMeasurement.composition)}
+                  </div>
+                  {currentMeasurement.grayWeale && (
+                    <div className="p-2 rounded-md bg-slate-800/50 border border-slate-700">
+                      <div className="flex items-center justify-between">
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            GRAY_WEALE_OPTIONS.find(g => g.value === currentMeasurement.grayWeale)?.risk === 'high' 
+                              ? 'bg-red-500/20 text-red-300 border-red-500/30' 
+                              : GRAY_WEALE_OPTIONS.find(g => g.value === currentMeasurement.grayWeale)?.risk === 'medium'
+                                ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                                : 'bg-green-500/20 text-green-300 border-green-500/30'
+                          }`}
+                        >
+                          Gray-Weale {currentMeasurement.grayWeale}
                         </Badge>
-                        <span className="text-[9px] text-slate-400">
-                          {GRAY_WEALE_DESCRIPTIONS[getGrayWealeType(currentMeasurement.echogenicity, currentMeasurement.composition)]}
+                        <span className="text-[10px] text-slate-400">
+                          {GRAY_WEALE_OPTIONS.find(g => g.value === currentMeasurement.grayWeale)?.description}
                         </span>
                       </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
-                      Composição:
-                    </label>
-                    <Select
-                      value={currentMeasurement.composition || currentMeasurement.plaqueComposition || ''}
-                      onValueChange={(value) =>
-                        setCurrentMeasurement({
-                          ...currentMeasurement,
-                          composition: value,
-                          plaqueComposition: value
-                        })
-                      }
-                    >
-                      <SelectTrigger className="h-7 text-xs flex-1">
-                        <SelectValue placeholder="Selecione..." />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-[200px] overflow-y-auto">
-                        {PLAQUE_COMPOSITION.map(c => (
-                          <SelectItem key={c.value} value={c.label}>
-                            {c.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-2">
                     <label className="text-xs font-medium text-muted-foreground min-w-[80px]">
@@ -942,48 +946,14 @@ function CarotidFindingDetailsComponent({
                       </SelectTrigger>
                       <SelectContent className="max-h-[200px] overflow-y-auto">
                         {PLAQUE_SURFACE.map(s => (
-                          <SelectItem key={s.value} value={s.label}>
-                            {s.label}
+                          <SelectItem key={s} value={s}>
+                            {s}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs font-medium text-muted-foreground min-w-[80px] flex items-center gap-1">
-                      <ShieldAlert size={12} />
-                      Risco:
-                    </label>
-                    <Select
-                      value={currentMeasurement.risk || currentMeasurement.plaqueRisk || ''}
-                      onValueChange={(value) =>
-                        setCurrentMeasurement({
-                          ...currentMeasurement,
-                          risk: value,
-                          plaqueRisk: value
-                        })
-                      }
-                    >
-                      <SelectTrigger className="h-7 text-xs flex-1">
-                        <SelectValue placeholder="Selecione..." />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-[200px] overflow-y-auto">
-                        {PLAQUE_RISK.map(option => (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <PlaqueRiskCalculatorPanel
-                    echogenicity={currentMeasurement.echogenicity || currentMeasurement.plaqueEchogenicity}
-                    composition={currentMeasurement.composition || currentMeasurement.plaqueComposition}
-                    surface={currentMeasurement.surface || currentMeasurement.plaqueSurface}
-                    className="mt-2"
-                  />
                 </>
               )}
 
@@ -1106,8 +1076,8 @@ function CarotidFindingDetailsComponent({
                       </SelectTrigger>
                       <SelectContent className="max-h-[200px] overflow-y-auto">
                         {FLOW_PATTERN.map(f => (
-                          <SelectItem key={f.value} value={f.label}>
-                            {f.label}
+                          <SelectItem key={f} value={f}>
+                            {f}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1184,10 +1154,9 @@ function CarotidFindingDetailsComponent({
                     !currentMeasurement.nascetGrade &&
                     !currentMeasurement.emiValue &&
                     !currentMeasurement.emi &&
+                    !currentMeasurement.grayWeale &&
                     !currentMeasurement.echogenicity &&
                     !currentMeasurement.plaqueEchogenicity &&
-                    !currentMeasurement.composition &&
-                    !currentMeasurement.plaqueComposition &&
                     !currentMeasurement.surface &&
                     !currentMeasurement.plaqueSurface &&
                     !currentMeasurement.risk &&

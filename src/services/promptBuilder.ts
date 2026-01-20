@@ -15,6 +15,7 @@ const FIELD_LABELS: Record<string, string> = {
   extension: 'Extensão longitudinal',
   diameter: 'Diâmetro',
   emi: 'EMI',
+  emi_value: 'EMI',
   emi_classification: 'Classificação EMI',
   emiClassification: 'Classificação EMI',
   echogenicity: 'Ecogenicidade',
@@ -127,7 +128,11 @@ function formatFieldName(key: string): string {
 }
 
 const REDUNDANT_FIELDS = new Set([
+  'measurement',  // Remove duplicação quando há campos específicos
+  'emi',  // Remove duplicação - mantém apenas emi_value
   'emiValue',
+  'emi_classification',  // Remove duplicação - campo já processado
+  'emiClassification',
   'nascet',
   'ratio',
   'plaqueEchogenicity',

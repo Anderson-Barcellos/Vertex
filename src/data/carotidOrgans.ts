@@ -2,7 +2,8 @@ import { Organ, OrganCategory, Finding } from './organs';
 import {
   PLAQUE_COMPOSITION as COMMON_PLAQUE_COMPOSITION,
   PLAQUE_SURFACE as COMMON_PLAQUE_SURFACE,
-  PLAQUE_LOCATION
+  PLAQUE_LOCATION,
+  LATERALITY
 } from './shared/commonFields';
 
 // ============================================================================
@@ -224,22 +225,526 @@ export const SUBCLAVIAN_STEAL = [
 ];
 
 // ============================================================================
+// NOVA ESTRUTURA - Segmentos carotídeos para consolidação
+// ============================================================================
+
+export const CAROTID_SEGMENTS = [
+  'Carótida Comum',
+  'Bulbo Carotídeo',
+  'Carótida Interna',
+  'Carótida Externa'
+] as const;
+
+export const ANATOMICAL_ALTERATIONS = [
+  'Normal',
+  'Kinking (dobra)',
+  'Coiling (enrolamento)',
+  'Tortuosidade acentuada',
+  'Loop arterial'
+] as const;
+
+// ============================================================================
+// CATEGORIAS DE ACHADOS COMPARTILHADAS
+// ============================================================================
+
+// Função helper para criar achados de placas com lado específico
+const createPlaqueFindings = (defaultSide?: string): Finding[] => [
+  {
+    id: `placa-aterosclerotica${defaultSide ? `-${defaultSide.toLowerCase()}` : ''}`,
+    name: 'Placa aterosclerótica',
+    description: 'Depósito de colesterol na parede arterial',
+    hasDetails: true,
+    hasMeasurement: true,
+    extraFields: [
+      ...(defaultSide ? [] : [{
+        id: 'lado',
+        label: 'Lado',
+        type: 'select' as const,
+        options: [...LATERALITY]
+      }]),
+      {
+        id: 'segmento',
+        label: 'Segmento',
+        type: 'select',
+        options: [...CAROTID_SEGMENTS]
+      },
+      {
+        id: 'localizacao',
+        label: 'Localização específica',
+        type: 'select',
+        options: ['Proximal', 'Média', 'Distal', 'Bifurcação']
+      },
+      {
+        id: 'echogenicity',
+        label: 'Ecogenicidade (Gray-Weale)',
+        type: 'select',
+        options: PLAQUE_ECHOGENICITY
+      },
+      {
+        id: 'composition',
+        label: 'Composição',
+        type: 'select',
+        options: PLAQUE_COMPOSITION
+      },
+      {
+        id: 'surface',
+        label: 'Superfície',
+        type: 'select',
+        options: PLAQUE_SURFACE_TYPE
+      },
+      {
+        id: 'extension',
+        label: 'Extensão longitudinal (mm)',
+        type: 'text',
+        placeholder: 'Ex: 12'
+      },
+      {
+        id: 'thickness',
+        label: 'Espessura máxima (mm)',
+        type: 'text',
+        placeholder: 'Ex: 2.5'
+      },
+      {
+        id: 'gsm',
+        label: 'GSM (Gray Scale Median)',
+        type: 'select',
+        options: PLAQUE_GSM.map(p => p.label)
+      },
+      {
+        id: 'vulnerable_features',
+        label: 'Features de Vulnerabilidade',
+        type: 'select',
+        options: ['Nenhuma', ...VULNERABLE_PLAQUE_FEATURES]
+      },
+      {
+        id: 'risk',
+        label: 'Estratificação de Risco',
+        type: 'select',
+        options: PLAQUE_RISK
+      }
+    ]
+  },
+  {
+    id: `placa-ulcerada${defaultSide ? `-${defaultSide.toLowerCase()}` : ''}`,
+    name: 'Placa ulcerada',
+    description: 'Placa aterosclerótica com ulceração (ALTO RISCO)',
+    hasDetails: true,
+    hasMeasurement: true,
+    extraFields: [
+      ...(defaultSide ? [] : [{
+        id: 'lado',
+        label: 'Lado',
+        type: 'select' as const,
+        options: [...LATERALITY]
+      }]),
+      {
+        id: 'segmento',
+        label: 'Segmento',
+        type: 'select',
+        options: [...CAROTID_SEGMENTS]
+      },
+      {
+        id: 'ulcer_depth',
+        label: 'Profundidade da úlcera (mm)',
+        type: 'text',
+        placeholder: 'Ex: 3'
+      },
+      {
+        id: 'echogenicity',
+        label: 'Ecogenicidade (Gray-Weale)',
+        type: 'select',
+        options: PLAQUE_ECHOGENICITY
+      },
+      {
+        id: 'composition',
+        label: 'Composição',
+        type: 'select',
+        options: PLAQUE_COMPOSITION
+      },
+      {
+        id: 'extension',
+        label: 'Extensão longitudinal (mm)',
+        type: 'text',
+        placeholder: 'Ex: 15'
+      },
+      {
+        id: 'risk',
+        label: 'Estratificação de Risco',
+        type: 'select',
+        options: ['Muito alto risco (ulcerada)']
+      }
+    ]
+  }
+];
+
+// Função helper para criar achados hemodinâmicos
+const createHemodynamicFindings = (defaultSide?: string, segmentOptions?: string[]): Finding[] => [
+  {
+    id: `estenose${defaultSide ? `-${defaultSide.toLowerCase()}` : ''}`,
+    name: 'Estenose',
+    description: 'Redução luminal arterial',
+    hasDetails: true,
+    hasMeasurement: true,
+    extraFields: [
+      ...(defaultSide ? [] : [{
+        id: 'lado',
+        label: 'Lado',
+        type: 'select' as const,
+        options: [...LATERALITY]
+      }]),
+      {
+        id: 'segmento',
+        label: 'Segmento',
+        type: 'select',
+        options: segmentOptions || [...CAROTID_SEGMENTS]
+      },
+      {
+        id: 'symptomatic_status',
+        label: 'Status Sintomático (ESVS 2023)',
+        type: 'select',
+        options: PATIENT_SYMPTOMS
+      },
+      {
+        id: 'stenosis_percent',
+        label: 'Estenose estimada (%)',
+        type: 'text',
+        placeholder: 'Ex: 65'
+      },
+      {
+        id: 'vps',
+        label: 'VPS (cm/s) - IAC: <125 normal, 125-230 moderada, >230 grave',
+        type: 'text',
+        placeholder: 'Ex: 250'
+      },
+      {
+        id: 'vdf',
+        label: 'VDF (cm/s) - IAC: <40 normal, 40-100 moderada, >100 grave',
+        type: 'text',
+        placeholder: 'Ex: 120'
+      },
+      {
+        id: 'ratio_aci_acc',
+        label: 'Razão VPS ACI/ACC - IAC: <2.0 normal, 2.0-4.0 moderada, >4.0 grave',
+        type: 'text',
+        placeholder: 'Ex: 4.2'
+      },
+      {
+        id: 'nascet_grade',
+        label: 'Grau NASCET',
+        type: 'select',
+        options: NASCET_CRITERIA
+      },
+      {
+        id: 'spectral_broadening',
+        label: 'Borramento Espectral',
+        type: 'select',
+        options: SPECTRAL_BROADENING
+      },
+      {
+        id: 'intervention_indication',
+        label: 'Indicação de Intervenção (ESVS 2023)',
+        type: 'select',
+        options: [
+          'Classe I - CEA/CAS recomendado (sintomático ≥50%)',
+          'Classe I - CEA recomendado (assintomático + alto risco)',
+          'Classe IIa - Considerar CEA (assintomático >60%)',
+          'Classe III - Apenas tratamento clínico (BMT)'
+        ]
+      }
+    ]
+  },
+  {
+    id: `oclusao${defaultSide ? `-${defaultSide.toLowerCase()}` : ''}`,
+    name: 'Oclusão',
+    description: 'Oclusão completa da artéria',
+    hasDetails: true,
+    extraFields: [
+      ...(defaultSide ? [] : [{
+        id: 'lado',
+        label: 'Lado',
+        type: 'select' as const,
+        options: [...LATERALITY]
+      }]),
+      {
+        id: 'segmento',
+        label: 'Segmento',
+        type: 'select',
+        options: segmentOptions || [...CAROTID_SEGMENTS]
+      },
+      {
+        id: 'extension_oclusao',
+        label: 'Extensão (mm)',
+        type: 'text',
+        placeholder: 'Ex: 30'
+      },
+      {
+        id: 'colaterais',
+        label: 'Circulação colateral',
+        type: 'select',
+        options: ['Ausente', 'Presente via ACE', 'Presente via oftálmica', 'Presente via comunicantes']
+      }
+    ]
+  },
+  {
+    id: `suboclusao${defaultSide ? `-${defaultSide.toLowerCase()}` : ''}`,
+    name: 'Suboclusão (near-occlusion)',
+    description: 'Estenose crítica com colapso distal',
+    hasDetails: true,
+    extraFields: [
+      ...(defaultSide ? [] : [{
+        id: 'lado',
+        label: 'Lado',
+        type: 'select' as const,
+        options: [...LATERALITY]
+      }]),
+      {
+        id: 'segmento',
+        label: 'Segmento',
+        type: 'select',
+        options: segmentOptions || [...CAROTID_SEGMENTS]
+      },
+      {
+        id: 'string_sign',
+        label: 'String sign',
+        type: 'select',
+        options: ['Presente', 'Ausente']
+      },
+      {
+        id: 'distal_collapse',
+        label: 'Colapso distal',
+        type: 'select',
+        options: ['Presente', 'Ausente']
+      }
+    ]
+  }
+];
+
+// Função helper para criar achados parietais
+const createParietalFindings = (defaultSide?: string): Finding[] => [
+  {
+    id: `espessamento-medio-intimal${defaultSide ? `-${defaultSide.toLowerCase()}` : ''}`,
+    name: 'Espessamento médio-intimal (EMI)',
+    description: 'Espessamento da camada íntima-média',
+    hasDetails: true,
+    hasMeasurement: true,
+    extraFields: [
+      ...(defaultSide ? [] : [{
+        id: 'lado',
+        label: 'Lado',
+        type: 'select' as const,
+        options: [...LATERALITY]
+      }]),
+      {
+        id: 'emi_value',
+        label: 'EMI (mm)',
+        type: 'text',
+        placeholder: 'Ex: 1.2'
+      },
+      {
+        id: 'emi_classification',
+        label: 'Classificação EMI',
+        type: 'select',
+        options: EMI_VALUES
+      }
+    ]
+  },
+  {
+    id: `disseccao-arterial${defaultSide ? `-${defaultSide.toLowerCase()}` : ''}`,
+    name: 'Dissecção arterial',
+    description: 'Dissecção da parede arterial',
+    hasDetails: true,
+    extraFields: [
+      ...(defaultSide ? [] : [{
+        id: 'lado',
+        label: 'Lado',
+        type: 'select' as const,
+        options: [...LATERALITY]
+      }]),
+      {
+        id: 'segmento',
+        label: 'Segmento',
+        type: 'select',
+        options: [...CAROTID_SEGMENTS]
+      },
+      {
+        id: 'flap_intimal',
+        label: 'Flap intimal',
+        type: 'select',
+        options: ['Visível', 'Não visível']
+      },
+      {
+        id: 'luz_verdadeira',
+        label: 'Luz verdadeira',
+        type: 'select',
+        options: ['Pérvia', 'Comprimida', 'Ocluída']
+      },
+      {
+        id: 'luz_falsa',
+        label: 'Luz falsa',
+        type: 'select',
+        options: ['Trombosada', 'Parcialmente trombosada', 'Pérvia']
+      },
+      {
+        id: 'extension_disseccao',
+        label: 'Extensão (mm)',
+        type: 'text',
+        placeholder: 'Ex: 40'
+      }
+    ]
+  }
+];
+
+// Função helper para criar achados anatômicos
+const createAnatomicalFindings = (defaultSide?: string): Finding[] => [
+  {
+    id: `tortuosidade-arterial${defaultSide ? `-${defaultSide.toLowerCase()}` : ''}`,
+    name: 'Tortuosidade arterial',
+    description: 'Trajeto arterial anômalo',
+    hasDetails: true,
+    extraFields: [
+      ...(defaultSide ? [] : [{
+        id: 'lado',
+        label: 'Lado',
+        type: 'select' as const,
+        options: [...LATERALITY]
+      }]),
+      {
+        id: 'segmento',
+        label: 'Segmento',
+        type: 'select',
+        options: [...CAROTID_SEGMENTS]
+      },
+      {
+        id: 'tipo_tortuosidade',
+        label: 'Tipo',
+        type: 'select',
+        options: [...ANATOMICAL_ALTERATIONS]
+      },
+      {
+        id: 'angulacao',
+        label: 'Angulação (graus)',
+        type: 'text',
+        placeholder: 'Ex: 90'
+      },
+      {
+        id: 'repercussao_hemodinamica',
+        label: 'Repercussão hemodinâmica',
+        type: 'select',
+        options: ['Ausente', 'Leve (VPS <125)', 'Moderada (VPS 125-230)', 'Grave (VPS >230)']
+      }
+    ]
+  },
+  {
+    id: `aneurisma-carotideo${defaultSide ? `-${defaultSide.toLowerCase()}` : ''}`,
+    name: 'Aneurisma',
+    description: 'Dilatação arterial aneurismática',
+    hasDetails: true,
+    hasMeasurement: true,
+    extraFields: [
+      ...(defaultSide ? [] : [{
+        id: 'lado',
+        label: 'Lado',
+        type: 'select' as const,
+        options: [...LATERALITY]
+      }]),
+      {
+        id: 'segmento',
+        label: 'Segmento',
+        type: 'select',
+        options: [...CAROTID_SEGMENTS]
+      },
+      {
+        id: 'diametro_maximo',
+        label: 'Diâmetro máximo (mm)',
+        type: 'text',
+        placeholder: 'Ex: 25'
+      },
+      {
+        id: 'colo',
+        label: 'Colo (mm)',
+        type: 'text',
+        placeholder: 'Ex: 8'
+      },
+      {
+        id: 'trombo_mural',
+        label: 'Trombo mural',
+        type: 'select',
+        options: ['Ausente', 'Presente parcial', 'Presente circunferencial']
+      },
+      {
+        id: 'tipo_aneurisma',
+        label: 'Tipo',
+        type: 'select',
+        options: ['Sacular', 'Fusiforme', 'Pseudoaneurisma']
+      }
+    ]
+  },
+  {
+    id: `hipoplasia-arterial${defaultSide ? `-${defaultSide.toLowerCase()}` : ''}`,
+    name: 'Hipoplasia arterial',
+    description: 'Calibre arterial reduzido',
+    hasDetails: true,
+    extraFields: [
+      ...(defaultSide ? [] : [{
+        id: 'lado',
+        label: 'Lado',
+        type: 'select' as const,
+        options: [...LATERALITY]
+      }]),
+      {
+        id: 'segmento',
+        label: 'Segmento',
+        type: 'select',
+        options: [...CAROTID_SEGMENTS]
+      },
+      {
+        id: 'diametro',
+        label: 'Diâmetro (mm)',
+        type: 'text',
+        placeholder: 'Ex: 3'
+      }
+    ]
+  }
+];
+
+// ============================================================================
 // AGRUPAMENTO PARA SIDEBAR (ACCORDION)
 // ============================================================================
 
 export const carotidOrganGroups = [
-  { id: 'carotida-comum', name: 'Carótida Comum', organIds: ['ccd', 'cce'] },
-  { id: 'bulbo', name: 'Bulbo Carotídeo', organIds: ['bd', 'be'] },
-  { id: 'carotida-interna', name: 'Carótida Interna', organIds: ['cid', 'cie'] },
-  { id: 'carotida-externa', name: 'Carótida Externa', organIds: ['ced', 'cee'] },
-  { id: 'vertebral', name: 'Vertebral', organIds: ['vd', 've'] },
+  { 
+    id: 'carotidas-comuns', 
+    name: 'Carótidas Comuns',
+    organIds: ['ccd', 'cce'] 
+  },
+  { 
+    id: 'bulbos', 
+    name: 'Bulbos Carotídeos',
+    organIds: ['bd', 'be'] 
+  },
+  { 
+    id: 'carotidas-internas', 
+    name: 'Carótidas Internas',
+    organIds: ['cid', 'cie'] 
+  },
+  { 
+    id: 'carotidas-externas', 
+    name: 'Carótidas Externas',
+    organIds: ['ced', 'cee'] 
+  },
+  { 
+    id: 'vertebrais', 
+    name: 'Artérias Vertebrais',
+    organIds: ['vd', 've'] 
+  }
 ];
 
 // ============================================================================
-// DEFINIÇÃO DOS ÓRGÃOS E ACHADOS
+// DEFINIÇÃO DOS ÓRGÃOS E ACHADOS - ESTRUTURA HÍBRIDA
 // ============================================================================
 
 export const carotidOrgans: Organ[] = [
+  // Carótidas Comuns
   {
     id: 'ccd',
     name: 'Artéria Carótida Comum Direita',
@@ -249,112 +754,22 @@ export const carotidOrgans: Organ[] = [
       {
         id: 'placas-ccd',
         name: 'Placas Ateroscleróticas',
-        findings: [
-          {
-            id: 'placa-ccd',
-            name: 'Placa aterosclerótica',
-            description: 'Depósito de colesterol na parede arterial',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'echogenicity',
-                label: 'Ecogenicidade (Gray-Weale)',
-                type: 'select',
-                options: PLAQUE_ECHOGENICITY
-              },
-              {
-                id: 'composition',
-                label: 'Composição',
-                type: 'select',
-                options: PLAQUE_COMPOSITION
-              },
-              {
-                id: 'surface',
-                label: 'Superfície',
-                type: 'select',
-                options: PLAQUE_SURFACE_TYPE
-              },
-              {
-                id: 'extension',
-                label: 'Extensão longitudinal',
-                type: 'text',
-                placeholder: 'Ex: 12 mm'
-              },
-              {
-                id: 'risk',
-                label: 'Estratificação de Risco',
-                type: 'select',
-                options: PLAQUE_RISK
-              }
-            ]
-          },
-          {
-            id: 'espessamento-imi-ccd',
-            name: 'Espessamento médio-intimal',
-            description: 'Espessamento da camada íntima-média (EMI)',
-            hasDetails: true,
-            hasMeasurement: true,  // EMI normal < 1.0mm
-            extraFields: [
-              {
-                id: 'emi_classification',
-                label: 'Classificação EMI',
-                type: 'select',
-                options: EMI_VALUES
-              }
-            ]
-          }
-        ]
+        findings: createPlaqueFindings('direito')
       },
       {
-        id: 'estenose-ccd',
-        name: 'Estenose',
-        findings: [
-          {
-            id: 'estenose-leve-ccd',
-            name: 'Estenose',
-            description: 'Redução luminal da artéria carótida comum',
-            hasDetails: true,
-            hasMeasurement: true,  // Grau de estenose em %
-            hasLocation: true,
-            hasSeverity: true,  // Leve (<50%), moderada (50-69%), acentuada (≥70%)
-            extraFields: [
-              {
-                id: 'stenosis_percent',
-                label: 'Estenose estimada (%)',
-                type: 'text',
-                placeholder: 'Ex: 45%'
-              },
-              {
-                id: 'vps',
-                label: 'VPS (Velocidade Pico Sistólico)',
-                type: 'text',
-                placeholder: 'Ex: 150 cm/s'
-              },
-              {
-                id: 'vdf',
-                label: 'VDF (Velocidade Diastólica Final)',
-                type: 'text',
-                placeholder: 'Ex: 80 cm/s'
-              },
-              {
-                id: 'nascet_grade',
-                label: 'Grau NASCET',
-                type: 'select',
-                options: NASCET_CRITERIA
-              }
-            ]
-          },
-          {
-            id: 'oclusao-ccd',
-            name: 'Oclusão',
-            description: 'Oclusão completa da artéria carótida comum',
-            hasDetails: true,
-            hasLocation: true
-          }
-        ]
+        id: 'hemodinamica-ccd',
+        name: 'Alterações Hemodinâmicas',
+        findings: createHemodynamicFindings('direito', ['Carótida Comum'])
+      },
+      {
+        id: 'parietais-ccd',
+        name: 'Alterações Parietais',
+        findings: createParietalFindings('direito')
+      },
+      {
+        id: 'anatomicas-ccd',
+        name: 'Alterações Anatômicas',
+        findings: createAnatomicalFindings('direito')
       }
     ]
   },
@@ -367,115 +782,27 @@ export const carotidOrgans: Organ[] = [
       {
         id: 'placas-cce',
         name: 'Placas Ateroscleróticas',
-        findings: [
-          {
-            id: 'placa-cce',
-            name: 'Placa aterosclerótica',
-            description: 'Depósito de colesterol na parede arterial',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'echogenicity',
-                label: 'Ecogenicidade (Gray-Weale)',
-                type: 'select',
-                options: PLAQUE_ECHOGENICITY
-              },
-              {
-                id: 'composition',
-                label: 'Composição',
-                type: 'select',
-                options: PLAQUE_COMPOSITION
-              },
-              {
-                id: 'surface',
-                label: 'Superfície',
-                type: 'select',
-                options: PLAQUE_SURFACE_TYPE
-              },
-              {
-                id: 'extension',
-                label: 'Extensão longitudinal',
-                type: 'text',
-                placeholder: 'Ex: 12 mm'
-              },
-              {
-                id: 'risk',
-                label: 'Estratificação de Risco',
-                type: 'select',
-                options: PLAQUE_RISK
-              }
-            ]
-          },
-          {
-            id: 'espessamento-imi-cce',
-            name: 'Espessamento médio-intimal',
-            description: 'Espessamento da camada íntima-média (EMI)',
-            hasDetails: true,
-            hasMeasurement: true,
-            extraFields: [
-              {
-                id: 'emi_classification',
-                label: 'Classificação EMI',
-                type: 'select',
-                options: EMI_VALUES
-              }
-            ]
-          }
-        ]
+        findings: createPlaqueFindings('esquerdo')
       },
       {
-        id: 'estenose-cce',
-        name: 'Estenose',
-        findings: [
-          {
-            id: 'estenose-leve-cce',
-            name: 'Estenose',
-            description: 'Redução luminal da artéria carótida comum',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'stenosis_percent',
-                label: 'Estenose estimada (%)',
-                type: 'text',
-                placeholder: 'Ex: 45%'
-              },
-              {
-                id: 'vps',
-                label: 'VPS (Velocidade Pico Sistólico)',
-                type: 'text',
-                placeholder: 'Ex: 150 cm/s'
-              },
-              {
-                id: 'vdf',
-                label: 'VDF (Velocidade Diastólica Final)',
-                type: 'text',
-                placeholder: 'Ex: 80 cm/s'
-              },
-              {
-                id: 'nascet_grade',
-                label: 'Grau NASCET',
-                type: 'select',
-                options: NASCET_CRITERIA
-              }
-            ]
-          },
-          {
-            id: 'oclusao-cce',
-            name: 'Oclusão',
-            description: 'Oclusão completa da artéria carótida comum',
-            hasDetails: true,
-            hasLocation: true
-          }
-        ]
+        id: 'hemodinamica-cce',
+        name: 'Alterações Hemodinâmicas',
+        findings: createHemodynamicFindings('esquerdo', ['Carótida Comum'])
+      },
+      {
+        id: 'parietais-cce',
+        name: 'Alterações Parietais',
+        findings: createParietalFindings('esquerdo')
+      },
+      {
+        id: 'anatomicas-cce',
+        name: 'Alterações Anatômicas',
+        findings: createAnatomicalFindings('esquerdo')
       }
     ]
   },
+  
+  // Bulbos Carotídeos
   {
     id: 'bd',
     name: 'Bulbo Carotídeo Direito',
@@ -485,87 +812,12 @@ export const carotidOrgans: Organ[] = [
       {
         id: 'placas-bd',
         name: 'Placas Ateroscleróticas',
-        findings: [
-          {
-            id: 'placa-bd',
-            name: 'Placa aterosclerótica',
-            description: 'Depósito de colesterol na parede do bulbo',
-            hasDetails: true,
-            hasMeasurement: true,
-            extraFields: [
-              {
-                id: 'echogenicity',
-                label: 'Ecogenicidade',
-                type: 'select',
-                options: PLAQUE_ECHOGENICITY
-              },
-              {
-                id: 'composition',
-                label: 'Composição',
-                type: 'select',
-                options: PLAQUE_COMPOSITION
-              },
-              {
-                id: 'surface',
-                label: 'Superfície',
-                type: 'select',
-                options: PLAQUE_SURFACE_TYPE
-              },
-              {
-                id: 'extension',
-                label: 'Extensão (mm)',
-                type: 'text',
-                placeholder: 'Ex: 12'
-              }
-            ]
-          }
-        ]
+        findings: createPlaqueFindings('direito')
       },
       {
-        id: 'estenose-bd',
-        name: 'Estenose',
-        findings: [
-          {
-            id: 'estenose-bd',
-            name: 'Estenose',
-            description: 'Redução luminal do bulbo carotídeo',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'symptomatic_status',
-                label: 'Status Sintomático (ESVS 2023)',
-                type: 'select',
-                options: PATIENT_SYMPTOMS
-              },
-              {
-                id: 'stenosis_percent',
-                label: 'Estenose estimada (%)',
-                type: 'text',
-                placeholder: 'Ex: 65%'
-              },
-              {
-                id: 'vps',
-                label: 'VPS (cm/s)',
-                type: 'text',
-                placeholder: 'Ex: 250'
-              },
-              {
-                id: 'vdf',
-                label: 'VDF (cm/s)',
-                type: 'text',
-                placeholder: 'Ex: 120'
-              },
-              {
-                id: 'nascet_grade',
-                label: 'Grau NASCET',
-                type: 'select',
-                options: NASCET_CRITERIA
-              }
-            ]
-          }
-        ]
+        id: 'hemodinamica-bd',
+        name: 'Alterações Hemodinâmicas',
+        findings: createHemodynamicFindings('direito', ['Bulbo Carotídeo'])
       }
     ]
   },
@@ -578,90 +830,17 @@ export const carotidOrgans: Organ[] = [
       {
         id: 'placas-be',
         name: 'Placas Ateroscleróticas',
-        findings: [
-          {
-            id: 'placa-be',
-            name: 'Placa aterosclerótica',
-            description: 'Depósito de colesterol na parede do bulbo',
-            hasDetails: true,
-            hasMeasurement: true,
-            extraFields: [
-              {
-                id: 'echogenicity',
-                label: 'Ecogenicidade',
-                type: 'select',
-                options: PLAQUE_ECHOGENICITY
-              },
-              {
-                id: 'composition',
-                label: 'Composição',
-                type: 'select',
-                options: PLAQUE_COMPOSITION
-              },
-              {
-                id: 'surface',
-                label: 'Superfície',
-                type: 'select',
-                options: PLAQUE_SURFACE_TYPE
-              },
-              {
-                id: 'extension',
-                label: 'Extensão (mm)',
-                type: 'text',
-                placeholder: 'Ex: 12'
-              }
-            ]
-          }
-        ]
+        findings: createPlaqueFindings('esquerdo')
       },
       {
-        id: 'estenose-be',
-        name: 'Estenose',
-        findings: [
-          {
-            id: 'estenose-be',
-            name: 'Estenose',
-            description: 'Redução luminal do bulbo carotídeo',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'symptomatic_status',
-                label: 'Status Sintomático (ESVS 2023)',
-                type: 'select',
-                options: PATIENT_SYMPTOMS
-              },
-              {
-                id: 'stenosis_percent',
-                label: 'Estenose estimada (%)',
-                type: 'text',
-                placeholder: 'Ex: 65%'
-              },
-              {
-                id: 'vps',
-                label: 'VPS (cm/s)',
-                type: 'text',
-                placeholder: 'Ex: 250'
-              },
-              {
-                id: 'vdf',
-                label: 'VDF (cm/s)',
-                type: 'text',
-                placeholder: 'Ex: 120'
-              },
-              {
-                id: 'nascet_grade',
-                label: 'Grau NASCET',
-                type: 'select',
-                options: NASCET_CRITERIA
-              }
-            ]
-          }
-        ]
+        id: 'hemodinamica-be',
+        name: 'Alterações Hemodinâmicas',
+        findings: createHemodynamicFindings('esquerdo', ['Bulbo Carotídeo'])
       }
     ]
   },
+  
+  // Carótidas Internas
   {
     id: 'cid',
     name: 'Artéria Carótida Interna Direita',
@@ -671,185 +850,22 @@ export const carotidOrgans: Organ[] = [
       {
         id: 'placas-cid',
         name: 'Placas Ateroscleróticas',
-        findings: [
-          {
-            id: 'placa-cid',
-            name: 'Placa aterosclerótica',
-            description: 'Depósito de colesterol na parede arterial',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'gsm',
-                label: 'GSM (Gray Scale Median)',
-                type: 'select',
-                options: PLAQUE_GSM.map(p => p.label)
-              },
-              {
-                id: 'echogenicity',
-                label: 'Ecogenicidade (Gray-Weale)',
-                type: 'select',
-                options: PLAQUE_ECHOGENICITY
-              },
-              {
-                id: 'composition',
-                label: 'Composição',
-                type: 'select',
-                options: PLAQUE_COMPOSITION
-              },
-              {
-                id: 'surface',
-                label: 'Superfície',
-                type: 'select',
-                options: PLAQUE_SURFACE_TYPE
-              },
-              {
-                id: 'extension',
-                label: 'Extensão longitudinal',
-                type: 'text',
-                placeholder: 'Ex: 12 mm'
-              },
-              {
-                id: 'vulnerable_features',
-                label: 'Features de Vulnerabilidade',
-                type: 'select',
-                options: ['Nenhuma', ...VULNERABLE_PLAQUE_FEATURES]
-              },
-              {
-                id: 'risk',
-                label: 'Estratificação de Risco',
-                type: 'select',
-                options: PLAQUE_RISK
-              }
-            ]
-          },
-          {
-            id: 'placa-ulcerada-cid',
-            name: 'Placa ulcerada',
-            description: 'Placa aterosclerótica com ulceração',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            extraFields: [
-              {
-                id: 'echogenicity',
-                label: 'Ecogenicidade (Gray-Weale)',
-                type: 'select',
-                options: PLAQUE_ECHOGENICITY
-              },
-              {
-                id: 'composition',
-                label: 'Composição',
-                type: 'select',
-                options: PLAQUE_COMPOSITION
-              },
-              {
-                id: 'extension',
-                label: 'Extensão longitudinal',
-                type: 'text',
-                placeholder: 'Ex: 12 mm'
-              },
-              {
-                id: 'risk',
-                label: 'Estratificação de Risco',
-                type: 'select',
-                options: PLAQUE_RISK
-              }
-            ]
-          }
-        ]
+        findings: createPlaqueFindings('direito')
       },
       {
-        id: 'estenose-cid',
-        name: 'Estenose',
-        findings: [
-          {
-            id: 'estenose-cid',
-            name: 'Estenose',
-            description: 'Redução luminal da artéria carótida interna',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'symptomatic_status',
-                label: 'Status Sintomático (ESVS 2023)',
-                type: 'select',
-                options: PATIENT_SYMPTOMS
-              },
-              {
-                id: 'stenosis_percent',
-                label: 'Estenose estimada (%)',
-                type: 'text',
-                placeholder: 'Ex: 65%'
-              },
-              {
-                id: 'vps',
-                label: 'VPS (cm/s) - IAC: <125 normal, 125-230 moderada, >230 grave',
-                type: 'text',
-                placeholder: 'Ex: 250'
-              },
-              {
-                id: 'vdf',
-                label: 'VDF (cm/s) - IAC: <40 normal, 40-100 moderada, >100 grave',
-                type: 'text',
-                placeholder: 'Ex: 120'
-              },
-              {
-                id: 'ratio_aci_acc',
-                label: 'Razão VPS ACI/ACC - IAC: <2.0 normal, 2.0-4.0 moderada, >4.0 grave',
-                type: 'text',
-                placeholder: 'Ex: 4.2'
-              },
-              {
-                id: 'nascet_grade',
-                label: 'Grau NASCET',
-                type: 'select',
-                options: NASCET_CRITERIA
-              },
-              {
-                id: 'intervention_indication',
-                label: 'Indicação de Intervenção (ESVS 2023)',
-                type: 'select',
-                options: [
-                  'Classe I - CEA/CAS recomendado (sintomático ≥50%)',
-                  'Classe I - CEA recomendado (assintomático + alto risco)',
-                  'Classe IIa - Considerar CEA (assintomático >60%)',
-                  'Classe III - Apenas tratamento clínico (BMT)'
-                ]
-              }
-            ]
-          },
-          {
-            id: 'oclusao-cid',
-            name: 'Oclusão',
-            description: 'Oclusão completa da artéria carótida interna',
-            hasDetails: true,
-            hasLocation: true
-          }
-        ]
+        id: 'hemodinamica-cid',
+        name: 'Alterações Hemodinâmicas',
+        findings: createHemodynamicFindings('direito', ['Carótida Interna'])
       },
       {
-        id: 'outras-cid',
-        name: 'Outras Alterações',
-        findings: [
-          {
-            id: 'disseccao-cid',
-            name: 'Dissecção arterial',
-            description: 'Dissecção da parede arterial',
-            hasDetails: true,
-            hasLocation: true
-          },
-          {
-            id: 'elongacao-cid',
-            name: 'Elongação/tortuosidade',
-            description: 'Trajeto arterial tortuoso ou elongado',
-            hasDetails: true
-          }
-        ]
+        id: 'parietais-cid',
+        name: 'Alterações Parietais',
+        findings: createParietalFindings('direito')
+      },
+      {
+        id: 'anatomicas-cid',
+        name: 'Alterações Anatômicas',
+        findings: createAnatomicalFindings('direito')
       }
     ]
   },
@@ -862,188 +878,27 @@ export const carotidOrgans: Organ[] = [
       {
         id: 'placas-cie',
         name: 'Placas Ateroscleróticas',
-        findings: [
-          {
-            id: 'placa-cie',
-            name: 'Placa aterosclerótica',
-            description: 'Depósito de colesterol na parede arterial',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'gsm',
-                label: 'GSM (Gray Scale Median)',
-                type: 'select',
-                options: PLAQUE_GSM.map(p => p.label)
-              },
-              {
-                id: 'echogenicity',
-                label: 'Ecogenicidade (Gray-Weale)',
-                type: 'select',
-                options: PLAQUE_ECHOGENICITY
-              },
-              {
-                id: 'composition',
-                label: 'Composição',
-                type: 'select',
-                options: PLAQUE_COMPOSITION
-              },
-              {
-                id: 'surface',
-                label: 'Superfície',
-                type: 'select',
-                options: PLAQUE_SURFACE_TYPE
-              },
-              {
-                id: 'extension',
-                label: 'Extensão longitudinal',
-                type: 'text',
-                placeholder: 'Ex: 12 mm'
-              },
-              {
-                id: 'vulnerable_features',
-                label: 'Features de Vulnerabilidade',
-                type: 'select',
-                options: ['Nenhuma', ...VULNERABLE_PLAQUE_FEATURES]
-              },
-              {
-                id: 'risk',
-                label: 'Estratificação de Risco',
-                type: 'select',
-                options: PLAQUE_RISK
-              }
-            ]
-          },
-          {
-            id: 'placa-ulcerada-cie',
-            name: 'Placa ulcerada',
-            description: 'Placa aterosclerótica com ulceração',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            extraFields: [
-              {
-                id: 'echogenicity',
-                label: 'Ecogenicidade (Gray-Weale)',
-                type: 'select',
-                options: PLAQUE_ECHOGENICITY
-              },
-              {
-                id: 'composition',
-                label: 'Composição',
-                type: 'select',
-                options: PLAQUE_COMPOSITION
-              },
-              {
-                id: 'extension',
-                label: 'Extensão longitudinal',
-                type: 'text',
-                placeholder: 'Ex: 12 mm'
-              },
-              {
-                id: 'risk',
-                label: 'Estratificação de Risco',
-                type: 'select',
-                options: PLAQUE_RISK
-              }
-            ]
-          }
-        ]
+        findings: createPlaqueFindings('esquerdo')
       },
       {
-        id: 'estenose-cie',
-        name: 'Estenose',
-        findings: [
-          {
-            id: 'estenose-cie',
-            name: 'Estenose',
-            description: 'Redução luminal da artéria carótida interna',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'symptomatic_status',
-                label: 'Status Sintomático (ESVS 2023)',
-                type: 'select',
-                options: PATIENT_SYMPTOMS
-              },
-              {
-                id: 'stenosis_percent',
-                label: 'Estenose estimada (%)',
-                type: 'text',
-                placeholder: 'Ex: 65%'
-              },
-              {
-                id: 'vps',
-                label: 'VPS (cm/s) - IAC: <125 normal, 125-230 moderada, >230 grave',
-                type: 'text',
-                placeholder: 'Ex: 250'
-              },
-              {
-                id: 'vdf',
-                label: 'VDF (cm/s) - IAC: <40 normal, 40-100 moderada, >100 grave',
-                type: 'text',
-                placeholder: 'Ex: 120'
-              },
-              {
-                id: 'ratio_aci_acc',
-                label: 'Razão VPS ACI/ACC - IAC: <2.0 normal, 2.0-4.0 moderada, >4.0 grave',
-                type: 'text',
-                placeholder: 'Ex: 4.2'
-              },
-              {
-                id: 'nascet_grade',
-                label: 'Grau NASCET',
-                type: 'select',
-                options: NASCET_CRITERIA
-              },
-              {
-                id: 'intervention_indication',
-                label: 'Indicação de Intervenção (ESVS 2023)',
-                type: 'select',
-                options: [
-                  'Classe I - CEA/CAS recomendado (sintomático ≥50%)',
-                  'Classe I - CEA recomendado (assintomático + alto risco)',
-                  'Classe IIa - Considerar CEA (assintomático >60%)',
-                  'Classe III - Apenas tratamento clínico (BMT)'
-                ]
-              }
-            ]
-          },
-          {
-            id: 'oclusao-cie',
-            name: 'Oclusão',
-            description: 'Oclusão completa da artéria carótida interna',
-            hasDetails: true,
-            hasLocation: true
-          }
-        ]
+        id: 'hemodinamica-cie',
+        name: 'Alterações Hemodinâmicas',
+        findings: createHemodynamicFindings('esquerdo', ['Carótida Interna'])
       },
       {
-        id: 'outras-cie',
-        name: 'Outras Alterações',
-        findings: [
-          {
-            id: 'disseccao-cie',
-            name: 'Dissecção arterial',
-            description: 'Dissecção da parede arterial',
-            hasDetails: true,
-            hasLocation: true
-          },
-          {
-            id: 'elongacao-cie',
-            name: 'Elongação/tortuosidade',
-            description: 'Trajeto arterial tortuoso ou elongado',
-            hasDetails: true
-          }
-        ]
+        id: 'parietais-cie',
+        name: 'Alterações Parietais',
+        findings: createParietalFindings('esquerdo')
+      },
+      {
+        id: 'anatomicas-cie',
+        name: 'Alterações Anatômicas',
+        findings: createAnatomicalFindings('esquerdo')
       }
     ]
   },
+  
+  // Carótidas Externas
   {
     id: 'ced',
     name: 'Artéria Carótida Externa Direita',
@@ -1053,91 +908,12 @@ export const carotidOrgans: Organ[] = [
       {
         id: 'placas-ced',
         name: 'Placas Ateroscleróticas',
-        findings: [
-          {
-            id: 'placa-ced',
-            name: 'Placa aterosclerótica',
-            description: 'Depósito de colesterol na parede arterial',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'echogenicity',
-                label: 'Ecogenicidade (Gray-Weale)',
-                type: 'select',
-                options: PLAQUE_ECHOGENICITY
-              },
-              {
-                id: 'composition',
-                label: 'Composição',
-                type: 'select',
-                options: PLAQUE_COMPOSITION
-              },
-              {
-                id: 'surface',
-                label: 'Superfície',
-                type: 'select',
-                options: PLAQUE_SURFACE_TYPE
-              },
-              {
-                id: 'extension',
-                label: 'Extensão longitudinal',
-                type: 'text',
-                placeholder: 'Ex: 12 mm'
-              },
-              {
-                id: 'risk',
-                label: 'Estratificação de Risco',
-                type: 'select',
-                options: PLAQUE_RISK
-              }
-            ]
-          }
-        ]
+        findings: createPlaqueFindings('direito')
       },
       {
-        id: 'estenose-ced',
-        name: 'Estenose',
-        findings: [
-          {
-            id: 'estenose-ced',
-            name: 'Estenose',
-            description: 'Redução luminal da artéria carótida externa',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'stenosis_percent',
-                label: 'Estenose estimada (%)',
-                type: 'text',
-                placeholder: 'Ex: 45%'
-              },
-              {
-                id: 'vps',
-                label: 'VPS (Velocidade Pico Sistólico)',
-                type: 'text',
-                placeholder: 'Ex: 150 cm/s'
-              },
-              {
-                id: 'vdf',
-                label: 'VDF (Velocidade Diastólica Final)',
-                type: 'text',
-                placeholder: 'Ex: 80 cm/s'
-              }
-            ]
-          },
-          {
-            id: 'oclusao-ced',
-            name: 'Oclusão',
-            description: 'Oclusão completa da artéria carótida externa',
-            hasDetails: true,
-            hasLocation: true
-          }
-        ]
+        id: 'hemodinamica-ced',
+        name: 'Alterações Hemodinâmicas',
+        findings: createHemodynamicFindings('direito', ['Carótida Externa'])
       }
     ]
   },
@@ -1150,94 +926,17 @@ export const carotidOrgans: Organ[] = [
       {
         id: 'placas-cee',
         name: 'Placas Ateroscleróticas',
-        findings: [
-          {
-            id: 'placa-cee',
-            name: 'Placa aterosclerótica',
-            description: 'Depósito de colesterol na parede arterial',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'echogenicity',
-                label: 'Ecogenicidade (Gray-Weale)',
-                type: 'select',
-                options: PLAQUE_ECHOGENICITY
-              },
-              {
-                id: 'composition',
-                label: 'Composição',
-                type: 'select',
-                options: PLAQUE_COMPOSITION
-              },
-              {
-                id: 'surface',
-                label: 'Superfície',
-                type: 'select',
-                options: PLAQUE_SURFACE_TYPE
-              },
-              {
-                id: 'extension',
-                label: 'Extensão longitudinal',
-                type: 'text',
-                placeholder: 'Ex: 12 mm'
-              },
-              {
-                id: 'risk',
-                label: 'Estratificação de Risco',
-                type: 'select',
-                options: PLAQUE_RISK
-              }
-            ]
-          }
-        ]
+        findings: createPlaqueFindings('esquerdo')
       },
       {
-        id: 'estenose-cee',
-        name: 'Estenose',
-        findings: [
-          {
-            id: 'estenose-cee',
-            name: 'Estenose',
-            description: 'Redução luminal da artéria carótida externa',
-            hasDetails: true,
-            hasMeasurement: true,
-            hasLocation: true,
-            hasSeverity: true,
-            extraFields: [
-              {
-                id: 'stenosis_percent',
-                label: 'Estenose estimada (%)',
-                type: 'text',
-                placeholder: 'Ex: 45%'
-              },
-              {
-                id: 'vps',
-                label: 'VPS (Velocidade Pico Sistólico)',
-                type: 'text',
-                placeholder: 'Ex: 150 cm/s'
-              },
-              {
-                id: 'vdf',
-                label: 'VDF (Velocidade Diastólica Final)',
-                type: 'text',
-                placeholder: 'Ex: 80 cm/s'
-              }
-            ]
-          },
-          {
-            id: 'oclusao-cee',
-            name: 'Oclusão',
-            description: 'Oclusão completa da artéria carótida externa',
-            hasDetails: true,
-            hasLocation: true
-          }
-        ]
+        id: 'hemodinamica-cee',
+        name: 'Alterações Hemodinâmicas',
+        findings: createHemodynamicFindings('esquerdo', ['Carótida Externa'])
       }
     ]
   },
+  
+  // Vertebrais
   {
     id: 'vd',
     name: 'Artéria Vertebral Direita',
@@ -1249,33 +948,55 @@ export const carotidOrgans: Organ[] = [
         name: 'Alterações de Fluxo',
         findings: [
           {
-            id: 'estenose-vd',
+            id: 'estenose-vertebral-d',
             name: 'Estenose',
             description: 'Redução luminal da artéria vertebral',
             hasDetails: true,
-            hasMeasurement: true,  // VPS aumentada (>100 cm/s)
-            hasSeverity: true,
+            hasMeasurement: true,
             extraFields: [
               {
+                id: 'segmento_vertebral',
+                label: 'Segmento',
+                type: 'select',
+                options: ['V0 (origem)', 'V1 (pré-foraminal)', 'V2 (foraminal)', 'V3 (atlanto-axial)', 'V4 (intracraniano)']
+              },
+              {
                 id: 'vps',
-                label: 'VPS (Velocidade Pico Sistólico)',
+                label: 'VPS (cm/s)',
+                type: 'text',
+                placeholder: 'Ex: 120'
+              },
+              {
+                id: 'vps_classification',
+                label: 'Classificação VPS',
                 type: 'select',
                 options: VERTEBRAL_VELOCITY
               },
               {
                 id: 'ir',
-                label: 'Índice de Resistividade (IR)',
+                label: 'Índice de Resistividade',
+                type: 'text',
+                placeholder: 'Ex: 0.65'
+              },
+              {
+                id: 'ir_classification',
+                label: 'Classificação IR',
                 type: 'select',
                 options: VERTEBRAL_IR
+              },
+              {
+                id: 'stenosis_percent',
+                label: 'Estenose estimada (%)',
+                type: 'text',
+                placeholder: 'Ex: 60'
               }
             ]
           },
           {
-            id: 'fluxo-reverso-vd',
-            name: 'Fluxo reverso (roubo da subclávia)',
-            description: 'Inversão do fluxo sanguíneo',
+            id: 'sindrome-roubo-subclavia-d',
+            name: 'Síndrome do roubo da subclávia',
+            description: 'Inversão do fluxo vertebral',
             hasDetails: true,
-            hasMeasurement: true,  // VPS e VDF
             extraFields: [
               {
                 id: 'flow_pattern',
@@ -1285,24 +1006,43 @@ export const carotidOrgans: Organ[] = [
               },
               {
                 id: 'subclavian_steal',
-                label: 'Roubo da Subclávia',
+                label: 'Tipo de Roubo',
                 type: 'select',
                 options: SUBCLAVIAN_STEAL
               },
               {
                 id: 'vps',
-                label: 'VPS (Velocidade Pico Sistólico)',
+                label: 'VPS (cm/s)',
                 type: 'text',
-                placeholder: 'Ex: -40 cm/s (negativo = reverso)'
+                placeholder: 'Ex: -40 (negativo = reverso)'
+              },
+              {
+                id: 'manobra_hiperemia',
+                label: 'Manobra de hiperemia reativa',
+                type: 'select',
+                options: ['Não realizada', 'Acentua reversão', 'Sem mudança', 'Normaliza fluxo']
               }
             ]
           },
           {
-            id: 'oclusao-vd',
+            id: 'oclusao-vertebral-d',
             name: 'Oclusão',
             description: 'Oclusão completa da artéria vertebral',
             hasDetails: true,
-            hasLocation: true
+            extraFields: [
+              {
+                id: 'segmento_vertebral',
+                label: 'Segmento',
+                type: 'select',
+                options: ['V0 (origem)', 'V1 (pré-foraminal)', 'V2 (foraminal)', 'V3 (atlanto-axial)', 'V4 (intracraniano)']
+              },
+              {
+                id: 'colaterais_vertebral',
+                label: 'Circulação colateral',
+                type: 'select',
+                options: ['Via vertebral contralateral', 'Via basilar', 'Via carótidas', 'Não identificada']
+              }
+            ]
           }
         ]
       },
@@ -1311,25 +1051,59 @@ export const carotidOrgans: Organ[] = [
         name: 'Variações Anatômicas',
         findings: [
           {
-            id: 'hipoplasia-vd',
+            id: 'hipoplasia-vertebral-d',
             name: 'Hipoplasia',
             description: 'Calibre reduzido da artéria vertebral (<2mm)',
             hasDetails: true,
-            hasMeasurement: true,  // Diâmetro em mm
+            hasMeasurement: true,
             extraFields: [
               {
                 id: 'diameter',
                 label: 'Diâmetro (mm)',
                 type: 'text',
-                placeholder: 'Ex: 1.5 mm'
+                placeholder: 'Ex: 1.5'
+              },
+              {
+                id: 'fluxo_compensatorio',
+                label: 'Fluxo compensatório contralateral',
+                type: 'select',
+                options: ['Presente', 'Ausente']
               }
             ]
           },
           {
-            id: 'aplasia-vd',
+            id: 'aplasia-vertebral-d',
             name: 'Aplasia',
             description: 'Ausência congênita da artéria vertebral',
-            hasDetails: true
+            hasDetails: true,
+            extraFields: [
+              {
+                id: 'vertebral_dominante',
+                label: 'Vertebral contralateral',
+                type: 'select',
+                options: ['Dominante compensatória', 'Calibre normal', 'Hipoplásica']
+              }
+            ]
+          },
+          {
+            id: 'dominancia-vertebral-d',
+            name: 'Dominância vertebral',
+            description: 'Assimetria significativa de calibre',
+            hasDetails: true,
+            extraFields: [
+              {
+                id: 'diameter_dominante',
+                label: 'Diâmetro dominante (mm)',
+                type: 'text',
+                placeholder: 'Ex: 4.5'
+              },
+              {
+                id: 'diameter_nao_dominante',
+                label: 'Diâmetro contralateral (mm)',
+                type: 'text',
+                placeholder: 'Ex: 2.0'
+              }
+            ]
           }
         ]
       }
@@ -1346,33 +1120,55 @@ export const carotidOrgans: Organ[] = [
         name: 'Alterações de Fluxo',
         findings: [
           {
-            id: 'estenose-ve',
+            id: 'estenose-vertebral-e',
             name: 'Estenose',
             description: 'Redução luminal da artéria vertebral',
             hasDetails: true,
             hasMeasurement: true,
-            hasSeverity: true,
             extraFields: [
               {
+                id: 'segmento_vertebral',
+                label: 'Segmento',
+                type: 'select',
+                options: ['V0 (origem)', 'V1 (pré-foraminal)', 'V2 (foraminal)', 'V3 (atlanto-axial)', 'V4 (intracraniano)']
+              },
+              {
                 id: 'vps',
-                label: 'VPS (Velocidade Pico Sistólico)',
+                label: 'VPS (cm/s)',
+                type: 'text',
+                placeholder: 'Ex: 120'
+              },
+              {
+                id: 'vps_classification',
+                label: 'Classificação VPS',
                 type: 'select',
                 options: VERTEBRAL_VELOCITY
               },
               {
                 id: 'ir',
-                label: 'Índice de Resistividade (IR)',
+                label: 'Índice de Resistividade',
+                type: 'text',
+                placeholder: 'Ex: 0.65'
+              },
+              {
+                id: 'ir_classification',
+                label: 'Classificação IR',
                 type: 'select',
                 options: VERTEBRAL_IR
+              },
+              {
+                id: 'stenosis_percent',
+                label: 'Estenose estimada (%)',
+                type: 'text',
+                placeholder: 'Ex: 60'
               }
             ]
           },
           {
-            id: 'fluxo-reverso-ve',
-            name: 'Fluxo reverso (roubo da subclávia)',
-            description: 'Inversão do fluxo sanguíneo',
+            id: 'sindrome-roubo-subclavia-e',
+            name: 'Síndrome do roubo da subclávia',
+            description: 'Inversão do fluxo vertebral',
             hasDetails: true,
-            hasMeasurement: true,
             extraFields: [
               {
                 id: 'flow_pattern',
@@ -1382,24 +1178,43 @@ export const carotidOrgans: Organ[] = [
               },
               {
                 id: 'subclavian_steal',
-                label: 'Roubo da Subclávia',
+                label: 'Tipo de Roubo',
                 type: 'select',
                 options: SUBCLAVIAN_STEAL
               },
               {
                 id: 'vps',
-                label: 'VPS (Velocidade Pico Sistólico)',
+                label: 'VPS (cm/s)',
                 type: 'text',
-                placeholder: 'Ex: -40 cm/s (negativo = reverso)'
+                placeholder: 'Ex: -40 (negativo = reverso)'
+              },
+              {
+                id: 'manobra_hiperemia',
+                label: 'Manobra de hiperemia reativa',
+                type: 'select',
+                options: ['Não realizada', 'Acentua reversão', 'Sem mudança', 'Normaliza fluxo']
               }
             ]
           },
           {
-            id: 'oclusao-ve',
+            id: 'oclusao-vertebral-e',
             name: 'Oclusão',
             description: 'Oclusão completa da artéria vertebral',
             hasDetails: true,
-            hasLocation: true
+            extraFields: [
+              {
+                id: 'segmento_vertebral',
+                label: 'Segmento',
+                type: 'select',
+                options: ['V0 (origem)', 'V1 (pré-foraminal)', 'V2 (foraminal)', 'V3 (atlanto-axial)', 'V4 (intracraniano)']
+              },
+              {
+                id: 'colaterais_vertebral',
+                label: 'Circulação colateral',
+                type: 'select',
+                options: ['Via vertebral contralateral', 'Via basilar', 'Via carótidas', 'Não identificada']
+              }
+            ]
           }
         ]
       },
@@ -1408,7 +1223,7 @@ export const carotidOrgans: Organ[] = [
         name: 'Variações Anatômicas',
         findings: [
           {
-            id: 'hipoplasia-ve',
+            id: 'hipoplasia-vertebral-e',
             name: 'Hipoplasia',
             description: 'Calibre reduzido da artéria vertebral (<2mm)',
             hasDetails: true,
@@ -1418,20 +1233,56 @@ export const carotidOrgans: Organ[] = [
                 id: 'diameter',
                 label: 'Diâmetro (mm)',
                 type: 'text',
-                placeholder: 'Ex: 1.5 mm'
+                placeholder: 'Ex: 1.5'
+              },
+              {
+                id: 'fluxo_compensatorio',
+                label: 'Fluxo compensatório contralateral',
+                type: 'select',
+                options: ['Presente', 'Ausente']
               }
             ]
           },
           {
-            id: 'aplasia-ve',
+            id: 'aplasia-vertebral-e',
             name: 'Aplasia',
             description: 'Ausência congênita da artéria vertebral',
-            hasDetails: true
+            hasDetails: true,
+            extraFields: [
+              {
+                id: 'vertebral_dominante',
+                label: 'Vertebral contralateral',
+                type: 'select',
+                options: ['Dominante compensatória', 'Calibre normal', 'Hipoplásica']
+              }
+            ]
+          },
+          {
+            id: 'dominancia-vertebral-e',
+            name: 'Dominância vertebral',
+            description: 'Assimetria significativa de calibre',
+            hasDetails: true,
+            extraFields: [
+              {
+                id: 'diameter_dominante',
+                label: 'Diâmetro dominante (mm)',
+                type: 'text',
+                placeholder: 'Ex: 4.5'
+              },
+              {
+                id: 'diameter_nao_dominante',
+                label: 'Diâmetro contralateral (mm)',
+                type: 'text',
+                placeholder: 'Ex: 2.0'
+              }
+            ]
           }
         ]
       }
     ]
   },
+  
+  // Observações
   {
     id: 'observacoes-carotidas',
     name: 'Observações',
@@ -1448,7 +1299,6 @@ export const carotidOrgans: Organ[] = [
             name: 'Observação Adicional',
             description: 'Informações complementares ao exame',
             hasDetails: true,
-            hasMeasurement: true,
             extraFields: [
               { id: 'texto', label: 'Observações', type: 'textarea', placeholder: 'Digite observações adicionais...' }
             ]
@@ -1526,32 +1376,56 @@ export interface StenosisAnalysis {
 
 type StenosisLevel = 'normal' | 'mild' | 'moderate' | 'severe' | 'critical' | 'near_occlusion' | 'occlusion';
 
-const getStenosisLevelFromVPS = (vps: number): StenosisLevel => {
-  if (vps === 0) return 'occlusion';
-  if (vps < 50) return 'near_occlusion';
-  if (vps < 125) return 'mild';
-  if (vps <= 230) return 'moderate';
-  if (vps <= 280) return 'severe';
-  return 'critical';
+const getStenosisLevelFromVPS = (vps: string | number): StenosisLevel => {
+  const str = String(vps).toLowerCase();
+  if (str === '0' || str.includes('oclus')) return 'occlusion';
+  if (str.includes('<125') || str.includes('normal')) return 'normal';
+  if (str.includes('125-230') || str.includes('125 a 230') || str.includes('moderada')) return 'moderate';
+  if (str.includes('>300') || str.includes('crítica') || str.includes('critica')) return 'critical';
+  if (str.includes('>230') || str.includes('severa') || str.includes('grave')) return 'severe';
+  const num = parseFloat(str.replace(/[^\d.]/g, ''));
+  if (!isNaN(num)) {
+    if (num < 125) return 'normal';
+    if (num <= 230) return 'moderate';
+    if (num <= 300) return 'severe';
+    return 'critical';
+  }
+  return 'normal';
 };
 
-const getStenosisLevelFromVDF = (vdf: number): StenosisLevel => {
-  if (vdf === 0) return 'occlusion';
-  if (vdf < 40) return 'mild';
-  if (vdf <= 100) return 'moderate';
-  return 'severe';
+const getStenosisLevelFromVDF = (vdf: string | number): StenosisLevel => {
+  const str = String(vdf).toLowerCase();
+  if (str === '0' || str.includes('oclus')) return 'occlusion';
+  if (str.includes('<40') || str.includes('normal')) return 'normal';
+  if (str.includes('40-100') || str.includes('40 a 100') || str.includes('moderada')) return 'moderate';
+  if (str.includes('>100') || str.includes('severa') || str.includes('grave')) return 'severe';
+  const num = parseFloat(str.replace(/[^\d.]/g, ''));
+  if (!isNaN(num)) {
+    if (num < 40) return 'normal';
+    if (num <= 100) return 'moderate';
+    return 'severe';
+  }
+  return 'normal';
 };
 
-const getStenosisLevelFromRatio = (ratio: number): StenosisLevel => {
-  if (ratio < 2.0) return 'mild';
-  if (ratio <= 4.0) return 'moderate';
-  return 'severe';
+const getStenosisLevelFromRatio = (ratio: string | number): StenosisLevel => {
+  const str = String(ratio).toLowerCase();
+  if (str.includes('<2') || str.includes('normal')) return 'normal';
+  if (str.includes('2.0-4') || str.includes('2-4') || str.includes('2 a 4') || str.includes('moderada')) return 'moderate';
+  if (str.includes('>4') || str.includes('severa') || str.includes('grave')) return 'severe';
+  const num = parseFloat(str.replace(/[^\d.]/g, ''));
+  if (!isNaN(num)) {
+    if (num < 2.0) return 'normal';
+    if (num <= 4.0) return 'moderate';
+    return 'severe';
+  }
+  return 'normal';
 };
 
 const getStenosisLevelFromBroadening = (broadening: string): StenosisLevel | null => {
   const lower = broadening.toLowerCase();
-  if (lower.includes('ausente')) return 'mild';
-  if (lower.includes('leve')) return 'mild';
+  if (lower.includes('ausente')) return 'normal';
+  if (lower.includes('leve')) return 'normal';
   if (lower.includes('moderado')) return 'moderate';
   if (lower.includes('acentuado')) return 'severe';
   return null;
@@ -1590,31 +1464,21 @@ export const calculateStenosisGrade = (params: {
   const criteriaUsed: string[] = [];
   const levels: StenosisLevel[] = [];
 
-  const parseNumeric = (val?: number | string): number | undefined => {
-    if (val === undefined || val === null || val === '') return undefined;
-    if (typeof val === 'number') return val;
-    const match = val.match(/[\d.]+/);
-    return match ? parseFloat(match[0]) : undefined;
-  };
+  const { vps, vdf, ratio, spectralBroadening, symptomatic = false, plaqueGSM, vulnerableFeatures = [] } = params;
 
-  const vps = parseNumeric(params.vps);
-  const vdf = parseNumeric(params.vdf);
-  const ratio = parseNumeric(params.ratio);
-  const { spectralBroadening, symptomatic = false, plaqueGSM, vulnerableFeatures = [] } = params;
-
-  if (vps !== undefined) {
+  if (vps !== undefined && vps !== null && vps !== '') {
     const level = getStenosisLevelFromVPS(vps);
     levels.push(level);
-    criteriaUsed.push(`VPS ${vps} cm/s → ${LEVEL_TO_NASCET[level].nascet}`);
+    criteriaUsed.push(`VPS ${vps} → ${LEVEL_TO_NASCET[level].nascet}`);
   }
 
-  if (vdf !== undefined) {
+  if (vdf !== undefined && vdf !== null && vdf !== '') {
     const level = getStenosisLevelFromVDF(vdf);
     levels.push(level);
-    criteriaUsed.push(`VDF ${vdf} cm/s → ${LEVEL_TO_NASCET[level].nascet}`);
+    criteriaUsed.push(`VDF ${vdf} → ${LEVEL_TO_NASCET[level].nascet}`);
   }
 
-  if (ratio !== undefined) {
+  if (ratio !== undefined && ratio !== null && ratio !== '') {
     const level = getStenosisLevelFromRatio(ratio);
     levels.push(level);
     criteriaUsed.push(`Ratio ${ratio} → ${LEVEL_TO_NASCET[level].nascet}`);

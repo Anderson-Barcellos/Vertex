@@ -80,15 +80,22 @@ src/
 
 ---
 
-## Sessao 2026-01-15 - Resumo
+## Sessao 2026-01-20 - Ultima Atualizacao
 
 ### Concluido
+- **Reestruturacao completa das Carotidas**: 
+  - Estrutura hibrida com helper functions (createPlaqueFindings, createHemodynamicFindings, etc)
+  - Manteve 10 vasos individuais mas com codigo reutilizavel
+  - Adicionou novos achados: dissecao, aneurisma, tortuosidade (kinking/coiling)
+  - Reducao de 1745 para 1594 linhas com mais funcionalidades
+- **Correcao da duplicacao da EMI**:
+  - Adicionados todos campos EMI em REDUNDANT_FIELDS (emi_value, emi_classification, emiClassification)
+  - Problema resolvia no promptBuilder.ts
+- **Limpeza de arquivos mortos**: 6 arquivos removidos
 - Novo modulo: **Ombro** (manguito rotador completo)
   - 7 estruturas: Biceps, Supraespinhal, Infraespinhal, Subescapular, Bursa, Art. AC, Derrame
   - 20+ achados com campos detalhados (face da rotura, extensao %, gap, atrofia)
 - Sub-modalidades do Abdome (Total, Superior, Vias Urinarias, Prostata)
-- Multiplas instancias para Cistos Renais e Massa Renal
-- Campo dimensao em Colelitiase
 - LandingPage: card "Abdome" (hub) + card "Ombro" (cyan)
 
 ### Sessao 2026-01-13
@@ -118,9 +125,8 @@ GRAY_WEALE_DESCRIPTIONS = {
 
 ### Fase 1: Migracao de Dados (Em andamento)
 - [x] Abdome Total - 100% commonFields + sub-modalidades
-- [x] Carotidas - Bulbos criados, Gray-Weale automatico
+- [x] Carotidas - Estrutura hibrida com helper functions + Gray-Weale automatico
 - [x] Ombro - Modulo completo com manguito rotador
-- [ ] Carotidas - Simplificar placas em ACC/ACI/ACE (mesmo padrao dos bulbos)
 - [ ] Tireoide - Migrar constantes para commonFields
 - [ ] Mama - Migrar constantes para commonFields
 - [ ] Arterial MMII - Migrar constantes
@@ -128,7 +134,13 @@ GRAY_WEALE_DESCRIPTIONS = {
 - [ ] Vasos Abdominais - Migrar constantes
 - [ ] Parede Abdominal - Migrar constantes
 
-### Fase 2: Calculadoras Automaticas
+### Fase 2: Proximas Prioridades (Q1 2026)
+- [ ] Reativar exames desabilitados (Tireoide, Mama, Arterial, Venoso)
+- [ ] Migrar constantes restantes para commonFields
+- [ ] Testes unitarios para helper functions
+- [ ] Documentacao API interna
+
+### Fase 3: Calculadoras Automaticas
 - [x] NASCET/ESVS Calculator (Carotidas)
 - [x] Gray-Weale automatico (Carotidas)
 - [x] TI-RADS Calculator (Tireoide)
@@ -136,27 +148,43 @@ GRAY_WEALE_DESCRIPTIONS = {
 - [ ] CEAP/VCSS Calculator (Venoso)
 - [ ] WIfI/Fontaine Calculator (Arterial)
 - [ ] Bosniak Calculator (Abdome - cistos renais)
+- [ ] Manguito Rotador Score (Ombro)
 
-### Fase 3: UX/Interface
+### Fase 4: UX/Interface (Q2 2026)
 - [ ] Sidebar com agrupamento bilateral em todos os exames
 - [ ] FindingDetails especifico para cada modalidade
 - [ ] Preview do laudo em tempo real
 - [ ] Atalhos de teclado para adicionar achados
+- [ ] Dark mode
+- [ ] Mobile responsive
 
-### Fase 4: Integracao e Export
+### Fase 5: Integracao e Export (Q2-Q3 2026)
 - [ ] Exportacao PDF com formatacao customizada
 - [ ] Integracao com PACS/RIS
 - [ ] Templates de laudo por patologia
 - [ ] Historico de laudos por paciente
+- [ ] API REST para integracao externa
 
-### Fase 5: IA Avancada
+### Fase 6: IA Avancada (Q3-Q4 2026)
 - [ ] Sugestao automatica de achados baseado em contexto
 - [ ] Correlacao clinico-radiologica
 - [ ] Frases padronizadas por instituicao
+- [ ] Analise de imagens com Vision AI
 
 ---
 
 ## Padroes de Codigo
+
+### Helper Functions para Evitar Duplicacao (Novo!)
+```typescript
+// Criar funcoes reutilizaveis ao inves de duplicar codigo
+const createPlaqueFindings = (defaultSide?: string): Finding[] => [...]
+const createHemodynamicFindings = (defaultSide?: string, segmentOptions?: string[]): Finding[] => [...]
+
+// Uso em multiplos orgaos
+findings: createPlaqueFindings('direito')
+findings: createPlaqueFindings('esquerdo')
+```
 
 ### Template de Exame (6 linhas)
 ```typescript
@@ -181,11 +209,18 @@ options: PLAQUE_COMPOSITION
 ### Campos Redundantes (promptBuilder.ts)
 ```typescript
 const REDUNDANT_FIELDS = new Set([
-  'emiValue',      // usa 'emi'
+  'measurement',   // remove quando ha campos especificos
+  'emi',           // mantem apenas 'emi_value'
+  'emiValue',      // evita duplicacao
+  'emi_classification', // campo ja processado  
+  'emiClassification',  // evita duplicacao
   'nascet',        // usa 'nascetGrade'
   'ratio',         // usa 'ratioICA_CCA'
   'plaqueEchogenicity',  // usa 'echogenicity'
-  // ...
+  'plaqueComposition', // evita duplicacao
+  'plaqueSurface',     // evita duplicacao
+  'vertebralFlowPattern', // evita duplicacao
+  'flowPattern',    // evita duplicacao
 ]);
 ```
 
@@ -194,13 +229,43 @@ const REDUNDANT_FIELDS = new Set([
 ## Troubleshooting
 
 | Problema | Solucao |
-|----------|---------|
+|----------|---------|  
 | Painel fecha ao selecionar dropdown | `useDropdownGuard` |
 | Observacoes com checkbox "Normal" | `hideNormalOption: true` |
 | Nao adiciona multiplas lesoes | Precisa campo `lado` como primeiro extraField |
-| EMI duplicando no laudo | Verificar REDUNDANT_FIELDS |
+| EMI duplicando no laudo | Adicionar todos campos EMI em REDUNDANT_FIELDS |
 | organsCatalog.find is not a function | Exportar como array `Organ[]`, nao objeto |
 | Gray-Weale nao aparece | Verificar getGrayWealeType() |
+
+---
+
+## Guidelines de Programacao
+
+### 1. Organizacao de Arquivos
+- **pages/exams/modules/**: Apenas templates minimos (6 linhas)
+- **pages/exams/shared/**: Logica compartilhada (BaseExamPage)
+- **data/*Organs.ts**: Dados especificos de cada exame
+- **data/shared/commonFields.ts**: Constantes reutilizaveis
+
+### 2. Principio DRY (Don't Repeat Yourself)
+- Use helper functions para achados repetitivos
+- Importe constantes de commonFields.ts
+- Evite duplicacao de strings/opcoes
+
+### 3. Performance
+- Lazy loading para modulos de exame
+- useCallback/useMemo onde apropriado
+- Evite re-renders desnecessarios
+
+### 4. Nomenclatura
+- IDs unicos com padrao: `${nome-achado}-${lado}`
+- Helper functions: `create[Tipo]Findings`
+- Constantes: UPPERCASE_SNAKE_CASE
+
+### 5. Estado e Props
+- tempDetails para estado temporario de findings
+- onTempDetailsChange para sincronizar com parent
+- Manter estado local quando nao ha callback
 
 ---
 
