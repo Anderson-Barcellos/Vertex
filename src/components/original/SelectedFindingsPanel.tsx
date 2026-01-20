@@ -238,10 +238,13 @@ export default function SelectedFindingsPanel({
                               const summaryFields: Record<string, string> = {
                                 lado: 'Lado',
                                 nascetGrade: 'NASCET',
-                                nascet: 'NASCET',
                                 emi_value: 'EMI',
                                 size: 'Tamanho',
+                                extensao: 'Extensão',
                                 location: 'Localização',
+                                grayWeale: 'Gray-Weale',
+                                plaqueSurface: 'Superfície',
+                                plaqueRisk: 'Risco',
                                 texto: 'Obs'
                               };
                               const skipFields = new Set([
@@ -249,8 +252,8 @@ export default function SelectedFindingsPanel({
                                 'spectralBroadening', 'calculatedGrade', 'calculatedConfidence',
                                 'emi', 'emiValue', 'emiClassification', 'emi_classification',
                                 'measurement', 'echogenicity', 'plaqueEchogenicity',
-                                'composition', 'plaqueComposition', 'surface', 'plaqueSurface',
-                                'risk', 'plaqueRisk', 'grayWeale'
+                                'composition', 'plaqueComposition',
+                                'nascet', 'surface', 'risk'
                               ]);
                               const renderedKeys = new Set<string>();
                               const entries = Object.entries(measurements).filter(([key, value]) => {

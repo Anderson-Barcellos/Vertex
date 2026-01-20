@@ -41,12 +41,19 @@ interface CarotidFindingDetailsProps {
 // e melhorar a manutenibilidade. Definidas inline apenas para compatibilidade.
 // TODO: Importar do arquivo centralizado após refatoração completa
 
-// Thresholds de velocidade para classificação de estenose
-const VELOCITY_THRESHOLDS = [
+// Thresholds de VPS para classificação de estenose
+const VPS_THRESHOLDS = [
   { value: '<125', label: 'Normal (<125 cm/s)' },
   { value: '125-230', label: 'Moderada (125-230 cm/s)' },
   { value: '>230', label: 'Severa (>230 cm/s)' },
   { value: '>300', label: 'Crítica (>300 cm/s)' }
+] as const;
+
+// Thresholds de VDF para classificação de estenose
+const VDF_THRESHOLDS = [
+  { value: '<40', label: 'Normal (<40 cm/s)' },
+  { value: '40-100', label: 'Moderada (40-100 cm/s)' },
+  { value: '>100', label: 'Severa (>100 cm/s)' }
 ] as const;
 
 // Razão VPS ACI/ACC para estenose
@@ -682,7 +689,7 @@ function CarotidFindingDetailsComponent({
                         <SelectValue placeholder="Selecione..." />
                       </SelectTrigger>
                       <SelectContent className="max-h-[200px] overflow-y-auto">
-                        {VELOCITY_THRESHOLDS.map(v => (
+                        {VPS_THRESHOLDS.map(v => (
                           <SelectItem key={v.value} value={v.label}>
                             {v.label}
                           </SelectItem>
@@ -704,7 +711,7 @@ function CarotidFindingDetailsComponent({
                         <SelectValue placeholder="Selecione..." />
                       </SelectTrigger>
                       <SelectContent className="max-h-[200px] overflow-y-auto">
-                        {VELOCITY_THRESHOLDS.map(v => (
+                        {VDF_THRESHOLDS.map(v => (
                           <SelectItem key={v.value} value={v.label}>
                             {v.label}
                           </SelectItem>
