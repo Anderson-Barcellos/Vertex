@@ -246,7 +246,13 @@ export default function BaseExamPage({ config, disabledOrgans = [], headerExtra 
           return;
         }
         await openaiStreamService.generateFullReportStream(
-          { examType, selectedFindings: data.selectedFindings, normalOrgans: data.normalOrgans, organsCatalog },
+          { 
+            examType, 
+            selectedFindings: data.selectedFindings, 
+            normalOrgans: data.normalOrgans, 
+            organsCatalog,
+            specializedPrompt: promptText  // Pass specialized prompt
+          },
           streamCallbacks
         );
       } else if (provider === 'claude') {
@@ -256,7 +262,13 @@ export default function BaseExamPage({ config, disabledOrgans = [], headerExtra 
           return;
         }
         await claudeStreamService.generateFullReportStream(
-          { examType, selectedFindings: data.selectedFindings, normalOrgans: data.normalOrgans, organsCatalog },
+          { 
+            examType, 
+            selectedFindings: data.selectedFindings, 
+            normalOrgans: data.normalOrgans, 
+            organsCatalog,
+            specializedPrompt: promptText  // Pass specialized prompt
+          },
           streamCallbacks
         );
       } else {
@@ -266,7 +278,13 @@ export default function BaseExamPage({ config, disabledOrgans = [], headerExtra 
           toast.success('Relatório gerado!');
         } else {
           await geminiStreamService.generateFullReportStream(
-            { examType, selectedFindings: data.selectedFindings, normalOrgans: data.normalOrgans, organsCatalog },
+            { 
+              examType, 
+              selectedFindings: data.selectedFindings, 
+              normalOrgans: data.normalOrgans, 
+              organsCatalog,
+              specializedPrompt: promptText  // Pass specialized prompt
+            },
             streamCallbacks
           );
         }

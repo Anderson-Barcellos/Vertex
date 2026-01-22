@@ -84,12 +84,13 @@ export class OpenAIStreamService {
       selectedFindings: SelectedFinding[];
       normalOrgans: string[];
       organsCatalog?: any[];
+      specializedPrompt?: string;  // Accept specialized prompt
     },
     callbacks: StreamCallbacks
   ): Promise<void> {
     try {
       const prompt = buildReportPrompt(data);
-      await this.streamFromBackend(prompt, callbacks);
+      await this.streamFromBackend(prompt, callbacks, data.specializedPrompt);
     } catch (error) {
       console.error('Erro ao gerar relatório completo:', error);
       callbacks.onError?.(error as Error);
@@ -101,7 +102,8 @@ export class OpenAIStreamService {
    */
   private async streamFromBackend(
     prompt: string,
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    specializedPrompt?: string
   ): Promise<void> {
     const requestUrl = createRequestUrl();
     const { modelId, reasoning } = getSelectedOpenAIModel();
@@ -113,7 +115,8 @@ export class OpenAIStreamService {
           role: 'user',
           content: prompt
         }
-      ]
+      ],
+      ...(specializedPrompt && { system_prompt: specializedPrompt })  // Send specialized prompt if provided
     };
     
     if (reasoning) {

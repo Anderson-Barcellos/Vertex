@@ -60,6 +60,7 @@ export class GeminiStreamService {
       selectedFindings: SelectedFinding[];
       normalOrgans: string[];
       organsCatalog?: any[];
+      specializedPrompt?: string;  // Accept specialized prompt
     },
     callbacks: StreamCallbacks
   ): Promise<void> {
@@ -79,7 +80,7 @@ export class GeminiStreamService {
       prompt += '\n' + buildReportPrompt(data);
       prompt += '\nGere um laudo completo e detalhado, incluindo técnica do exame, todos os achados e impressão diagnóstica.';
 
-      await this.streamFromBackend(prompt, callbacks);
+      await this.streamFromBackend(prompt, callbacks, data.specializedPrompt);
     } catch (error) {
       console.error('Erro ao gerar relatório completo:', error);
       callbacks.onError?.(error as Error);
@@ -88,7 +89,8 @@ export class GeminiStreamService {
 
   private async streamFromBackend(
     prompt: string,
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    specializedPrompt?: string
   ): Promise<void> {
     const requestUrl = createRequestUrl('');
 
@@ -104,8 +106,8 @@ export class GeminiStreamService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         text: prompt,
-        model: selectedModel
-        // NÃO enviar 'prompt' - deixar backend usar seu system_prompt padrão
+        model: selectedModel,
+        ...(specializedPrompt && { system_prompt: specializedPrompt })  // Send specialized prompt if provided
       })
     });
     if (!response.ok) {

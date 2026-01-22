@@ -54,12 +54,13 @@ export class ClaudeStreamService {
       selectedFindings: SelectedFinding[];
       normalOrgans: string[];
       organsCatalog?: any[];
+      specializedPrompt?: string;  // Accept specialized prompt
     },
     callbacks: StreamCallbacks
   ): Promise<void> {
     try {
       const prompt = buildReportPrompt(data);
-      await this.streamFromBackend(prompt, callbacks);
+      await this.streamFromBackend(prompt, callbacks, data.specializedPrompt);
     } catch (error) {
       console.error('Erro ao gerar relatório completo:', error);
       callbacks.onError?.(error as Error);
@@ -68,7 +69,8 @@ export class ClaudeStreamService {
 
   private async streamFromBackend(
     prompt: string,
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    specializedPrompt?: string
   ): Promise<void> {
     const requestUrl = createRequestUrl();
     const selectedModel = getSelectedClaudeModel();
@@ -81,7 +83,8 @@ export class ClaudeStreamService {
           content: prompt
         }
       ],
-      max_tokens: 2000
+      max_tokens: 2000,
+      ...(specializedPrompt && { system_prompt: specializedPrompt })  // Send specialized prompt if provided
     };
 
     if (import.meta.env.DEV) {
