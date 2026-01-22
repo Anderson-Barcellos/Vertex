@@ -60,7 +60,7 @@ export default function BaseExamPage({ config, disabledOrgans = [], headerExtra 
     Record<string, Record<string, { severity?: string; instances?: FindingInstance[] }>>
   >({});
 
-  useAutoSave(
+  const { clearState } = useAutoSave(
     autoSaveKey,
     selectedFindings,
     normalOrgans,
@@ -114,6 +114,7 @@ export default function BaseExamPage({ config, disabledOrgans = [], headerExtra 
     setAiImpression('');
     setAiGenerationStats(null);
     setTempFindingDetails({});
+    clearState();
   };
 
   const handleFindingChange = (

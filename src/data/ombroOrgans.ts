@@ -19,6 +19,7 @@ export const ombroOrgans: Organ[] = [
   {
     id: 'tendao-biceps',
     name: 'Tendão do Bíceps',
+    normalDescription: 'Tendão de espessura e ecogenicidade normais, centrado no sulco intertubercular.',
     categories: [
       {
         name: 'Posição',
@@ -77,6 +78,7 @@ export const ombroOrgans: Organ[] = [
   {
     id: 'supraespinhal',
     name: 'Supraespinhal',
+    normalDescription: 'Tendão de espessura e ecotextura preservadas, sem sinais de rotura.',
     categories: [
       {
         name: 'Tendinopatia',
@@ -138,6 +140,7 @@ export const ombroOrgans: Organ[] = [
   {
     id: 'infraespinhal',
     name: 'Infraespinhal',
+    normalDescription: 'Tendão de aspecto normal, sem sinais de tendinopatia ou rotura.',
     categories: [
       {
         name: 'Alterações',
@@ -185,6 +188,7 @@ export const ombroOrgans: Organ[] = [
   {
     id: 'subescapular',
     name: 'Subescapular',
+    normalDescription: 'Tendão de aspecto normal, sem sinais de tendinopatia ou rotura.',
     categories: [
       {
         name: 'Alterações',
@@ -232,6 +236,7 @@ export const ombroOrgans: Organ[] = [
   {
     id: 'bursa-subacromial',
     name: 'Bursa Subacromial-Subdeltoidea',
+    normalDescription: 'Bursa subacromial-subdeltoidea de espessura normal, sem distensão líquida.',
     categories: [
       {
         name: 'Alterações',
@@ -261,6 +266,7 @@ export const ombroOrgans: Organ[] = [
   {
     id: 'articulacao-ac',
     name: 'Articulação Acromioclavicular',
+    normalDescription: 'Articulação acromioclavicular sem alterações degenerativas significativas.',
     categories: [
       {
         name: 'Alterações',
@@ -289,6 +295,7 @@ export const ombroOrgans: Organ[] = [
   {
     id: 'derrame-articular',
     name: 'Derrame Articular',
+    normalDescription: 'Ausência de derrame articular glenoumeral significativo.',
     categories: [
       {
         name: 'Avaliação',
