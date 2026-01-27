@@ -5,8 +5,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Finding } from '@/data/organs';
 import { FindingInstance } from '@/types/report';
-import { Plus, Trash2, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Check, AlertCircle, AlertTriangle } from 'lucide-react';
 import { TiradsCalculatorPanel } from '@/components/shared/TiradsCalculatorPanel';
+import { ITBIDBCalculatorPanel } from '@/components/shared/ITBIDBCalculatorPanel';
+import { useMultipleNumericValidation } from '@/hooks/useNumericValidation';
+import { cn } from '@/lib/utils';
 
 interface FindingDetailsGenericProps {
   finding: Finding;
@@ -33,6 +36,7 @@ export default function FindingDetailsGeneric({
 }: FindingDetailsGenericProps) {
   const [saved, setSaved] = useState(false);
   const initializedRef = React.useRef(false);
+  const { validations, validateField, isAllValid } = useMultipleNumericValidation();
 
   const [instanceForms, setInstanceForms] = useState<InstanceFormData[]>(() => {
     if (instances.length > 0) {
@@ -69,6 +73,23 @@ export default function FindingDetailsGeneric({
 
   const handleFieldChange = (instanceId: string, fieldId: string, value: string) => {
     setSaved(false);
+    
+    // Detecta se é campo numérico baseado no tipo ou conteúdo
+    const field = finding.extraFields?.find(f => typeof f === 'object' && f.id === fieldId);
+    const isNumeric = field && (field.type === 'number' || 
+                                fieldId.toLowerCase().includes('vps') ||
+                                fieldId.toLowerCase().includes('vdf') ||
+                                fieldId.toLowerCase().includes('diameter') ||
+                                fieldId.toLowerCase().includes('thickness') ||
+                                fieldId.toLowerCase().includes('volume') ||
+                                fieldId.toLowerCase().includes('size') ||
+                                fieldId.toLowerCase().includes('measurement') ||
+                                fieldId.toLowerCase().includes('emi'));
+    
+    if (isNumeric) {
+      validateField(fieldId, value);
+    }
+    
     setInstanceForms(prev => {
       const updated = prev.map(form =>
         form.id === instanceId
@@ -129,6 +150,10 @@ export default function FindingDetailsGeneric({
     const fieldIds = extraFields.map(f => typeof f === 'string' ? f : f.id);
     return fieldIds.includes('composition') && fieldIds.includes('echogenicity') && fieldIds.includes('shape');
   }, [extraFields]);
+
+  const isArterialITBIDB = useMemo(() => {
+    return organId === 'itb' && (finding.id === 'itb-valores' || finding.id === 'idb-valores');
+  }, [organId, finding.id]);
 
   const hasLateralityField = useMemo(() => {
     return extraFields.some(f => typeof f !== 'string' && f.id === 'lado');
@@ -202,18 +227,55 @@ export default function FindingDetailsGeneric({
           );
         }
 
+        // Detecta se é campo numérico
+        const isNumericField = type === 'number' || 
+                               id.toLowerCase().includes('vps') ||
+                               id.toLowerCase().includes('vdf') ||
+                               id.toLowerCase().includes('diameter') ||
+                               id.toLowerCase().includes('thickness') ||
+                               id.toLowerCase().includes('volume') ||
+                               id.toLowerCase().includes('size') ||
+                               id.toLowerCase().includes('measurement') ||
+                               id.toLowerCase().includes('emi');
+        
+        const validation = validations[id];
+        const hasValidation = isNumericField && validation;
+        
         return (
           <div key={id} className="flex items-center gap-2">
             <label className="text-xs font-medium text-muted-foreground min-w-[100px]">
               {label}:
             </label>
-            <Input
-              type="text"
-              placeholder={placeholder || ''}
-              value={form.data[id] || ''}
-              onChange={(e) => handleFieldChange(form.id, id, e.target.value)}
-              className="h-8 text-xs flex-1"
-            />
+            <div className="relative flex-1 group">
+              <Input
+                type={isNumericField ? "text" : "text"}
+                inputMode={isNumericField ? "decimal" : "text"}
+                placeholder={placeholder || ''}
+                value={form.data[id] || ''}
+                onChange={(e) => handleFieldChange(form.id, id, e.target.value)}
+                className={cn(
+                  "h-8 text-xs pr-8",
+                  hasValidation && !validation.isValid && "border-red-500 focus:ring-red-500",
+                  hasValidation && validation.severity === 'warning' && "border-yellow-500 focus:ring-yellow-500",
+                  hasValidation && validation.severity === 'error' && "border-red-600 focus:ring-red-600"
+                )}
+              />
+              {hasValidation && validation.message && (
+                <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                  {validation.severity === 'error' ? (
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                  ) : validation.severity === 'warning' ? (
+                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                  ) : null}
+                </div>
+              )}
+              {hasValidation && validation.message && (
+                <div className="absolute z-10 -top-8 left-0 p-1.5 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  {validation.message}
+                  <div className="absolute bottom-0 left-4 transform translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900" />
+                </div>
+              )}
+            </div>
           </div>
         );
       })}
@@ -227,6 +289,13 @@ export default function FindingDetailsGeneric({
           echogenicFoci={form.data['echogenic_foci']}
           size={form.data['size']}
           className="mt-3"
+        />
+      )}
+
+      {isArterialITBIDB && (
+        <ITBIDBCalculatorPanel
+          data={form.data}
+          onFieldChange={(fieldId, value) => handleFieldChange(form.id, fieldId, value)}
         />
       )}
     </div>

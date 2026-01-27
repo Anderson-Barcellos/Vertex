@@ -341,40 +341,48 @@ export const FONTAINE_CLASSIFICATION = [
 ] as const;
 
 export const CLAUDICATION_DISTANCE = [
-  '>500m',
-  '200-500m',
-  '100-200m',
-  '50-100m',
-  '<50m'
+  '>500m (leve)',
+  '200-500m (moderada)',
+  '50-200m (grave)',
+  '<50m (muito grave)',
+  'Dor em repouso'
 ] as const;
 
 export const WIFI_WOUND = [
-  '0 - Sem úlcera/gangrena',
+  '0 - Sem úlcera',
   '1 - Úlcera pequena/superficial',
-  '2 - Úlcera profunda',
-  '3 - Gangrena extensa'
+  '2 - Úlcera profunda (tendão/osso exposto)',
+  '3 - Úlcera extensa/gangrena'
 ] as const;
 
 export const WIFI_ISCHEMIA = [
-  '0 - ITB ≥0.8',
-  '1 - ITB 0.6-0.79',
-  '2 - ITB 0.4-0.59',
-  '3 - ITB <0.4'
+  '0 - ITB ≥0.80 / Pressão tornozelo ≥100 / Pressão dedo ≥60',
+  '1 - ITB 0.60-0.79 / Pressão tornozelo 70-99 / Pressão dedo 40-59',
+  '2 - ITB 0.40-0.59 / Pressão tornozelo 50-69 / Pressão dedo 30-39',
+  '3 - ITB <0.40 / Pressão tornozelo <50 / Pressão dedo <30'
 ] as const;
 
 export const WIFI_FOOT_INFECTION = [
   '0 - Sem infecção',
-  '1 - Infecção local leve',
-  '2 - Infecção local moderada',
-  '3 - Infecção sistêmica/grave'
+  '1 - Infecção leve (local, <2cm celulite)',
+  '2 - Infecção moderada (>2cm celulite, abscesso profundo)',
+  '3 - SIRS / Sepse'
 ] as const;
 
 export const ITB_CLASSIFICATION = [
-  'Normal (0.9-1.3)',
-  'Leve (0.7-0.89)',
-  'Moderada (0.4-0.69)',
-  'Grave (<0.4)',
-  'Não compressível (>1.3)'
+  'Normal (0.91-1.30)',
+  'Doença leve (0.70-0.90)',
+  'Doença moderada (0.40-0.69)',
+  'Doença grave (<0.40)',
+  'Incompressível (>1.30)'
+] as const;
+
+export const IDB_CLASSIFICATION = [
+  'Normal (>0.70)',
+  'Doença leve (0.50-0.69)',
+  'Doença moderada (0.30-0.49)',
+  'Doença grave (<0.30)',
+  'Não mensurável (amputação)'
 ] as const;
 
 // === HELPERS: Field Factories ===

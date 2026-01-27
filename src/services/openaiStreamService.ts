@@ -64,11 +64,12 @@ export class OpenAIStreamService {
       normalOrgans: string[];
       organsCatalog?: any[];
     },
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    signal?: AbortSignal
   ): Promise<void> {
     try {
       const prompt = buildReportPrompt(data);
-      await this.streamFromBackend(prompt, callbacks);
+      await this.streamFromBackend(prompt, callbacks, undefined, signal);
     } catch (error) {
       console.error('Erro no streaming OpenAI:', error);
       callbacks.onError?.(error as Error);
@@ -86,11 +87,12 @@ export class OpenAIStreamService {
       organsCatalog?: any[];
       specializedPrompt?: string;  // Accept specialized prompt
     },
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    signal?: AbortSignal
   ): Promise<void> {
     try {
       const prompt = buildReportPrompt(data);
-      await this.streamFromBackend(prompt, callbacks, data.specializedPrompt);
+      await this.streamFromBackend(prompt, callbacks, data.specializedPrompt, signal);
     } catch (error) {
       console.error('Erro ao gerar relatório completo:', error);
       callbacks.onError?.(error as Error);
@@ -103,7 +105,8 @@ export class OpenAIStreamService {
   private async streamFromBackend(
     prompt: string,
     callbacks: StreamCallbacks,
-    specializedPrompt?: string
+    specializedPrompt?: string,
+    signal?: AbortSignal
   ): Promise<void> {
     const requestUrl = createRequestUrl();
     const { modelId, reasoning } = getSelectedOpenAIModel();
@@ -130,7 +133,8 @@ export class OpenAIStreamService {
     const response = await fetch(requestUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: signal
     });
 
 

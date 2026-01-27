@@ -37,11 +37,12 @@ export class ClaudeStreamService {
       normalOrgans: string[];
       organsCatalog?: any[];
     },
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    signal?: AbortSignal
   ): Promise<void> {
     try {
       const prompt = buildReportPrompt(data);
-      await this.streamFromBackend(prompt, callbacks);
+      await this.streamFromBackend(prompt, callbacks, undefined, signal);
     } catch (error) {
       console.error('Erro no streaming Claude:', error);
       callbacks.onError?.(error as Error);
@@ -56,11 +57,12 @@ export class ClaudeStreamService {
       organsCatalog?: any[];
       specializedPrompt?: string;  // Accept specialized prompt
     },
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    signal?: AbortSignal
   ): Promise<void> {
     try {
       const prompt = buildReportPrompt(data);
-      await this.streamFromBackend(prompt, callbacks, data.specializedPrompt);
+      await this.streamFromBackend(prompt, callbacks, data.specializedPrompt, signal);
     } catch (error) {
       console.error('Erro ao gerar relatório completo:', error);
       callbacks.onError?.(error as Error);
@@ -70,7 +72,8 @@ export class ClaudeStreamService {
   private async streamFromBackend(
     prompt: string,
     callbacks: StreamCallbacks,
-    specializedPrompt?: string
+    specializedPrompt?: string,
+    signal?: AbortSignal
   ): Promise<void> {
     const requestUrl = createRequestUrl();
     const selectedModel = getSelectedClaudeModel();
@@ -94,7 +97,8 @@ export class ClaudeStreamService {
     const response = await fetch(requestUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: signal
     });
 
     if (!response.ok) {

@@ -136,6 +136,9 @@ const REDUNDANT_FIELDS = new Set([
   'plaqueSurface',
   'vertebralFlowPattern',
   'flowPattern',
+  'emi',
+  'emiValue',
+  'emiClassification',
 ]);
 
 export interface ReportPromptPayload {
@@ -209,6 +212,163 @@ const EXAM_TEMPLATES = {
     formatting: {
       sections: ['CARÓTIDA COMUM DIREITA', 'CARÓTIDA INTERNA DIREITA', 'CARÓTIDA EXTERNA DIREITA', 
                 'CARÓTIDA COMUM ESQUERDA', 'CARÓTIDA INTERNA ESQUERDA', 'CARÓTIDA EXTERNA ESQUERDA', 'VERTEBRAIS'],
+      emphasizeFindings: true,
+      includeRecommendations: true
+    }
+  },
+
+  'Ecodoppler Arterial de Membros Inferiores': {
+    systemInstruction: `Você é um radiologista vascular especialista em doença arterial periférica.
+    
+    ## DIRETRIZES ESPECÍFICAS:
+    - Sempre mencione os valores de ITB (Índice Tornozelo-Braquial) e sua interpretação
+    - Para pacientes diabéticos com artérias calcificadas, valorize o IDB (Índice Dedo-Braquial)
+    - Use a classificação de Fontaine para claudicação intermitente
+    - Descreva padrão de onda (trifásico, bifásico, monofásico) em cada segmento
+    - Para estenoses significativas (>50%), correlacione com velocidades e razão VPS
+    - Em oclusões, mencione circulação colateral e reenchimento distal
+    - Use a classificação WIfI quando houver lesões tróficas`,
+
+    conclusionTemplate: `
+    ## CONCLUSÃO:
+    - Valores de ITB bilaterais e classificação
+    - Presença e localização de estenoses/oclusões significativas
+    - Classificação de Fontaine
+    - Recomendações (angiografia, revascularização, tratamento clínico)`,
+
+    formatting: {
+      sections: ['ÍNDICES PRESSÓRICOS', 'ARTÉRIAS ILÍACAS', 'ARTÉRIAS FEMORAIS', 'ARTÉRIAS POPLÍTEAS', 
+                'ARTÉRIAS TIBIAIS', 'ARTÉRIAS PLANTARES', 'CONCLUSÃO'],
+      emphasizeFindings: true,
+      includeRecommendations: true
+    }
+  },
+
+  'Ecodoppler Venoso de Membros Inferiores': {
+    systemInstruction: `Você é um radiologista vascular especialista em doença venosa.
+    
+    ## DIRETRIZES ESPECÍFICAS:
+    - Use a classificação CEAP para achados clínicos
+    - Para refluxo, sempre mencione tempo de duração (>0.5s = patológico)
+    - Descreva compressibilidade venosa em todos os segmentos
+    - Para TVP, caracterize: aguda (hipoecóica) vs crônica (hiperecóica, espessamento parietal)
+    - Avalie junções safeno-femoral e safeno-poplítea com manobra de Valsalva
+    - Mencione diâmetros das safenas quando dilatadas
+    - Identifique perfurantes insuficientes e sua localização`,
+
+    conclusionTemplate: `
+    ## CONCLUSÃO:
+    - Presença ou ausência de TVP
+    - Classificação CEAP
+    - Refluxo em sistemas superficial, profundo e perfurantes
+    - Recomendações (compressão elástica, escleroterapia, cirurgia)`,
+
+    formatting: {
+      sections: ['SISTEMA VENOSO PROFUNDO', 'SAFENA MAGNA', 'SAFENA PARVA', 'PERFURANTES', 
+                'CLASSIFICAÇÃO CEAP', 'CONCLUSÃO'],
+      emphasizeFindings: true,
+      includeRecommendations: true
+    }
+  },
+
+  'Ultrassonografia de Tireoide': {
+    systemInstruction: `Você é um radiologista especialista em tireoide e paratireoides.
+    
+    ## DIRETRIZES ESPECÍFICAS:
+    - Use classificação TI-RADS ACR 2017 para todos os nódulos
+    - Descreva: composição, ecogenicidade, forma, margens e focos ecogênicos
+    - Para nódulos >1cm ou suspeitos, mencione necessidade de PAAF
+    - Avalie linfonodos cervicais (níveis I-VII)
+    - Em tireoidites, descreva padrão de vascularização (inferno tireoidiano)
+    - Correlacione com dados laboratoriais quando disponíveis`,
+
+    conclusionTemplate: `
+    ## CONCLUSÃO:
+    - Características da glândula (dimensões, ecotextura)
+    - Nódulos com classificação TI-RADS individual
+    - Linfonodomegalias suspeitas
+    - Recomendações (PAAF, seguimento, correlação laboratorial)`,
+
+    formatting: {
+      sections: ['LOBO DIREITO', 'ISTMO', 'LOBO ESQUERDO', 'LINFONODOS CERVICAIS', 'CONCLUSÃO'],
+      emphasizeFindings: true,
+      includeRecommendations: true
+    }
+  },
+
+  'Ecodoppler de Vasos Abdominais': {
+    systemInstruction: `Você é um radiologista vascular especialista em hemodinâmica abdominal.
+    
+    ## DIRETRIZES ESPECÍFICAS:
+    - Para aorta abdominal, sempre mencione diâmetro máximo e presença de aneurisma (>3cm)
+    - Avalie artérias renais: VPS >180cm/s sugere estenose >60%
+    - Para artérias mesentéricas, valorize VPS em jejum
+    - Na hipertensão portal, avalie direção do fluxo portal e colaterais
+    - Descreva padrão de onda hepática (trifásico normal vs bifásico/monofásico)
+    - Para TIPS, avalie velocidades e gradiente de pressão`,
+
+    conclusionTemplate: `
+    ## CONCLUSÃO:
+    - Calibre e fluxo da aorta abdominal
+    - Patência de artérias viscerais
+    - Sistema porta (direção, velocidade, colaterais)
+    - Recomendações específicas`,
+
+    formatting: {
+      sections: ['AORTA ABDOMINAL', 'ARTÉRIAS RENAIS', 'TRONCO CELÍACO', 'ARTÉRIA MESENTÉRICA SUPERIOR', 
+                'SISTEMA PORTA', 'VEIAS HEPÁTICAS', 'CONCLUSÃO'],
+      emphasizeFindings: true,
+      includeRecommendations: true
+    }
+  },
+
+  'Ultrassonografia de Parede Abdominal': {
+    systemInstruction: `Você é um radiologista especialista em parede abdominal e hérnias.
+    
+    ## DIRETRIZES ESPECÍFICAS:
+    - Para hérnias, descreva: localização, dimensões do defeito, conteúdo, redutibilidade
+    - Use manobras dinâmicas (Valsalva) para avaliar hérnias ocultas
+    - Em diástase de retos, meça distância inter-retos em 3 níveis
+    - Para coleções pós-operatórias, diferencie seroma vs hematoma vs abscesso
+    - Identifique telas cirúrgicas e complicações (dobras, migração, infecção)`,
+
+    conclusionTemplate: `
+    ## CONCLUSÃO:
+    - Presença e caracterização de hérnias
+    - Diástase de retos (se presente)
+    - Coleções ou complicações pós-operatórias
+    - Recomendações cirúrgicas`,
+
+    formatting: {
+      sections: ['REGIÃO INGUINAL', 'REGIÃO UMBILICAL', 'LINHA ALBA', 'CICATRIZES CIRÚRGICAS', 'CONCLUSÃO'],
+      emphasizeFindings: true,
+      includeRecommendations: true
+    }
+  },
+
+  'Ultrassonografia de Ombro': {
+    systemInstruction: `Você é um radiologista musculoesquelético especialista em ombro.
+    
+    ## DIRETRIZES ESPECÍFICAS:
+    - Avalie sistematicamente o manguito rotador: supraespinhal, infraespinhal, subescapular, redondo menor
+    - Para roturas, classifique: parcial (bursal/articular/intratendinosa) vs completa
+    - Meça gap e retração tendinosa em roturas completas
+    - Descreva atrofia muscular e infiltração gordurosa (Goutallier)
+    - Avalie tendão bicipital: posição, líquido peritendinoso, subluxação
+    - Identifique bursites: subacromial-subdeltoidea, subcoracoidea
+    - Teste dinâmico para impacto subacromial
+    - Correlacione com manobras clínicas (Jobe, Gerber, Patte)`,
+
+    conclusionTemplate: `
+    ## CONCLUSÃO:
+    - Integridade do manguito rotador
+    - Caracterização de roturas (localização, extensão, retração)
+    - Presença de tendinopatias ou bursites
+    - Recomendações (fisioterapia, infiltração, RM, cirurgia)`,
+
+    formatting: {
+      sections: ['TENDÃO SUPRAESPINHAL', 'TENDÃO INFRAESPINHAL', 'TENDÃO SUBESCAPULAR', 
+                'TENDÃO BICIPITAL', 'BURSA SUBACROMIAL', 'ARTICULAÇÃO ACROMIOCLAVICULAR', 'CONCLUSÃO'],
       emphasizeFindings: true,
       includeRecommendations: true
     }

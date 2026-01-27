@@ -37,11 +37,12 @@ export class GeminiStreamService {
       normalOrgans: string[];
       organsCatalog?: any[];
     },
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    signal?: AbortSignal
   ): Promise<void> {
     try {
       const prompt = buildReportPrompt(data);
-      await this.streamFromBackend(prompt, callbacks);
+      await this.streamFromBackend(prompt, callbacks, undefined, signal);
     } catch (error) {
       console.error('Erro no streaming Gemini:', error);
       callbacks.onError?.(error as Error);
@@ -62,7 +63,8 @@ export class GeminiStreamService {
       organsCatalog?: any[];
       specializedPrompt?: string;  // Accept specialized prompt
     },
-    callbacks: StreamCallbacks
+    callbacks: StreamCallbacks,
+    signal?: AbortSignal
   ): Promise<void> {
     try {
       let prompt = `Gere um LAUDO COMPLETO de ${data.examType || 'Ultrassonografia'} com os seguintes dados:\n\n`;
@@ -80,7 +82,7 @@ export class GeminiStreamService {
       prompt += '\n' + buildReportPrompt(data);
       prompt += '\nGere um laudo completo e detalhado, incluindo técnica do exame, todos os achados e impressão diagnóstica.';
 
-      await this.streamFromBackend(prompt, callbacks, data.specializedPrompt);
+      await this.streamFromBackend(prompt, callbacks, data.specializedPrompt, signal);
     } catch (error) {
       console.error('Erro ao gerar relatório completo:', error);
       callbacks.onError?.(error as Error);
@@ -90,7 +92,8 @@ export class GeminiStreamService {
   private async streamFromBackend(
     prompt: string,
     callbacks: StreamCallbacks,
-    specializedPrompt?: string
+    specializedPrompt?: string,
+    signal?: AbortSignal
   ): Promise<void> {
     const requestUrl = createRequestUrl('');
 
@@ -108,7 +111,8 @@ export class GeminiStreamService {
         text: prompt,
         model: selectedModel,
         ...(specializedPrompt && { system_prompt: specializedPrompt })  // Send specialized prompt if provided
-      })
+      }),
+      signal: signal
     });
     if (!response.ok) {
       const message = await response.text().catch(() => '');

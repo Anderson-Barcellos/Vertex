@@ -100,17 +100,17 @@ class UnifiedAIService {
         if (!openaiStreamService.isConfigured()) {
           throw new Error('OpenAI não está configurado. Configure VITE_OPENAI_API_KEY.');
         }
-        await openaiStreamService.generateClinicalImpressionStream(data, wrappedCallbacks);
+        await openaiStreamService.generateClinicalImpressionStream(data, wrappedCallbacks, this.currentAbortController.signal);
       } else if (this.currentProvider === 'claude') {
         if (!claudeStreamService.isConfigured()) {
           throw new Error('Claude não está configurado. Configure VITE_CLAUDE_API_URL.');
         }
-        await claudeStreamService.generateClinicalImpressionStream(data, wrappedCallbacks);
+        await claudeStreamService.generateClinicalImpressionStream(data, wrappedCallbacks, this.currentAbortController.signal);
       } else {
         if (!geminiStreamService.isConfigured()) {
           throw new Error('Gemini não está configurado. Configure VITE_GEMINI_API_URL.');
         }
-        await geminiStreamService.generateClinicalImpressionStream(data, wrappedCallbacks);
+        await geminiStreamService.generateClinicalImpressionStream(data, wrappedCallbacks, this.currentAbortController.signal);
       }
     } catch (error: any) {
       this.notifyStatus('error');

@@ -19,9 +19,11 @@ const defaultTheme = {
   },
   extend: {
     screens: {
-      coarse: { raw: "(pointer: coarse)" },
-      fine: { raw: "(pointer: fine)" },
-      pwa: { raw: "(display-mode: standalone)" },
+      // Removidas media queries problemáticas que causavam warnings
+      // Podem ser reativadas quando Tailwind v4 suportar melhor
+      // coarse: { raw: "(pointer: coarse)" },
+      // fine: { raw: "(pointer: fine)" },
+      // pwa: { raw: "(display-mode: standalone)" },
     },
     colors: {
       neutral: {

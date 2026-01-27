@@ -24,6 +24,11 @@ const AI_MODELS: Record<AIProvider, ModelConfig[]> = {
     { id: 'o3', name: 'o3', description: 'Reasoning avançado' },
     { id: 'gpt-4.1', name: 'GPT-4.1', description: 'Coding otimizado, 1M ctx' },
     { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', description: 'Compacto e eficiente' }
+  ],
+  claude: [
+    { id: 'claude-3.5-sonnet-latest', name: 'Claude 3.5 Sonnet', description: 'Balanceado' },
+    { id: 'claude-3.5-haiku', name: 'Claude 3.5 Haiku', description: 'Rápido e econômico' },
+    { id: 'claude-3-opus', name: 'Claude 3 Opus', description: 'Mais poderoso' }
   ]
 };
 
@@ -37,6 +42,11 @@ const PROVIDER_CONFIG: Record<AIProvider, { icon: typeof Brain; label: string; a
     icon: Lightning,
     label: 'OpenAI',
     activeClass: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+  },
+  claude: {
+    icon: Brain,
+    label: 'Claude',
+    activeClass: 'bg-purple-500/20 text-purple-400 border-purple-500/30'
   }
 };
 

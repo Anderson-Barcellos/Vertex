@@ -41,6 +41,17 @@ export interface FindingMeasurement {
   distanceFromNipple?: string; // Distância do mamilo em cm
   clockPosition?: string; // Posição em horas do relógio (1-12)
   quadrant?: string; // Quadrante mamário (QSE, QSI, QIE, QII, retroareolar)
+  echoPattern?: string; // Padrão ecográfico da lesão
+  calcifications?: string; // Presença e tipo de calcificações
+  sweEmean?: string; // Elastografia SWE - média
+  sweEmax?: string; // Elastografia SWE - máximo
+  sweQualitative?: string; // Elastografia SWE qualitativa
+  sweEmeanValue?: string; // Valor numérico da elastografia média
+  sweEmaxValue?: string; // Valor numérico da elastografia máxima
+  selectedDiagnoses?: string[]; // Diagnósticos diferenciais selecionados
+  dopplerFlow?: string; // Fluxo ao Doppler
+  cystType?: string; // Tipo de cisto
+  complexity?: string; // Complexidade do cisto
 
   // Nodule/Mass characteristics
   shape?: string; // Forma da lesão (oval, redonda, irregular)
@@ -92,6 +103,11 @@ export interface FindingMeasurement {
   tiradsScore?: number; // Pontuação TI-RADS calculada
   tiradsCategory?: string; // Categoria TI-RADS (TR1-TR5)
   tiradsRecommendation?: string; // Recomendação (PAAF, seguimento, etc)
+  suspiciousFeatures?: string[]; // Características suspeitas do nódulo
+  level?: string; // Nível do linfonodo
+  comprimento?: string; // Comprimento (dimensão) em cm
+  ap?: string; // Diâmetro ântero-posterior em cm
+  transverso?: string; // Diâmetro transverso em cm
 
   // Thyroid Volume fields (Gutekunst reference)
   volumeDirect?: string; // Volume inserido diretamente pelo usuário em mL

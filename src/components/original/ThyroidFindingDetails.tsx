@@ -148,7 +148,7 @@ function ThyroidFindingDetailsComponent({
         currentMeasurement.vascularity ||
         currentMeasurement.thickness ||
         currentMeasurement.volumeDirect ||
-        currentMeasurement.suspiciousFeatures ||
+        (Array.isArray(currentMeasurement.suspiciousFeatures) && currentMeasurement.suspiciousFeatures.length > 0) ||
         currentMeasurement.level ||
         currentMeasurement.description ||
         hasExtraFieldData) {
@@ -304,8 +304,8 @@ function ThyroidFindingDetailsComponent({
                       {instance.measurements.level && (
                         <p><span className="text-muted-foreground">Nível:</span> {instance.measurements.level}</p>
                       )}
-                      {instance.measurements.suspiciousFeatures && (
-                        <p><span className="text-muted-foreground">Características:</span> {instance.measurements.suspiciousFeatures}</p>
+                      {instance.measurements.suspiciousFeatures && instance.measurements.suspiciousFeatures.length > 0 && (
+                        <p><span className="text-muted-foreground">Características:</span> {Array.isArray(instance.measurements.suspiciousFeatures) ? instance.measurements.suspiciousFeatures.join(', ') : instance.measurements.suspiciousFeatures}</p>
                       )}
                       {instance.measurements.description && (
                         <p><span className="text-muted-foreground">Obs:</span> {instance.measurements.description}</p>
@@ -703,8 +703,13 @@ function ThyroidFindingDetailsComponent({
                       </label>
                       <textarea
                         placeholder="Ex: Perda do hilo, forma arredondada..."
-                        value={currentMeasurement.suspiciousFeatures || ''}
-                        onChange={(e) => setCurrentMeasurement({...currentMeasurement, suspiciousFeatures: e.target.value})}
+                        value={Array.isArray(currentMeasurement.suspiciousFeatures) 
+                          ? currentMeasurement.suspiciousFeatures.join(', ') 
+                          : currentMeasurement.suspiciousFeatures || ''}
+                        onChange={(e) => setCurrentMeasurement({
+                          ...currentMeasurement, 
+                          suspiciousFeatures: e.target.value ? [e.target.value] : []
+                        })}
                         className="flex-1 min-h-[40px] p-1.5 text-xs bg-background border rounded-md resize-none"
                       />
                     </div>
@@ -823,7 +828,7 @@ function ThyroidFindingDetailsComponent({
                     !currentMeasurement.thickness &&
                     !currentMeasurement.volumeDirect &&
                     !currentMeasurement.level &&
-                    !currentMeasurement.suspiciousFeatures &&
+                    (!currentMeasurement.suspiciousFeatures || currentMeasurement.suspiciousFeatures.length === 0) &&
                     !currentMeasurement.description &&
                     !finding.extraFields?.some(field => {
                       if (typeof field === 'string') return false;
