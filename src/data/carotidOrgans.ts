@@ -818,6 +818,11 @@ export const carotidOrgans: Organ[] = [
         id: 'hemodinamica-bd',
         name: 'Alterações Hemodinâmicas',
         findings: createHemodynamicFindings('direito', ['Bulbo Carotídeo'])
+      },
+      {
+        id: 'parietais-bd',
+        name: 'Alterações Parietais',
+        findings: createParietalFindings('direito')
       }
     ]
   },
@@ -836,6 +841,11 @@ export const carotidOrgans: Organ[] = [
         id: 'hemodinamica-be',
         name: 'Alterações Hemodinâmicas',
         findings: createHemodynamicFindings('esquerdo', ['Bulbo Carotídeo'])
+      },
+      {
+        id: 'parietais-be',
+        name: 'Alterações Parietais',
+        findings: createParietalFindings('esquerdo')
       }
     ]
   },
