@@ -990,12 +990,22 @@ function CarotidFindingDetailsComponent({
 
                       const normalized = rawValue.trim();
                       const numeric = parseFloat(normalized.replace(',', '.'));
+                      
+                      // Calcula classificação automática do EMI
+                      let classification = undefined;
+                      if (!isNaN(numeric) && numeric > 0) {
+                        const emiClass = getEMIClassification(numeric);
+                        classification = `${emiClass.label} (${numeric < 0.9 ? '<0.9 mm' : 
+                                          numeric < 1.0 ? '0.9-1.0 mm' :
+                                          numeric < 1.5 ? '1.0-1.5 mm' : '>1.5 mm'})`;
+                      }
 
                       setCurrentMeasurement({
                         ...currentMeasurement,
                         emi: normalized,
                         emiValue: normalized,
-                        emiClassification: undefined
+                        emiClassification: classification,
+                        emi_classification: classification
                       });
                     }}
                     className="h-7 text-xs flex-1"

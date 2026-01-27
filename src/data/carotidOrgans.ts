@@ -58,7 +58,7 @@ export const HIGH_RISK_FEATURES_ASYMPTOMATIC = [
   'Progressão de estenose >20% em 6 meses',
   'Estenose contralateral ocluída',
   'Infartos silenciosos ipsilaterais na TC/RM',
-  'Placa ecolucente (GSM <25)',
+  'Placa ecolucente (MEC <25)',
   'Hemorragia intraplaca na RM',
   'Microêmbolos ao DTC (Doppler transcraniano)',
   'Reserva cerebrovascular reduzida',
@@ -68,14 +68,14 @@ export const HIGH_RISK_FEATURES_ASYMPTOMATIC = [
 // Critérios IAC 2021 (Atualização dos SRU 2003)
 export const IAC_2021_CRITERIA = {
   normal: { stenosis: 'Normal', vps: '<125', edv: '<40', ratio: '<2.0' },
-  mild: { stenosis: '<50%', vps: '<125', edv: '<40', ratio: '<2.0', note: 'Placa visível sem aceleração' },
-  moderate_50_69: { stenosis: '50-69%', vps: '125-230', edv: '40-100', ratio: '2.0-4.0' },
-  severe_70_99: { stenosis: '≥70%', vps: '>230', edv: '>100', ratio: '>4.0' },
-  near_occlusion: { stenosis: 'Suboclusão', vps: 'Variável/Baixa', edv: 'Variável', ratio: 'Variável', note: 'String sign, fluxo filiforme' },
+  mild: { stenosis: '<50% (leve)', vps: '<125', edv: '<40', ratio: '<2.0', note: 'Placa visível sem aceleração' },
+  moderate_50_69: { stenosis: '50-69% (moderada)', vps: '125-230', edv: '40-100', ratio: '2.0-4.0' },
+  severe_70_99: { stenosis: '≥70% (grave)', vps: '>230', edv: '>100', ratio: '>4.0' },
+  near_occlusion: { stenosis: 'Suboclusão', vps: 'Variável/Baixa', edv: 'Variável', ratio: 'Variável', note: 'Sinal de cordão, fluxo filiforme' },
   occlusion: { stenosis: 'Oclusão', vps: 'Ausente', edv: 'Ausente', ratio: 'N/A' }
 };
 
-// Borramento Espectral (Spectral Broadening) - Critério adicional
+// Borramento Espectral - Critério adicional
 export const SPECTRAL_BROADENING = [
   'Ausente (janela espectral preservada)',
   'Leve (preenchimento parcial da janela)',
